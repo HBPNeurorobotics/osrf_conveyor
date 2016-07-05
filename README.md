@@ -20,3 +20,9 @@
 1. Gazebo rules and scoring plugin
     1. Run the different simulation tasks.
     1. Score each task.
+    
+# Robot Arms
+
+1. UR 10
+1. Motoman MH5
+1. Faunuc m-10IA
