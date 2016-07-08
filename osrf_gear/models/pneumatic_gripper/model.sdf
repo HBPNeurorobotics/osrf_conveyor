@@ -1,0 +1,71 @@
+<?xml version="1.0" ?>
+<sdf version="1.5">
+  <model name="pneumatic_end_effector">
+    <static>true</static>
+    <!-- Base of end effector -->
+    <link name="gripper_base">
+      <visual name="visual">
+        <pose>0 0 0 0 3.14159 3.14159</pose>
+        <geometry>
+          <mesh>
+            <uri>model://pneumatic_gripper/meshes/pneumatic_gripper_w_cup.DAE</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="visual">
+        <pose>0 0 0.04 0 3.14159 3.14159</pose>
+        <geometry>
+          <cylinder>
+            <length>0.08</length>
+            <radius>0.02</radius>
+          </cylinder>
+        </geometry>
+        <!--<material name="darkred">
+          <color rgba=".5 .1 .1 1"/>
+        </material>-->
+      </collision>
+      <inertial>
+        <pose>0 0 0 0 3.14159 3.14159</pose>
+        <mass>0.3</mass>
+        <inertia>
+          <ixx>2e-08</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>3e-08</iyy>
+          <iyz>0</iyz>
+          <izz>2e-08</izz>
+        </inertia>
+      </inertial>
+    </link>
+
+    <!-- Pneumatic Gripper Tip link -->
+    <link name="gripper_tip">
+      <pose>0 0 0.08 0 0 0</pose>
+      <inertial>
+        <mass>0.0001</mass>
+        <inertia>
+          <ixx>0</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0</iyy>
+          <iyz>0</iyz>
+          <izz>0</izz>
+        </inertia>
+      </inertial>
+    </link>
+
+    <!-- Pneumatic Gripper Tip joint -->
+    <joint name="endpoint" type="fixed">
+      <pose>0 0 0.08 0 0 0</pose>
+      <parent>gripper_base</parent>
+      <child>gripper_tip</child>
+    </joint>
+
+    <plugin name="gazebo_ros_vacuum_gripper" filename="libgazebo_ros_vacuum_gripper.so">
+        <robotNamespace>/osrf_gear</robotNamespace>
+        <bodyName>gripper_tip</bodyName>
+        <topicName>grasping</topicName>
+    </plugin>
+
+  </model>
+</sdf>
