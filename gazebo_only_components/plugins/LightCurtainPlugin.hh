@@ -23,6 +23,7 @@
 #define _GAZEBO_LIGHT_CURTAIN_PLUGIN_HH_
 
 #include "gazebo/common/Plugin.hh"
+#include "gazebo/msgs/msgs.hh"
 #include "gazebo/sensors/SensorTypes.hh"
 #include "gazebo/sensors/RaySensor.hh"
 #include "gazebo/util/system.hh"
@@ -45,8 +46,26 @@ namespace gazebo
     /// \param take in SDF root element
     public: void Load(sensors::SensorPtr _parent, sdf::ElementPtr _sdf);
 
+    /// \brief Generate a topic name for the beam interruption message
+    private: std::string Topic() const;
+
+    /// \brief Publisher for the beam interruption
+    private: transport::PublisherPtr interruptionPub;
+
+    /// \brief Beam interruption message
+    private: msgs::Contact interruptionMsg;
+
+    /// \brief Mutex to protect interruptionMsg
+    private: std::mutex mutex;
+
+    /// \brief Interruption state
+    private: bool interrupted;
+
     /// \brief Pointer to parent
     protected: physics::WorldPtr world;
+
+    /// \brief Pointer to this node for publishing
+    private: transport::NodePtr node;
 
     /// \brief The parent sensor
     private: sensors::RaySensorPtr parentSensor;

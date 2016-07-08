@@ -17,7 +17,9 @@
 #include <functional>
 #include <cstdio>
 
-#include "gazebo/physics/physics.hh"
+#include <gazebo/physics/physics.hh>
+#include <gazebo/transport/Node.hh>
+#include <gazebo/transport/Publisher.hh>
 #include "LightCurtainPlugin.hh"
 
 using namespace gazebo;
@@ -39,21 +41,41 @@ LightCurtainPlugin::~LightCurtainPlugin()
     this->world.reset();
 }
 
+//////////////////////////////////////////////////
+std::string LightCurtainPlugin::Topic() const
+{
+  std::string topicName = "~/";
+  topicName += this->parentSensor->Name() + "/" + this->GetHandle() + "/interruption";
+  boost::replace_all(topicName, "::", "/");
+
+  return topicName;
+}
+
 /////////////////////////////////////////////////
 void LightCurtainPlugin::Load(sensors::SensorPtr _parent, sdf::ElementPtr /*_sdf*/)
 {
-    // Get then name of the parent sensor
+    // Get the name of the parent sensor
     this->parentSensor =
         std::dynamic_pointer_cast<sensors::RaySensor>(_parent);
 
     if (!this->parentSensor)
         gzthrow("LightCurtainPlugin requires a Ray Sensor as its parent");
 
-    this->world = physics::get_world(this->parentSensor->WorldName());
+    std::string worldName = this->parentSensor->WorldName();
+    this->world = physics::get_world(worldName);
+    this->node = transport::NodePtr(new transport::Node());
+    this->node->Init(worldName);
 
     this->newLaserScansConnection =
         this->parentSensor->LaserShape()->ConnectNewLaserScans(
             std::bind(&LightCurtainPlugin::OnNewLaserScans, this));
+
+    this->interruptionPub =
+        this->node->Advertise<msgs::Contact>(this->Topic(), 50);
+
+    this->interruptionMsg.set_world(this->parentSensor->WorldName());
+    this->interruptionMsg.set_collision1("");
+    this->interruptionMsg.set_collision2("");
 }
 
 /////////////////////////////////////////////////
@@ -79,8 +101,17 @@ void LightCurtainPlugin::OnNewLaserScans()
 
     if (objectDetected) {
         std::cout << "Laser beam interrupted" << std::endl;
+        if (!this->interrupted) {
+            if (this->interruptionPub && this->interruptionPub->HasConnections()) {
+                std::lock_guard<std::mutex> lock(this->mutex);
+                msgs::Set(this->interruptionMsg.mutable_time(), this->world->GetSimTime());
+                this->interruptionPub->Publish(this->interruptionMsg);
+            }
+        }
+        this->interrupted = true;
     } else {
         std::cout << "nothing" << std::endl;
+        this->interrupted = false;
     }
     this->parentSensor->SetActive(true); // this seems to happen automatically, not sure if a bug
 }

@@ -39,7 +39,7 @@
         <always_on>1</always_on>
         <update_rate>0.5</update_rate>
         <visualize>true</visualize>
-        <plugin name="laser" filename="libLightCurtainPlugin.so" />
+        <plugin name="light_curtain_plugin" filename="libLightCurtainPlugin.so" />
       </sensor>
     </link>
   </model>
