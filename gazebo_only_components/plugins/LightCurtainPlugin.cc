@@ -71,11 +71,7 @@ void LightCurtainPlugin::Load(sensors::SensorPtr _parent, sdf::ElementPtr /*_sdf
             std::bind(&LightCurtainPlugin::OnNewLaserScans, this));
 
     this->interruptionPub =
-        this->node->Advertise<msgs::Contact>(this->Topic(), 50);
-
-    this->interruptionMsg.set_world(this->parentSensor->WorldName());
-    this->interruptionMsg.set_collision1("");
-    this->interruptionMsg.set_collision2("");
+        this->node->Advertise<msgs::LaserScanStamped>(this->Topic(), 50);
 }
 
 /////////////////////////////////////////////////
@@ -87,12 +83,28 @@ void LightCurtainPlugin::OnNewLaserScans()
     double maxRange = this->parentSensor->RangeMax();
     double minRange = this->parentSensor->RangeMin();
     int rangeCount = this->parentSensor->RangeCount();
+    std::vector<double> ranges;
+    this->parentSensor->Ranges(ranges);
 
     bool objectDetected = false;
+
+    std::lock_guard<std::mutex> lock(this->mutex);
+    msgs::Set(this->interruptionMsg.mutable_time(), this->world->GetSimTime());
+    msgs::LaserScan *scanToPublish = this->interruptionMsg.mutable_scan();
+    scanToPublish->set_frame(this->parentSensor->ParentName());
+    msgs::Set(scanToPublish->mutable_world_pose(), ignition::math::Pose3d()); // this isn't accurate
+    scanToPublish->set_angle_min(this->parentSensor->AngleMin().Radian());
+    scanToPublish->set_angle_max(this->parentSensor->AngleMax().Radian());
+    scanToPublish->set_angle_step(this->parentSensor->AngleResolution());
+    scanToPublish->set_count(this->parentSensor->RangeCount());
+    scanToPublish->set_range_min(minRange);
+    scanToPublish->set_range_max(maxRange);
+
     std::cout << "Laser ranges:" << std::endl;
-    for (int i = 0; i<rangeCount; i++){
-        double range = this->parentSensor->Range(i);
-        std::cout << this->parentSensor->Range(i) << " ";
+    for (int i = 0; i<ranges.size(); i++){
+        double range = ranges[i];//this->parentSensor->Range(i);
+        scanToPublish->add_ranges(range);
+        std::cout << range << " ";
         if (range < maxRange and range > minRange) {
             objectDetected = true;
         }
@@ -103,8 +115,6 @@ void LightCurtainPlugin::OnNewLaserScans()
         std::cout << "Laser beam interrupted" << std::endl;
         if (!this->interrupted) {
             if (this->interruptionPub && this->interruptionPub->HasConnections()) {
-                std::lock_guard<std::mutex> lock(this->mutex);
-                msgs::Set(this->interruptionMsg.mutable_time(), this->world->GetSimTime());
                 this->interruptionPub->Publish(this->interruptionMsg);
             }
         }

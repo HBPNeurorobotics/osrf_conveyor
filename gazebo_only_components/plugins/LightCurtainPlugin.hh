@@ -53,7 +53,7 @@ namespace gazebo
     private: transport::PublisherPtr interruptionPub;
 
     /// \brief Beam interruption message
-    private: msgs::Contact interruptionMsg;
+    private: msgs::LaserScanStamped interruptionMsg;
 
     /// \brief Mutex to protect interruptionMsg
     private: std::mutex mutex;
