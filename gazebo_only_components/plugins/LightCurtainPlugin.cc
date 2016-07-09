@@ -71,7 +71,7 @@ void LightCurtainPlugin::Load(sensors::SensorPtr _parent, sdf::ElementPtr /*_sdf
             std::bind(&LightCurtainPlugin::OnNewLaserScans, this));
 
     this->interruptionPub =
-        this->node->Advertise<msgs::LaserScanStamped>(this->Topic(), 50);
+        this->node->Advertise<msgs::Header>(this->Topic(), 50);
 }
 
 /////////////////////////////////////////////////
@@ -88,28 +88,19 @@ void LightCurtainPlugin::OnNewLaserScans()
 
     bool objectDetected = false;
 
-    std::lock_guard<std::mutex> lock(this->mutex);
-    msgs::Set(this->interruptionMsg.mutable_time(), this->world->GetSimTime());
-    msgs::LaserScan *scanToPublish = this->interruptionMsg.mutable_scan();
-    scanToPublish->set_frame(this->parentSensor->ParentName());
-    msgs::Set(scanToPublish->mutable_world_pose(), ignition::math::Pose3d()); // this isn't accurate
-    scanToPublish->set_angle_min(this->parentSensor->AngleMin().Radian());
-    scanToPublish->set_angle_max(this->parentSensor->AngleMax().Radian());
-    scanToPublish->set_angle_step(this->parentSensor->AngleResolution());
-    scanToPublish->set_count(this->parentSensor->RangeCount());
-    scanToPublish->set_range_min(minRange);
-    scanToPublish->set_range_max(maxRange);
-
     std::cout << "Laser ranges:" << std::endl;
     for (int i = 0; i<ranges.size(); i++){
-        double range = ranges[i];//this->parentSensor->Range(i);
-        scanToPublish->add_ranges(range);
+        double range = ranges[i];
         std::cout << range << " ";
         if (range < maxRange and range > minRange) {
             objectDetected = true;
         }
     }
     std::cout << std::endl;
+
+    std::lock_guard<std::mutex> lock(this->mutex);
+    msgs::Set(this->interruptionMsg.mutable_stamp(), this->world->GetSimTime());
+    this->interruptionMsg.set_index(objectDetected);
 
     if (objectDetected) {
         std::cout << "Laser beam interrupted" << std::endl;
@@ -121,6 +112,11 @@ void LightCurtainPlugin::OnNewLaserScans()
         this->interrupted = true;
     } else {
         std::cout << "nothing" << std::endl;
+        if (this->interrupted) {
+            if (this->interruptionPub && this->interruptionPub->HasConnections()) {
+                this->interruptionPub->Publish(this->interruptionMsg);
+            }
+        }
         this->interrupted = false;
     }
     this->parentSensor->SetActive(true); // this seems to happen automatically, not sure if a bug
