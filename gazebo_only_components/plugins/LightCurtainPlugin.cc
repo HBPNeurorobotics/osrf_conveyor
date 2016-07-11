@@ -52,7 +52,7 @@ std::string LightCurtainPlugin::Topic() const
 }
 
 /////////////////////////////////////////////////
-void LightCurtainPlugin::Load(sensors::SensorPtr _parent, sdf::ElementPtr /*_sdf*/)
+void LightCurtainPlugin::Load(sensors::SensorPtr _parent, sdf::ElementPtr _sdf)
 {
     // Get the name of the parent sensor
     this->parentSensor =
@@ -60,6 +60,16 @@ void LightCurtainPlugin::Load(sensors::SensorPtr _parent, sdf::ElementPtr /*_sdf
 
     if (!this->parentSensor)
         gzthrow("LightCurtainPlugin requires a Ray Sensor as its parent");
+
+    std::string interruptionTopic;
+    if (_sdf->HasElement("output_topic"))
+    {
+        interruptionTopic = _sdf->Get<std::string>("output_topic");
+    }
+    else {
+        interruptionTopic = this->Topic();
+    }
+    std::cout << interruptionTopic << std::endl;
 
     std::string worldName = this->parentSensor->WorldName();
     this->world = physics::get_world(worldName);
@@ -71,7 +81,7 @@ void LightCurtainPlugin::Load(sensors::SensorPtr _parent, sdf::ElementPtr /*_sdf
             std::bind(&LightCurtainPlugin::OnNewLaserScans, this));
 
     this->interruptionPub =
-        this->node->Advertise<msgs::Header>(this->Topic(), 50);
+        this->node->Advertise<msgs::Header>(interruptionTopic, 50);
 }
 
 /////////////////////////////////////////////////

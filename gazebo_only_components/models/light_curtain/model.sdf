@@ -39,7 +39,9 @@
         <always_on>1</always_on>
         <update_rate>0.5</update_rate>
         <visualize>true</visualize>
-        <plugin name="light_curtain_plugin" filename="libLightCurtainPlugin.so" />
+        <plugin name="light_curtain_plugin" filename="libLightCurtainPlugin.so" >
+          <output_topic>interruption</output_topic>
+        </plugin>
       </sensor>
     </link>
   </model>
