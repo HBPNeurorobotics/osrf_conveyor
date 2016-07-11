@@ -42,13 +42,13 @@ LightCurtainPlugin::~LightCurtainPlugin()
 }
 
 //////////////////////////////////////////////////
-std::string LightCurtainPlugin::Topic() const
+std::string LightCurtainPlugin::Topic(std::string topicName) const
 {
-  std::string topicName = "~/";
-  topicName += this->parentSensor->Name() + "/" + this->GetHandle() + "/interruption";
-  boost::replace_all(topicName, "::", "/");
+  std::string globalTopicName = "~/";
+  globalTopicName += this->parentSensor->Name() + "/" + this->GetHandle() + topicName;
+  boost::replace_all(globalTopicName, "::", "/");
 
-  return topicName;
+  return globalTopicName;
 }
 
 /////////////////////////////////////////////////
@@ -61,27 +61,36 @@ void LightCurtainPlugin::Load(sensors::SensorPtr _parent, sdf::ElementPtr _sdf)
     if (!this->parentSensor)
         gzthrow("LightCurtainPlugin requires a Ray Sensor as its parent");
 
-    std::string interruptionTopic;
-    if (_sdf->HasElement("output_topic"))
-    {
-        interruptionTopic = _sdf->Get<std::string>("output_topic");
-    }
-    else {
-        interruptionTopic = this->Topic();
-    }
-    std::cout << interruptionTopic << std::endl;
-
     std::string worldName = this->parentSensor->WorldName();
     this->world = physics::get_world(worldName);
     this->node = transport::NodePtr(new transport::Node());
     this->node->Init(worldName);
 
+    std::string interruptionTopic;
+    if (_sdf->HasElement("output_state_topic"))
+    {
+        interruptionTopic = _sdf->Get<std::string>("output_state_topic");
+    }
+    else {
+        interruptionTopic = this->Topic("interruption_state");
+    }
+    this->interruptionPub =
+        this->node->Advertise<msgs::Header>(interruptionTopic, 50);
+
+    std::string interruptionChangeTopic;
+    if (_sdf->HasElement("output_change_topic"))
+    {
+        interruptionChangeTopic = _sdf->Get<std::string>("output_change_topic");
+    }
+    else {
+        interruptionChangeTopic = this->Topic("interruption_change");
+    }
+    this->interruptionChangePub =
+        this->node->Advertise<msgs::Header>(interruptionChangeTopic, 50);
+
     this->newLaserScansConnection =
         this->parentSensor->LaserShape()->ConnectNewLaserScans(
             std::bind(&LightCurtainPlugin::OnNewLaserScans, this));
-
-    this->interruptionPub =
-        this->node->Advertise<msgs::Header>(interruptionTopic, 50);
 }
 
 /////////////////////////////////////////////////
@@ -111,20 +120,23 @@ void LightCurtainPlugin::OnNewLaserScans()
     std::lock_guard<std::mutex> lock(this->mutex);
     msgs::Set(this->interruptionMsg.mutable_stamp(), this->world->GetSimTime());
     this->interruptionMsg.set_index(objectDetected);
+    if (this->interruptionPub && this->interruptionPub->HasConnections()) {
+        this->interruptionPub->Publish(this->interruptionMsg);
+    }
 
     if (objectDetected) {
         std::cout << "Laser beam interrupted" << std::endl;
         if (!this->interrupted) {
-            if (this->interruptionPub && this->interruptionPub->HasConnections()) {
-                this->interruptionPub->Publish(this->interruptionMsg);
+            if (this->interruptionChangePub && this->interruptionChangePub->HasConnections()) {
+                this->interruptionChangePub->Publish(this->interruptionMsg);
             }
         }
         this->interrupted = true;
     } else {
         std::cout << "nothing" << std::endl;
         if (this->interrupted) {
-            if (this->interruptionPub && this->interruptionPub->HasConnections()) {
-                this->interruptionPub->Publish(this->interruptionMsg);
+            if (this->interruptionChangePub && this->interruptionChangePub->HasConnections()) {
+                this->interruptionChangePub->Publish(this->interruptionMsg);
             }
         }
         this->interrupted = false;

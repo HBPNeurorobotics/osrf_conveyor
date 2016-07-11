@@ -40,7 +40,8 @@
         <update_rate>0.5</update_rate>
         <visualize>true</visualize>
         <plugin name="light_curtain_plugin" filename="libLightCurtainPlugin.so" >
-          <output_topic>interruption</output_topic>
+          <output_state_topic>interruption_state_</output_state_topic>
+          <output_change_topic>interruption_change_</output_change_topic>
         </plugin>
       </sensor>
     </link>

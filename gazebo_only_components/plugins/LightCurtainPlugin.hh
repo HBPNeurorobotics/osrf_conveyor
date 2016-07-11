@@ -46,11 +46,15 @@ namespace gazebo
     /// \param take in SDF root element
     public: void Load(sensors::SensorPtr _parent, sdf::ElementPtr _sdf);
 
-    /// \brief Generate a topic name for the beam interruption message
-    private: std::string Topic() const;
+    /// \brief Generate a global topic name from a local one
+    /// \param local local topic name
+    private: std::string Topic(std::string topicName) const;
 
-    /// \brief Publisher for the beam interruption
+    /// \brief Publisher for the beam interruption state
     private: transport::PublisherPtr interruptionPub;
+
+    /// \brief Publisher for the beam interruption state change
+    private: transport::PublisherPtr interruptionChangePub;
 
     /// \brief Beam interruption message
     private: msgs::Header interruptionMsg;
