@@ -65,6 +65,15 @@ namespace gazebo
     /// \brief Interruption state
     private: bool interrupted;
 
+    /// \brief Minimum sensing range in meters
+    private: double sensingRangeMin;
+
+    /// \brief Maximum sensing range in meters
+    private: double sensingRangeMax;
+
+    /// \brief Whether or not the output function is normally open (default) or normally closed
+    private: bool normallyOpen;
+
     /// \brief Pointer to parent
     protected: physics::WorldPtr world;
 

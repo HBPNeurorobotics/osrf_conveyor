@@ -37,11 +37,19 @@
         </ray>
 
         <always_on>1</always_on>
-        <update_rate>0.5</update_rate>
-        <visualize>true</visualize>
+        <visualize>false</visualize>
+        <!-- use details of SICK MM12 -->
         <plugin name="proximity_ray_plugin" filename="libProximityRayPlugin.so" >
-          <output_state_topic>interruption_state_</output_state_topic>
-          <output_change_topic>interruption_change_</output_change_topic>
+          <output_state_topic>sensor_output</output_state_topic>
+          <time_delay>0.02</time_delay><!-- this modifies the update rate of the ray sensor -->
+          <output_function>normally_open</output_function> <!-- energized when target detected -->
+          <!-- the ray sensor doesn't have setters for these yet unfortunately -->
+          <!--
+          <sensing_range_min>0.06</sensing_range_min>
+          <sensing_range_max>0.12</sensing_range_max>
+          <resolution>0.001</resolution>
+          -->
+
         </plugin>
       </sensor>
     </link>

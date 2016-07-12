@@ -66,6 +66,13 @@ void ProximityRayPlugin::Load(sensors::SensorPtr _parent, sdf::ElementPtr _sdf)
     this->node = transport::NodePtr(new transport::Node());
     this->node->Init(worldName);
 
+    if (_sdf->HasElement("time_delay"))
+    {
+      double time_delay = _sdf->Get<double>("time_delay");
+      this->parentSensor->SetUpdateRate(1.0/time_delay);
+      gzdbg << "Setting update rate of parent sensor to " << 1.0/time_delay << " Hz\n";
+    }
+
     std::string interruptionTopic;
     if (_sdf->HasElement("output_state_topic"))
     {
@@ -74,6 +81,7 @@ void ProximityRayPlugin::Load(sensors::SensorPtr _parent, sdf::ElementPtr _sdf)
     else {
         interruptionTopic = this->Topic("interruption_state");
     }
+    gzdbg << "Publishing interruption state to topic: " << interruptionTopic << "\n";
     this->interruptionPub =
         this->node->Advertise<msgs::Header>(interruptionTopic, 50);
 
@@ -85,8 +93,49 @@ void ProximityRayPlugin::Load(sensors::SensorPtr _parent, sdf::ElementPtr _sdf)
     else {
         interruptionChangeTopic = this->Topic("interruption_change");
     }
+    gzdbg << "Publishing interruption state changes to topic: " << interruptionChangeTopic << "\n";
     this->interruptionChangePub =
         this->node->Advertise<msgs::Header>(interruptionChangeTopic, 50);
+
+    // TODO: override sensor's range values
+    /*
+    if (_sdf->HasElement("sensing_range_min"))
+    {
+      this->sensingRangeMin = _sdf->Get<double>("sensing_range_min");
+    }
+    else {
+      this->sensingRangeMin = this->parentSensor->RangeMin();
+    }
+    gzdbg << "Using mininimum sensing range of: " << this->sensingRangeMin << " m\n";
+
+    if (_sdf->HasElement("sensing_range_max"))
+    {
+      this->sensingRangeMax = _sdf->Get<double>("sensing_range_max");
+    }
+    else {
+      this->sensingRangeMax = this->parentSensor->RangeMax();
+    }
+    gzdbg << "Using maximum sensing range of: " << this->sensingRangeMax << " m\n";
+    */
+
+    if (_sdf->HasElement("output_function"))
+    {
+      std::string outputFunction = _sdf->Get<std::string>("output_function");
+      if ("normally_open" == outputFunction) {
+        this->normallyOpen = true;
+      }
+      else if ("normally_closed" == outputFunction) {
+        this->normallyOpen = false;
+      }
+      else {
+        gzerr << "output_function can only be either normally_open or normally_closed" << std::endl;
+        return;
+      }
+    }
+    else {
+      this->normallyOpen = true;
+    }
+    gzdbg << "Using normally open setting of: " << this->normallyOpen << "\n";
 
     this->newLaserScansConnection =
         this->parentSensor->LaserShape()->ConnectNewLaserScans(
@@ -116,7 +165,7 @@ void ProximityRayPlugin::OnNewLaserScans()
 
     std::lock_guard<std::mutex> lock(this->mutex);
     msgs::Set(this->interruptionMsg.mutable_stamp(), this->world->GetSimTime());
-    this->interruptionMsg.set_index(objectDetected);
+    this->interruptionMsg.set_index(this->normallyOpen ? objectDetected : !objectDetected);
     if (this->interruptionPub && this->interruptionPub->HasConnections()) {
         this->interruptionPub->Publish(this->interruptionMsg);
     }
