@@ -1,7 +1,52 @@
 <?xml version="1.0" ?>
 <sdf version="1.6">
-  <model name="hokuyo">
+  <model name="proximity_sick_mm12">
     <link name="link">
+      <sensor name="laser" type="ray">
+        <plugin name="proximity_ray_plugin" filename="libProximityRayPlugin.so" >
+          <output_state_topic>sensor_output</output_state_topic>
+          <time_delay>0.02</time_delay><!-- this modifies the update rate of the ray sensor -->
+          <output_function>normally_open</output_function> <!-- energized when target detected -->
+          <!-- the ray sensor doesn't have setters for these yet unfortunately so they have to be set in the ray tags -->
+          <!--
+          <sensing_range_min>0.06</sensing_range_min>
+          <sensing_range_max>0.12</sensing_range_max>
+          <resolution>0.001</resolution>
+          -->
+        </plugin>
+        <ray>
+          <range>
+            <min>0.06</min>
+            <max>0.12</max>
+            <resolution>0.001</resolution>
+          </range>
+
+          <!-- nothing below this line really needs to be modified upon change of sensor model -->
+
+          <scan>
+            <horizontal>
+              <samples>30</samples>
+              <resolution>1</resolution>
+              <min_angle>-0.7854</min_angle>
+              <max_angle>0.7854</max_angle>
+            </horizontal>
+            <vertical>
+              <samples>30</samples>
+              <resolution>1</resolution>
+              <min_angle>-0.7854</min_angle>
+              <max_angle>0.7854</max_angle>
+            </vertical>
+          </scan>
+          <noise>
+            <type>gaussian</type>
+            <mean>0.0</mean>
+            <stddev>0.01</stddev>
+          </noise>
+        </ray>
+
+        <always_on>1</always_on>
+        <visualize>true</visualize>
+      </sensor>
       <gravity>false</gravity>
       <inertial>
         <mass>0.1</mass>
@@ -13,45 +58,6 @@
           </mesh>
         </geometry>
       </visual>
-      <sensor name="laser" type="ray">
-        <pose>0.01 0 0.03 0 -0 0</pose>
-        <ray>
-          <scan>
-            <horizontal>
-              <samples>20</samples>
-              <resolution>1</resolution>
-              <min_angle>-0.7854</min_angle>
-              <max_angle>0.7854</max_angle>
-            </horizontal>
-          </scan>
-          <range>
-            <min>0.01</min>
-            <max>0.1</max>
-            <resolution>0.01</resolution>
-          </range>
-          <noise>
-            <type>gaussian</type>
-            <mean>0.0</mean>
-            <stddev>0.01</stddev>
-          </noise>
-        </ray>
-
-        <always_on>1</always_on>
-        <visualize>false</visualize>
-        <!-- use details of SICK MM12 -->
-        <plugin name="proximity_ray_plugin" filename="libProximityRayPlugin.so" >
-          <output_state_topic>sensor_output</output_state_topic>
-          <time_delay>0.02</time_delay><!-- this modifies the update rate of the ray sensor -->
-          <output_function>normally_open</output_function> <!-- energized when target detected -->
-          <!-- the ray sensor doesn't have setters for these yet unfortunately -->
-          <!--
-          <sensing_range_min>0.06</sensing_range_min>
-          <sensing_range_max>0.12</sensing_range_max>
-          <resolution>0.001</resolution>
-          -->
-
-        </plugin>
-      </sensor>
     </link>
   </model>
 </sdf>

@@ -45,7 +45,7 @@ ProximityRayPlugin::~ProximityRayPlugin()
 std::string ProximityRayPlugin::Topic(std::string topicName) const
 {
   std::string globalTopicName = "~/";
-  globalTopicName += this->parentSensor->Name() + "/" + this->GetHandle() + topicName;
+  globalTopicName += this->parentSensor->Name() + "/" + this->GetHandle() + "/" + topicName;
   boost::replace_all(globalTopicName, "::", "/");
 
   return globalTopicName;
@@ -158,6 +158,7 @@ void ProximityRayPlugin::OnNewLaserScans()
 
     for (int i = 0; i<ranges.size(); i++){
         double range = ranges[i];
+        // TODO: determine detections in cylindrical shape not spherical
         if (range < maxRange and range > minRange) {
             objectDetected = true;
         }

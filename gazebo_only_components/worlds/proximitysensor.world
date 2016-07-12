@@ -228,7 +228,7 @@
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
-      <model name='hokuyo'>
+      <model name='proximity_sick_mm12'>
         <pose frame=''>-1.85508 1.0672 0 0 -0 0</pose>
         <scale>1 1 1</scale>
         <link name='link'>
