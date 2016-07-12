@@ -20,20 +20,20 @@
 #include <gazebo/physics/physics.hh>
 #include <gazebo/transport/Node.hh>
 #include <gazebo/transport/Publisher.hh>
-#include "LightCurtainPlugin.hh"
+#include "ProximityRayPlugin.hh"
 
 using namespace gazebo;
 
 // Register this plugin with the simulator
-GZ_REGISTER_SENSOR_PLUGIN(LightCurtainPlugin)
+GZ_REGISTER_SENSOR_PLUGIN(ProximityRayPlugin)
 
 /////////////////////////////////////////////////
-LightCurtainPlugin::LightCurtainPlugin()
+ProximityRayPlugin::ProximityRayPlugin()
 {
 }
 
 /////////////////////////////////////////////////
-LightCurtainPlugin::~LightCurtainPlugin()
+ProximityRayPlugin::~ProximityRayPlugin()
 {
     this->newLaserScansConnection.reset();
 
@@ -42,7 +42,7 @@ LightCurtainPlugin::~LightCurtainPlugin()
 }
 
 //////////////////////////////////////////////////
-std::string LightCurtainPlugin::Topic(std::string topicName) const
+std::string ProximityRayPlugin::Topic(std::string topicName) const
 {
   std::string globalTopicName = "~/";
   globalTopicName += this->parentSensor->Name() + "/" + this->GetHandle() + topicName;
@@ -52,14 +52,14 @@ std::string LightCurtainPlugin::Topic(std::string topicName) const
 }
 
 /////////////////////////////////////////////////
-void LightCurtainPlugin::Load(sensors::SensorPtr _parent, sdf::ElementPtr _sdf)
+void ProximityRayPlugin::Load(sensors::SensorPtr _parent, sdf::ElementPtr _sdf)
 {
     // Get the name of the parent sensor
     this->parentSensor =
         std::dynamic_pointer_cast<sensors::RaySensor>(_parent);
 
     if (!this->parentSensor)
-        gzthrow("LightCurtainPlugin requires a Ray Sensor as its parent");
+        gzthrow("ProximityRayPlugin requires a Ray Sensor as its parent");
 
     std::string worldName = this->parentSensor->WorldName();
     this->world = physics::get_world(worldName);
@@ -90,11 +90,11 @@ void LightCurtainPlugin::Load(sensors::SensorPtr _parent, sdf::ElementPtr _sdf)
 
     this->newLaserScansConnection =
         this->parentSensor->LaserShape()->ConnectNewLaserScans(
-            std::bind(&LightCurtainPlugin::OnNewLaserScans, this));
+            std::bind(&ProximityRayPlugin::OnNewLaserScans, this));
 }
 
 /////////////////////////////////////////////////
-void LightCurtainPlugin::OnNewLaserScans()
+void ProximityRayPlugin::OnNewLaserScans()
 {
     // Prevent new scans from arriving while we're processing this one
     this->parentSensor->SetActive(false);
@@ -107,15 +107,12 @@ void LightCurtainPlugin::OnNewLaserScans()
 
     bool objectDetected = false;
 
-    std::cout << "Laser ranges:" << std::endl;
     for (int i = 0; i<ranges.size(); i++){
         double range = ranges[i];
-        std::cout << range << " ";
         if (range < maxRange and range > minRange) {
             objectDetected = true;
         }
     }
-    std::cout << std::endl;
 
     std::lock_guard<std::mutex> lock(this->mutex);
     msgs::Set(this->interruptionMsg.mutable_stamp(), this->world->GetSimTime());
@@ -125,7 +122,6 @@ void LightCurtainPlugin::OnNewLaserScans()
     }
 
     if (objectDetected) {
-        std::cout << "Laser beam interrupted" << std::endl;
         if (!this->interrupted) {
             if (this->interruptionChangePub && this->interruptionChangePub->HasConnections()) {
                 this->interruptionChangePub->Publish(this->interruptionMsg);
@@ -133,7 +129,6 @@ void LightCurtainPlugin::OnNewLaserScans()
         }
         this->interrupted = true;
     } else {
-        std::cout << "nothing" << std::endl;
         if (this->interrupted) {
             if (this->interruptionChangePub && this->interruptionChangePub->HasConnections()) {
                 this->interruptionChangePub->Publish(this->interruptionMsg);

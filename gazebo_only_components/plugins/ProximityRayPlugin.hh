@@ -15,7 +15,7 @@
  *
 */
 /*
- * Desc: Light Curtain Plugin
+ * Desc: Proximity Ray Plugin
  * Author: Nate Koenig mod by John Hsu, Deanna Hood
  */
 
@@ -30,14 +30,14 @@
 
 namespace gazebo
 {
-  /// \brief A Ray Sensor Plugin
-  class GAZEBO_VISIBLE LightCurtainPlugin : public SensorPlugin
+  /// \brief A Ray Sensor Plugin which makes it act as a proximity sensor
+  class GAZEBO_VISIBLE ProximityRayPlugin : public SensorPlugin
   {
     /// \brief Constructor
-    public: LightCurtainPlugin();
+    public: ProximityRayPlugin();
 
     /// \brief Destructor
-    public: virtual ~LightCurtainPlugin();
+    public: virtual ~ProximityRayPlugin();
 
     /// \brief Update callback
     public: virtual void OnNewLaserScans();
@@ -74,7 +74,7 @@ namespace gazebo
     /// \brief The parent sensor
     private: sensors::RaySensorPtr parentSensor;
 
-    /// \brief The connection tied to LightCurtainPlugin::OnNewLaserScans()
+    /// \brief The connection tied to ProximityRayPlugin::OnNewLaserScans()
     private: event::ConnectionPtr newLaserScansConnection;
 
   };
