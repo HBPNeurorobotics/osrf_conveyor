@@ -43,7 +43,14 @@ void ConveyorBeltPlugin::Load(sensors::SensorPtr _sensor, sdf::ElementPtr /*_sdf
     return;
   }
 
-  this->beltCollisionName = this->parentSensor->Name();
+  std::string worldName = this->parentSensor->WorldName();
+  this->world = physics::get_world(worldName);
+
+  this->beltLinkName = this->parentSensor->ParentName();
+  gzdbg << this->beltLinkName << "\n";
+  this->beltLink = boost::dynamic_pointer_cast<physics::Link>(this->world->GetEntity(this->beltLinkName));
+  //physics::CollisionPtr beltCollision = boost::dynamic_pointer_cast<physics::Collision>(this->world->GetEntity(this->parentSensor->Name()));
+  //beltCollision->GetBoundingBox();
 
   // Connect to the sensor update event.
   this->updateConnection = this->parentSensor->ConnectUpdated(
@@ -56,28 +63,29 @@ void ConveyorBeltPlugin::Load(sensors::SensorPtr _sensor, sdf::ElementPtr /*_sdf
 /////////////////////////////////////////////////
 void ConveyorBeltPlugin::OnUpdate()
 {
-  // Get all the contacts.
+  double beltHeight = this->beltLink->GetBoundingBox().max.z;
+
+  // Get all the contacts
   msgs::Contacts contacts;
   contacts = this->parentSensor->Contacts();
   gzdbg << "Contacts detected: " << contacts.contact_size() << "\n";
-
-  std::string worldName = this->parentSensor->WorldName();
-  physics::WorldPtr world = physics::get_world(worldName);
 
   this->contactingLinkPtrs.clear();
   for (int i = 0; i < contacts.contact_size(); ++i)
   {
     // Get the collision that's not the belt (doesn't seem to be a standard order)
     std::string collision = contacts.contact(i).collision1();
-    if (this->beltCollisionName == contacts.contact(i).collision1()) {
+    if (this->beltLinkName == contacts.contact(i).collision1()) {
+      gzdbg << "Turns out this never actually happens" << "\n";
       collision = contacts.contact(i).collision2();
     }
       
     // Only act on objects on top of belt
     for (unsigned int j = 0; j < contacts.contact(i).position_size(); ++j)
     {
-      if (contacts.contact(i).position(j).z() > 0.05) {
-        physics::CollisionPtr collisionPtr = boost::dynamic_pointer_cast<physics::Collision>(world->GetEntity(collision));
+      if (contacts.contact(i).position(j).z() > (beltHeight - 0.001)) {
+        physics::CollisionPtr collisionPtr = boost::dynamic_pointer_cast<physics::Collision>(this->world->GetEntity(collision));
+        collisionPtr->GetBoundingBox();
         physics::LinkPtr linkPtr = collisionPtr->GetLink();
         this->contactingLinkPtrs.insert(linkPtr);
       }

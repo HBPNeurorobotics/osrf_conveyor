@@ -56,8 +56,14 @@ namespace gazebo
     /// updated signal and the OnUpdate callback.
     private: event::ConnectionPtr updateConnection;
 
+    /// \brief Pointer to the world
+    private: physics::WorldPtr world;
+
     /// \brief Name of the collision of the belt
-    private: std::string beltCollisionName;
+    private: std::string beltLinkName;
+
+    /// \brief Pointer to the belt link
+    private: physics::LinkPtr beltLink;
 
     /// \brief Set of pointers to links which have collisions with the belt
     private: std::set<physics::LinkPtr> contactingLinkPtrs;
