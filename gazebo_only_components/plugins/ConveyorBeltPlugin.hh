@@ -60,7 +60,7 @@ namespace gazebo
     private: physics::WorldPtr world;
 
     /// \brief Name of the collision of the belt
-    private: std::string beltLinkName;
+    private: std::string beltCollisionName;
 
     /// \brief Pointer to the belt link
     private: physics::LinkPtr beltLink;
