@@ -67,17 +67,20 @@ void ConveyorBeltPlugin::OnUpdate()
   this->contactingLinkPtrs.clear();
   for (int i = 0; i < contacts.contact_size(); ++i)
   {
-    // TODO: only act on collisions on top of belt
-    if ("ground_plane::link::collision" != contacts.contact(i).collision1() &&
-            "ground_plane::link::collision" != contacts.contact(i).collision2()) {
-      std::string collision = contacts.contact(i).collision1();
-      if (this->beltCollisionName == contacts.contact(i).collision1()) {
-        collision = contacts.contact(i).collision2();
-      }
+    // Get the collision that's not the belt (doesn't seem to be a standard order)
+    std::string collision = contacts.contact(i).collision1();
+    if (this->beltCollisionName == contacts.contact(i).collision1()) {
+      collision = contacts.contact(i).collision2();
+    }
       
-      physics::CollisionPtr collisionPtr = boost::dynamic_pointer_cast<physics::Collision>(world->GetEntity(collision));
-      physics::LinkPtr linkPtr = collisionPtr->GetLink();
-      this->contactingLinkPtrs.insert(linkPtr);
+    // Only act on objects on top of belt
+    for (unsigned int j = 0; j < contacts.contact(i).position_size(); ++j)
+    {
+      if (contacts.contact(i).position(j).z() > 0.05) {
+        physics::CollisionPtr collisionPtr = boost::dynamic_pointer_cast<physics::Collision>(world->GetEntity(collision));
+        physics::LinkPtr linkPtr = collisionPtr->GetLink();
+        this->contactingLinkPtrs.insert(linkPtr);
+      }
     }
   }
   gzdbg << "Number of links in collision with belt: " << this->contactingLinkPtrs.size() << "\n";
