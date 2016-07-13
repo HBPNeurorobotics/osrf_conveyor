@@ -139,7 +139,7 @@ void ConveyorBeltPlugin::ActOnContactingLinks()
 /////////////////////////////////////////////////
 void ConveyorBeltPlugin::OnControlCommand(ConstHeaderPtr& _msg)
 {
-  gzdbg << "Received control command of : " << _msg->index() << "\n";
+  gzdbg << "Received control command of: " << _msg->index() << "\n";
   std::lock_guard<std::mutex> lock(this->stateMutex);
   this->state = _msg->index();
 }
