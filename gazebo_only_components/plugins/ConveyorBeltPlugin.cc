@@ -15,6 +15,8 @@
  *
 */
 #include "ConveyorBeltPlugin.hh"
+#include <gazebo/transport/Node.hh>
+#include <gazebo/transport/Publisher.hh>
 
 using namespace gazebo;
 GZ_REGISTER_SENSOR_PLUGIN(ConveyorBeltPlugin)
@@ -27,6 +29,18 @@ ConveyorBeltPlugin::ConveyorBeltPlugin() : SensorPlugin()
 /////////////////////////////////////////////////
 ConveyorBeltPlugin::~ConveyorBeltPlugin()
 {
+  this->parentSensor.reset();
+  this->world.reset();
+}
+
+//////////////////////////////////////////////////
+std::string ConveyorBeltPlugin::Topic(std::string topicName) const
+{
+  std::string globalTopicName = "~/";
+  globalTopicName += this->parentSensor->Name() + "/" + this->GetHandle() + "/" + topicName;
+  boost::replace_all(globalTopicName, "::", "/");
+
+  return globalTopicName;
 }
 
 /////////////////////////////////////////////////
@@ -45,10 +59,21 @@ void ConveyorBeltPlugin::Load(sensors::SensorPtr _sensor, sdf::ElementPtr /*_sdf
 
   std::string worldName = this->parentSensor->WorldName();
   this->world = physics::get_world(worldName);
+  this->node = transport::NodePtr(new transport::Node());
+  this->node->Init(worldName);
 
   std::string beltLinkName = this->parentSensor->ParentName();
-  this->beltLink = boost::dynamic_pointer_cast<physics::Link>(this->world->GetEntity(beltLinkName));
+  this->beltLink =
+    boost::dynamic_pointer_cast<physics::Link>(this->world->GetEntity(beltLinkName));
   this->beltCollisionName = this->parentSensor->GetCollisionName(0); // assuming only one collision which is belt....
+
+  std::string controlCommandTopic = this->Topic("control_command");
+  gzdbg << "Subscribing to control commands on topic: " << controlCommandTopic << "\n";
+  this->controlCommandSub = this->node->Subscribe(controlCommandTopic,
+      &ConveyorBeltPlugin::OnControlCommand, this);
+
+  std::lock_guard<std::mutex> lock(this->stateMutex);
+  this->state = false;
 
   // Connect to the sensor update event.
   this->updateConnection = this->parentSensor->ConnectUpdated(
@@ -62,12 +87,16 @@ void ConveyorBeltPlugin::Load(sensors::SensorPtr _sensor, sdf::ElementPtr /*_sdf
 void ConveyorBeltPlugin::OnUpdate()
 {
   this->CalculateContactingLinks();
-  this->ActOnContactingLinks();
+  std::lock_guard<std::mutex> lock(this->stateMutex);
+  if (this->state) {
+    this->ActOnContactingLinks();
+  }
 
 }
 
 /////////////////////////////////////////////////
-void ConveyorBeltPlugin::CalculateContactingLinks(){
+void ConveyorBeltPlugin::CalculateContactingLinks()
+{
   double beltHeight = this->beltLink->GetBoundingBox().max.z;
 
   // Get all the contacts
@@ -87,7 +116,8 @@ void ConveyorBeltPlugin::CalculateContactingLinks(){
     for (unsigned int j = 0; j < contacts.contact(i).position_size(); ++j)
     {
       if (contacts.contact(i).position(j).z() > (beltHeight - 0.001)) {
-        physics::CollisionPtr collisionPtr = boost::dynamic_pointer_cast<physics::Collision>(this->world->GetEntity(collision));
+        physics::CollisionPtr collisionPtr =
+          boost::dynamic_pointer_cast<physics::Collision>(this->world->GetEntity(collision));
         collisionPtr->GetBoundingBox();
         physics::LinkPtr linkPtr = collisionPtr->GetLink();
         this->contactingLinkPtrs.insert(linkPtr);
@@ -98,9 +128,18 @@ void ConveyorBeltPlugin::CalculateContactingLinks(){
 }
 
 /////////////////////////////////////////////////
-void ConveyorBeltPlugin::ActOnContactingLinks(){
+void ConveyorBeltPlugin::ActOnContactingLinks()
+{
   for (auto linkPtr : this->contactingLinkPtrs) {
     std::cout << "Collision with: " << linkPtr->GetScopedName() << "\n";
     linkPtr->SetLinearVel(math::Vector3(0, 0.5, 0));
   }
+}
+
+/////////////////////////////////////////////////
+void ConveyorBeltPlugin::OnControlCommand(ConstHeaderPtr& _msg)
+{
+  gzdbg << "Received control command of : " << _msg->index() << "\n";
+  std::lock_guard<std::mutex> lock(this->stateMutex);
+  this->state = _msg->index();
 }

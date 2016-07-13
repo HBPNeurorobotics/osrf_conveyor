@@ -24,8 +24,9 @@
 #include <string>
 
 #include <gazebo/common/Plugin.hh>
+#include <gazebo/msgs/msgs.hh>
 #include <gazebo/sensors/sensors.hh>
-#include "gazebo/util/system.hh"
+#include <gazebo/util/system.hh>
 
 namespace gazebo
 {
@@ -58,6 +59,25 @@ namespace gazebo
 
     /// \brief Pointer to the world
     private: physics::WorldPtr world;
+
+    /// \brief Pointer to this node for publishing/subscribing
+    private: transport::NodePtr node;
+
+    /// \brief Subscriber for the control commands
+    private: transport::SubscriberPtr controlCommandSub;
+
+    /// \brief Callback for responding to control commands
+    private: void OnControlCommand(ConstHeaderPtr& _msg);
+
+    /// \brief Belt state (true: on, false: off)
+    private: bool state;
+
+    /// \brief Mutex to protect the belt state
+    private: std::mutex stateMutex;
+
+    /// \brief Generate a scoped topic name from a local one
+    /// \param local local topic name
+    private: std::string Topic(std::string topicName) const;
 
     /// \brief Name of the collision of the belt
     private: std::string beltCollisionName;
