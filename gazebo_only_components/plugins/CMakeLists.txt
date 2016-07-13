@@ -7,3 +7,6 @@ list(APPEND CMAKE_CXX_FLAGS "${GAZEBO_CXX_FLAGS}")
 
 add_library(ProximityRayPlugin SHARED ProximityRayPlugin.cc)
 target_link_libraries(ProximityRayPlugin ${GAZEBO_LIBRARIES})
+
+add_library(ConveyorBeltPlugin SHARED ConveyorBeltPlugin.cc)
+target_link_libraries(ConveyorBeltPlugin ${GAZEBO_LIBRARIES})
