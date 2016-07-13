@@ -61,6 +61,13 @@ void ConveyorBeltPlugin::Load(sensors::SensorPtr _sensor, sdf::ElementPtr /*_sdf
 /////////////////////////////////////////////////
 void ConveyorBeltPlugin::OnUpdate()
 {
+  this->CalculateContactingLinks();
+  this->ActOnContactingLinks();
+
+}
+
+/////////////////////////////////////////////////
+void ConveyorBeltPlugin::CalculateContactingLinks(){
   double beltHeight = this->beltLink->GetBoundingBox().max.z;
 
   // Get all the contacts
@@ -76,7 +83,7 @@ void ConveyorBeltPlugin::OnUpdate()
       collision = contacts.contact(i).collision2();
     }
 
-    // Only act on objects on top of belt
+    // Only consider links ontop of belt
     for (unsigned int j = 0; j < contacts.contact(i).position_size(); ++j)
     {
       if (contacts.contact(i).position(j).z() > (beltHeight - 0.001)) {
@@ -87,10 +94,13 @@ void ConveyorBeltPlugin::OnUpdate()
       }
     }
   }
-  gzdbg << "Number of links in collision with belt: " << this->contactingLinkPtrs.size() << "\n";
-  for (auto linkPtr : contactingLinkPtrs) {
+  gzdbg << "Number of links ontop of belt: " << this->contactingLinkPtrs.size() << "\n";
+}
+
+/////////////////////////////////////////////////
+void ConveyorBeltPlugin::ActOnContactingLinks(){
+  for (auto linkPtr : this->contactingLinkPtrs) {
     std::cout << "Collision with: " << linkPtr->GetScopedName() << "\n";
     linkPtr->SetLinearVel(math::Vector3(0, 0.5, 0));
   }
-
 }

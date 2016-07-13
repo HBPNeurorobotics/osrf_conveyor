@@ -67,6 +67,12 @@ namespace gazebo
 
     /// \brief Set of pointers to links which have collisions with the belt
     private: std::set<physics::LinkPtr> contactingLinkPtrs;
+
+    /// \brief Determine which links are ontop of the belt
+    private: void CalculateContactingLinks();
+
+    /// \brief Act on links that are ontop of the belt
+    private: void ActOnContactingLinks();
   };
 }
 #endif
