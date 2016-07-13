@@ -72,6 +72,9 @@ void ProximityRayPlugin::Load(sensors::SensorPtr _parent, sdf::ElementPtr _sdf)
       this->parentSensor->SetUpdateRate(1.0/time_delay);
       gzdbg << "Setting update rate of parent sensor to " << 1.0/time_delay << " Hz\n";
     }
+    else {
+      gzdbg << "Using update rate of parent sensor: " << this->parentSensor->UpdateRate() << " Hz\n";
+    }
 
     std::string interruptionTopic;
     if (_sdf->HasElement("output_state_topic"))
@@ -137,6 +140,7 @@ void ProximityRayPlugin::Load(sensors::SensorPtr _parent, sdf::ElementPtr _sdf)
     }
     gzdbg << "Using normally open setting of: " << this->normallyOpen << "\n";
 
+    this->interrupted = false;
     this->newLaserScansConnection =
         this->parentSensor->LaserShape()->ConnectNewLaserScans(
             std::bind(&ProximityRayPlugin::OnNewLaserScans, this));
@@ -167,11 +171,13 @@ void ProximityRayPlugin::OnNewLaserScans()
     std::lock_guard<std::mutex> lock(this->mutex);
     msgs::Set(this->interruptionMsg.mutable_stamp(), this->world->GetSimTime());
     this->interruptionMsg.set_index(this->normallyOpen ? objectDetected : !objectDetected);
+    this->interruptionMsg.set_str_id(this->normallyOpen ? "normally_open" : "normally_closed");
     if (this->interruptionPub && this->interruptionPub->HasConnections()) {
         this->interruptionPub->Publish(this->interruptionMsg);
     }
 
     if (objectDetected) {
+        gzdbg << "Object detected\n";
         if (!this->interrupted) {
             if (this->interruptionChangePub && this->interruptionChangePub->HasConnections()) {
                 this->interruptionChangePub->Publish(this->interruptionMsg);
