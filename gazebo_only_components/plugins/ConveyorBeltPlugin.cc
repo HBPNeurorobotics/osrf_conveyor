@@ -88,9 +88,8 @@ void ConveyorBeltPlugin::OnUpdate()
 {
   this->CalculateContactingLinks();
   std::lock_guard<std::mutex> lock(this->stateMutex);
-  if (this->state) {
-    this->ActOnContactingLinks();
-  }
+  bool state = this->state;
+  this->ActOnContactingLinks(state);
 
 }
 
@@ -128,11 +127,10 @@ void ConveyorBeltPlugin::CalculateContactingLinks()
 }
 
 /////////////////////////////////////////////////
-void ConveyorBeltPlugin::ActOnContactingLinks()
+void ConveyorBeltPlugin::ActOnContactingLinks(bool state)
 {
   for (auto linkPtr : this->contactingLinkPtrs) {
-    std::cout << "Collision with: " << linkPtr->GetScopedName() << "\n";
-    linkPtr->SetLinearVel(math::Vector3(0, 0.5, 0));
+    linkPtr->SetLinearVel(math::Vector3(0, state? 0.5 : 0, 0));
   }
 }
 

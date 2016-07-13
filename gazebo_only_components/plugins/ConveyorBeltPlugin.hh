@@ -92,7 +92,7 @@ namespace gazebo
     private: void CalculateContactingLinks();
 
     /// \brief Act on links that are ontop of the belt
-    private: void ActOnContactingLinks();
+    private: void ActOnContactingLinks(bool state);
   };
 }
 #endif
