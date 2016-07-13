@@ -74,7 +74,16 @@ void ConveyorBeltPlugin::Load(sensors::SensorPtr _sensor, sdf::ElementPtr _sdf)
   std::string beltLinkName = this->parentSensor->ParentName();
   this->beltLink =
     boost::dynamic_pointer_cast<physics::Link>(this->world->GetEntity(beltLinkName));
-  this->beltCollisionName = this->parentSensor->GetCollisionName(0); // assuming only one collision which is belt....
+
+  std::string defaultCollisionName = beltLinkName + "::__default__";
+  if (this->parentSensor->GetCollisionCount() != 1 ||
+        this->parentSensor->GetCollisionName(0) == defaultCollisionName)
+  {
+    gzerr << "ConveyorBeltPlugin requires a single collision to observe contacts for\n";
+    return;
+  }
+
+  this->beltCollisionName = this->parentSensor->GetCollisionName(0);
 
   std::string controlCommandTopic = this->Topic("control_command");
   gzdbg << "Subscribing to control commands on topic: " << controlCommandTopic << "\n";
