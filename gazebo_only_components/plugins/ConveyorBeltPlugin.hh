@@ -69,6 +69,9 @@ namespace gazebo
     /// \brief Callback for responding to control commands
     private: void OnControlCommand(ConstHeaderPtr& _msg);
 
+    /// \brief Belt speed (m/s)
+    private: double beltSpeed;
+
     /// \brief Belt state (true: on, false: off)
     private: bool state;
 
@@ -92,7 +95,7 @@ namespace gazebo
     private: void CalculateContactingLinks();
 
     /// \brief Act on links that are ontop of the belt
-    private: void ActOnContactingLinks(bool state);
+    private: void ActOnContactingLinks(double speed);
   };
 }
 #endif

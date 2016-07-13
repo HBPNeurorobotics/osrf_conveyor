@@ -44,7 +44,7 @@ std::string ConveyorBeltPlugin::Topic(std::string topicName) const
 }
 
 /////////////////////////////////////////////////
-void ConveyorBeltPlugin::Load(sensors::SensorPtr _sensor, sdf::ElementPtr /*_sdf*/)
+void ConveyorBeltPlugin::Load(sensors::SensorPtr _sensor, sdf::ElementPtr _sdf)
 {
   // Get the parent sensor.
   this->parentSensor =
@@ -61,6 +61,15 @@ void ConveyorBeltPlugin::Load(sensors::SensorPtr _sensor, sdf::ElementPtr /*_sdf
   this->world = physics::get_world(worldName);
   this->node = transport::NodePtr(new transport::Node());
   this->node->Init(worldName);
+
+  if (_sdf->HasElement("belt_speed"))
+  {
+    this->beltSpeed = _sdf->Get<double>("belt_speed");
+  }
+  else {
+    this->beltSpeed = 0.1;
+  }
+  gzdbg << "Using belt speed of: " << this->beltSpeed << " m/s\n";
 
   std::string beltLinkName = this->parentSensor->ParentName();
   this->beltLink =
@@ -88,8 +97,8 @@ void ConveyorBeltPlugin::OnUpdate()
 {
   this->CalculateContactingLinks();
   std::lock_guard<std::mutex> lock(this->stateMutex);
-  bool state = this->state;
-  this->ActOnContactingLinks(state);
+  double speed = this->state ? this->beltSpeed : 0.0;
+  this->ActOnContactingLinks(speed);
 
 }
 
@@ -127,10 +136,10 @@ void ConveyorBeltPlugin::CalculateContactingLinks()
 }
 
 /////////////////////////////////////////////////
-void ConveyorBeltPlugin::ActOnContactingLinks(bool state)
+void ConveyorBeltPlugin::ActOnContactingLinks(double speed)
 {
   for (auto linkPtr : this->contactingLinkPtrs) {
-    linkPtr->SetLinearVel(math::Vector3(0, state? 0.5 : 0, 0));
+    linkPtr->SetLinearVel(math::Vector3(0, speed, 0));
   }
 }
 
