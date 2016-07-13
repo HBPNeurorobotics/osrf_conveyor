@@ -1,7 +1,9 @@
 <launch>
-  <arg name="gzname" default="gazebo"/>
-  <arg name="gzworld" default="gripper.world"/>
+  <arg name="gzworld" default="$(find osrf_gear)/worlds/gripper.world"/>
   <arg name="extra_gazebo_args" default="--verbose"/>
 
-  <node name="gazebo" pkg="osrf_gear" type="run_$(arg gzname)" args="$(arg gzworld) $(arg extra_gazebo_args)" output="screen" />
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="extra_gazebo_args" value="$(arg extra_gazebo_args)" />
+    <arg name="world_name" value="$(arg gzworld)" />
+  </include>
 </launch>
