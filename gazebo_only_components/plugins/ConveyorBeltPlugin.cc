@@ -43,6 +43,8 @@ void ConveyorBeltPlugin::Load(sensors::SensorPtr _sensor, sdf::ElementPtr /*_sdf
     return;
   }
 
+  this->beltCollisionName = this->parentSensor->Name();
+
   // Connect to the sensor update event.
   this->updateConnection = this->parentSensor->ConnectUpdated(
       std::bind(&ConveyorBeltPlugin::OnUpdate, this));
@@ -61,21 +63,27 @@ void ConveyorBeltPlugin::OnUpdate()
 
   std::string worldName = this->parentSensor->WorldName();
   physics::WorldPtr world = physics::get_world(worldName);
-  // TODO: apply to all links with collisions with belt
-  physics::CollisionPtr collision = boost::dynamic_pointer_cast<physics::Collision>(world->GetEntity("unit_box::link::collision"));
-  physics::LinkPtr link = collision->GetLink();
-  gzdbg << "Applying force to: " << link->GetParent()->GetName() << "\n";
-  link->AddForce(math::Vector3(0,100,0));
 
-  /*
+  this->contactingLinkPtrs.clear();
   for (int i = 0; i < contacts.contact_size(); ++i)
   {
+    // TODO: only act on collisions on top of belt
     if ("ground_plane::link::collision" != contacts.contact(i).collision1() &&
-        "ground_plane::link::collision" != contacts.contact(i).collision2()) {
-
-      std::cout << "Collision between[" << contacts.contact(i).collision1()
-                << "] and [" << contacts.contact(i).collision2() << "]\n";
+            "ground_plane::link::collision" != contacts.contact(i).collision2()) {
+      std::string collision = contacts.contact(i).collision1();
+      if (this->beltCollisionName == contacts.contact(i).collision1()) {
+        collision = contacts.contact(i).collision2();
+      }
+      
+      physics::CollisionPtr collisionPtr = boost::dynamic_pointer_cast<physics::Collision>(world->GetEntity(collision));
+      physics::LinkPtr linkPtr = collisionPtr->GetLink();
+      this->contactingLinkPtrs.insert(linkPtr);
     }
   }
-  */
+  gzdbg << "Number of links in collision with belt: " << this->contactingLinkPtrs.size() << "\n";
+  for (auto linkPtr : contactingLinkPtrs) {
+    std::cout << "Collision with: " << linkPtr->GetScopedName() << "\n";
+    linkPtr->SetLinearVel(math::Vector3(0, 0.5, 0));
+  }
+
 }

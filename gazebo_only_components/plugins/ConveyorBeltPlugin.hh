@@ -55,6 +55,12 @@ namespace gazebo
     /// \brief Connection that maintains a link between the contact sensor's
     /// updated signal and the OnUpdate callback.
     private: event::ConnectionPtr updateConnection;
+
+    /// \brief Name of the collision of the belt
+    private: std::string beltCollisionName;
+
+    /// \brief Set of pointers to links which have collisions with the belt
+    private: std::set<physics::LinkPtr> contactingLinkPtrs;
   };
 }
 #endif
