@@ -2,7 +2,7 @@
   <world name='default'>
     <plugin name="conveyor_controller" filename="libConveyorController.so"/>
     <include>
-      <uri>model://proximity_sensor</uri>
+      <uri>model://break_beam</uri>
       <pose frame=''>-0.575983 -0.101408 0.5 0 -0 0</pose>
     </include>
     <include>
