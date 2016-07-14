@@ -78,6 +78,9 @@ namespace gazebo
     /// \brief Mutex to protect the belt state
     private: std::mutex stateMutex;
 
+    /// \brief Set the state of the conveyor belt
+    private: void SetState(bool state);
+
     /// \brief Generate a scoped topic name from a local one
     /// \param local local topic name
     private: std::string Topic(std::string topicName) const;

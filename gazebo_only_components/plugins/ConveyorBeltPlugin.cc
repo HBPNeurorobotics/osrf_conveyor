@@ -163,6 +163,12 @@ void ConveyorBeltPlugin::ActOnContactingLinks(double speed)
 void ConveyorBeltPlugin::OnControlCommand(ConstHeaderPtr& _msg)
 {
   gzdbg << "Received control command of: " << _msg->index() << "\n";
+  this->SetState(_msg->index());
+}
+
+/////////////////////////////////////////////////
+void ConveyorBeltPlugin::SetState(bool state)
+{
   std::lock_guard<std::mutex> lock(this->stateMutex);
-  this->state = _msg->index();
+  this->state = state;
 }
