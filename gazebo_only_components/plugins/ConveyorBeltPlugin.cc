@@ -85,7 +85,14 @@ void ConveyorBeltPlugin::Load(sensors::SensorPtr _sensor, sdf::ElementPtr _sdf)
 
   this->beltCollisionName = this->parentSensor->GetCollisionName(0);
 
-  std::string controlCommandTopic = this->Topic("control_command");
+  std::string controlCommandTopic;
+  if (_sdf->HasElement("control_command_topic"))
+  {
+      controlCommandTopic = _sdf->Get<std::string>("control_command_topic");
+  }
+  else {
+      controlCommandTopic = this->Topic("control_command");
+  }
   gzdbg << "Subscribing to control commands on topic: " << controlCommandTopic << "\n";
   this->controlCommandSub = this->node->Subscribe(controlCommandTopic,
       &ConveyorBeltPlugin::OnControlCommand, this);
