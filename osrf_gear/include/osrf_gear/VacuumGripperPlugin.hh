@@ -48,10 +48,13 @@ namespace gazebo
     /// \brief Return the name of the gripper.
     public: std::string Name() const;
 
+    /// \brief Whether the suction of the gripper has been enabled.
+    public: bool Enabled() const;
+
     /// \brief True if the gripper is attached to another model.
     /// \return True if the gripper is active and a joint has been
     /// created between the gripper and another model.
-    public: bool IsAttached() const;
+    public: bool Attached() const;
 
     /// \brief Enable the suction.
     public: void Enable();
@@ -71,6 +74,10 @@ namespace gazebo
 
     /// \brief Detach an object from the gripper.
     private: void HandleDetach();
+
+    /// \brief Overwrite this method for sending periodic updates with the
+    /// gripper state.
+    private: virtual void Publish() const;
 
     /// \internal
     /// \brief Pointer to private data.

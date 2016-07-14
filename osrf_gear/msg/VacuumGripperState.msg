@@ -1,7 +1,8 @@
+# Vacum gripper state message
+# This structure contains the state of the gripper.
+
 # Is the suction enabled?
-bool enabled  = 0
+bool enabled
 
 # Is an object attached to the gripper?
-bool attached = 1
-
-bool attached2 = 2
+bool attached

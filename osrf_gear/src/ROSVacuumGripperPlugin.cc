@@ -15,13 +15,13 @@
  *
 */
 
-// ROS
+#include <memory>
+#include <string>
 #include <ros/ros.h>
-#include <std_msgs/String.h>
-#include <ros/callback_queue.h>
-#include <ros/advertise_options.h>
-
+#include <sdf/sdf.hh>
 #include "osrf_gear/ROSVacuumGripperPlugin.hh"
+#include "osrf_gear/VacuumGripperControl.h"
+#include "osrf_gear/VacuumGripperState.h"
 
 namespace gazebo
 {
@@ -29,20 +29,14 @@ namespace gazebo
   /// \brief Private data for the ROSVacuumGripperPlugin class.
   struct ROSVacuumGripperPluginPrivate
   {
-    /// \brief for setting ROS name space.
-    public: std::string robotNamespace;
-
     /// \brief ROS node handle.
     public: std::unique_ptr<ros::NodeHandle> rosnode;
 
-    /// \brief Subscribes to a topic that controls the suction of the gripper.
-    public: ros::Subscriber gripperSub;
+    /// \brief Publishes the state of the gripper.
+    public: ros::Publisher statePub;
 
-    /// \brief Custom callback queue.
-    public: ros::CallbackQueue queue;
-
-    // \brief Custom callback queue thread.
-    public: boost::thread callbackQueueThread;
+    /// \brief Receives service calls to control the gripper.
+    public: ros::ServiceServer controlService;
   };
 }
 
@@ -60,24 +54,13 @@ ROSVacuumGripperPlugin::ROSVacuumGripperPlugin()
 /////////////////////////////////////////////////
 ROSVacuumGripperPlugin::~ROSVacuumGripperPlugin()
 {
-  this->dataPtr->queue.clear();
-  this->dataPtr->queue.disable();
   this->dataPtr->rosnode->shutdown();
-  this->dataPtr->callbackQueueThread.join();
 }
 
 /////////////////////////////////////////////////
 void ROSVacuumGripperPlugin::Load(physics::ModelPtr _parent,
     sdf::ElementPtr _sdf)
 {
-  // load parameters
-  this->dataPtr->robotNamespace = "";
-  if (_sdf->HasElement("robotNamespace"))
-  {
-    this->dataPtr->robotNamespace = _sdf->GetElement(
-        "robotNamespace")->Get<std::string>() + "/";
-  }
-
   // Make sure the ROS node for Gazebo has already been initialized
   if (!ros::isInitialized())
   {
@@ -87,25 +70,34 @@ void ROSVacuumGripperPlugin::Load(physics::ModelPtr _parent,
     return;
   }
 
-  std::string topic = "vacuum_gripper";
+  // Load SDF parameters.
+  std::string robotNamespace = "";
+  if (_sdf->HasElement("robot_namespace"))
+  {
+    robotNamespace = _sdf->GetElement(
+      "robot_namespace")->Get<std::string>() + "/";
+  }
+
+  std::string controlTopic = "vacuum_gripper_control";
   if (_sdf->HasElement("control_topic"))
-    topic = _sdf->Get<std::string>("control_topic");
+    controlTopic = _sdf->Get<std::string>("control_topic");
+
+  std::string stateTopic = "vacuum_gripper_state";
+  if (_sdf->HasElement("state_topic"))
+    stateTopic = _sdf->Get<std::string>("state_topic");
 
   VacuumGripperPlugin::Load(_parent, _sdf);
 
-  this->dataPtr->rosnode.reset(
-    new ros::NodeHandle(this->dataPtr->robotNamespace));
+  this->dataPtr->rosnode.reset(new ros::NodeHandle(robotNamespace));
 
-  ros::SubscribeOptions so =
-    ros::SubscribeOptions::create<std_msgs::Bool>(topic, 1,
-        boost::bind(&ROSVacuumGripperPlugin::OnGripperControl, this, _1),
-        ros::VoidPtr(), &this->dataPtr->queue);
+  // Service for controlling the gripper.
+  this->dataPtr->controlService =
+    this->dataPtr->rosnode->advertiseService(controlTopic,
+      &ROSVacuumGripperPlugin::OnGripperControl, this);
 
-  this->dataPtr->gripperSub = this->dataPtr->rosnode->subscribe(so);
-
-  // start custom queue for elevator
-  this->dataPtr->callbackQueueThread =
-    boost::thread(boost::bind(&ROSVacuumGripperPlugin::QueueThread, this));
+  // Message used for publishing the state of the gripper.
+  this->dataPtr->statePub = this->dataPtr->rosnode->advertise<
+    osrf_gear::VacuumGripperState>(stateTopic, 1000);
 }
 
 /////////////////////////////////////////////////
@@ -114,21 +106,24 @@ void ROSVacuumGripperPlugin::Reset()
   VacuumGripperPlugin::Reset();
 }
 
-/////////////////////////////////////////////////
-void ROSVacuumGripperPlugin::OnGripperControl(
-    const std_msgs::Bool::ConstPtr &_msg)
+bool ROSVacuumGripperPlugin::OnGripperControl(
+  osrf_gear::VacuumGripperControl::Request &_req,
+  osrf_gear::VacuumGripperControl::Response &_res)
 {
-  if (_msg->data)
+  if (_req.enable)
     this->Enable();
   else
     this->Disable();
+
+  _res.success = true;
+  return _res.success;
 }
 
 /////////////////////////////////////////////////
-void ROSVacuumGripperPlugin::QueueThread()
+void ROSVacuumGripperPlugin::Publish() const
 {
-  static const double timeout = 0.01;
-
-  while (this->dataPtr->rosnode->ok())
-    this->dataPtr->queue.callAvailable(ros::WallDuration(timeout));
+  osrf_gear::VacuumGripperState msg;
+  msg.attached = this->Attached();
+  msg.enabled = this->Enabled();
+  this->dataPtr->statePub.publish(msg);
 }

@@ -19,13 +19,9 @@
 #define _ROS_VACUUM_GRIPPER_PLUGIN_HH_
 
 #include <memory>
-
-// ROS
-#include <std_msgs/Bool.h>
-
-// Gazebo
 #include <gazebo/physics/PhysicsTypes.hh>
 #include <sdf/sdf.hh>
+#include "osrf_gear/VacuumGripperControl.h"
 #include "osrf_gear/VacuumGripperPlugin.hh"
 
 namespace gazebo
@@ -49,11 +45,14 @@ namespace gazebo
     public: virtual void Reset();
 
     /// \brief Receives messages on the gripper's topic.
-    /// \param[in] _msg The boolean message that enables/disables the suction.
-    public: void OnGripperControl(const std_msgs::Bool::ConstPtr &_msg);
+    /// \param[in] _req The message to control the gripper.
+    /// \param[out] _rep If the service succeed or not.
+    public: bool OnGripperControl(
+      osrf_gear::VacuumGripperControl::Request &_req,
+      osrf_gear::VacuumGripperControl::Response &_res);
 
-    /// \brief Queu to handle callbacks.
-    private: void QueueThread();
+    // Documentation inherited.
+    private: virtual void Publish() const;
 
     /// \internal
     /// \brief Pointer to private data.

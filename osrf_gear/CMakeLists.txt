@@ -6,12 +6,14 @@ if(NOT WIN32)
 endif()
 
 find_package(catkin REQUIRED COMPONENTS
-  gazebo
+  gazebo_ros
   gazebo_plugins
   roscpp
   std_msgs
   message_generation
 )
+
+find_package(gazebo REQUIRED)
 
 ########################
 ## Message generation ##

@@ -206,8 +206,45 @@ void VacuumGripperPlugin::Reset()
 }
 
 /////////////////////////////////////////////////
+std::string VacuumGripperPlugin::Name() const
+{
+  return this->dataPtr->name;
+}
+
+/////////////////////////////////////////////////
+bool VacuumGripperPlugin::Enabled() const
+{
+  return this->dataPtr->enabled;
+}
+
+/////////////////////////////////////////////////
+bool VacuumGripperPlugin::Attached() const
+{
+  return this->dataPtr->attached;
+}
+
+/////////////////////////////////////////////////
+void VacuumGripperPlugin::Enable()
+{
+  std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
+  this->dataPtr->enabled = true;
+}
+
+/////////////////////////////////////////////////
+void VacuumGripperPlugin::Disable()
+{
+  {
+    std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
+    this->dataPtr->enabled = false;
+  }
+  this->HandleDetach();
+}
+
+/////////////////////////////////////////////////
 void VacuumGripperPlugin::OnUpdate()
 {
+  this->Publish();
+
   std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
   if (common::Time::GetWallTime() -
       this->dataPtr->prevUpdateTime < this->dataPtr->updateRate ||
@@ -215,16 +252,6 @@ void VacuumGripperPlugin::OnUpdate()
   {
     return;
   }
-
-  if (this->dataPtr->enabled)
-    std::cout << "gripper enabled" << std::endl;
-
-  if (this->dataPtr->attached)
-    std::cout << "Attached" << std::endl;
-  else
-    std::cout << "Not attached" << std::endl;
-
-  std::cout << "Contacts: " << this->dataPtr->contacts.size() << std::endl;
 
   // @todo: should package the decision into a function
   if (this->dataPtr->contacts.size() >= this->dataPtr->minContactCount)
@@ -237,9 +264,6 @@ void VacuumGripperPlugin::OnUpdate()
     this->dataPtr->zeroCount++;
     this->dataPtr->posCount = std::max(0, this->dataPtr->posCount-1);
   }
-
-  std::cout << "Pos count: " << this->dataPtr->posCount << std::endl;
-  std::cout << "AttachSteps: " << this->dataPtr->attachSteps << std::endl;
 
   if (this->dataPtr->posCount > this->dataPtr->attachSteps &&
       !this->dataPtr->attached)
@@ -254,6 +278,25 @@ void VacuumGripperPlugin::OnUpdate()
 
   this->dataPtr->contacts.clear();
   this->dataPtr->prevUpdateTime = common::Time::GetWallTime();
+}
+
+/////////////////////////////////////////////////
+void VacuumGripperPlugin::OnContacts(ConstContactsPtr &_msg)
+{
+  std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
+  for (int i = 0; i < _msg->contact_size(); ++i)
+  {
+    CollisionPtr collision1 = boost::dynamic_pointer_cast<Collision>(
+        this->dataPtr->world->GetEntity(_msg->contact(i).collision1()));
+    CollisionPtr collision2 = boost::dynamic_pointer_cast<Collision>(
+        this->dataPtr->world->GetEntity(_msg->contact(i).collision2()));
+
+    if ((collision1 && !collision1->IsStatic()) &&
+        (collision2 && !collision2->IsStatic()))
+    {
+      this->dataPtr->contacts.push_back(_msg->contact(i));
+    }
+  }
 }
 
 /////////////////////////////////////////////////
@@ -316,49 +359,6 @@ void VacuumGripperPlugin::HandleDetach()
 }
 
 /////////////////////////////////////////////////
-void VacuumGripperPlugin::OnContacts(ConstContactsPtr &_msg)
+void VacuumGripperPlugin::Publish() const
 {
-  std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
-  for (int i = 0; i < _msg->contact_size(); ++i)
-  {
-    CollisionPtr collision1 = boost::dynamic_pointer_cast<Collision>(
-        this->dataPtr->world->GetEntity(_msg->contact(i).collision1()));
-    CollisionPtr collision2 = boost::dynamic_pointer_cast<Collision>(
-        this->dataPtr->world->GetEntity(_msg->contact(i).collision2()));
-
-    if ((collision1 && !collision1->IsStatic()) &&
-        (collision2 && !collision2->IsStatic()))
-    {
-      this->dataPtr->contacts.push_back(_msg->contact(i));
-    }
-  }
-}
-
-/////////////////////////////////////////////////
-std::string VacuumGripperPlugin::Name() const
-{
-  return this->dataPtr->name;
-}
-
-/////////////////////////////////////////////////
-bool VacuumGripperPlugin::IsAttached() const
-{
-  return this->dataPtr->attached;
-}
-
-/////////////////////////////////////////////////
-void VacuumGripperPlugin::Enable()
-{
-  std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
-  this->dataPtr->enabled = true;
-}
-
-/////////////////////////////////////////////////
-void VacuumGripperPlugin::Disable()
-{
-  {
-    std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
-    this->dataPtr->enabled = false;
-  }
-  this->HandleDetach();
 }

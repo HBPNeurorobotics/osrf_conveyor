@@ -26,7 +26,9 @@
           </suction_cup_link>
 
           <!-- ROS -->
+          <robot_namespace>vacuum_gripper</robot_namespace>
           <control_topic>vacuum_gripper_control</control_topic>
+          <state_topic>vacuum_gripper_state</state_topic>
         </plugin>
       </model>
 
