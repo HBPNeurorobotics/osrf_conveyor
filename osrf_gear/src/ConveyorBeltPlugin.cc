@@ -123,6 +123,9 @@ void ConveyorBeltPlugin::OnUpdate()
 /////////////////////////////////////////////////
 void ConveyorBeltPlugin::CalculateContactingLinks()
 {
+  auto beltPose = this->beltLink->GetWorldPose().Ign();
+  math::Vector3 beltTopNormal = beltPose.Rot().RotateVector(ignition::math::Vector3d::UnitZ);
+
   // Get all the contacts
   msgs::Contacts contacts;
   contacts = this->parentSensor->Contacts();
@@ -137,10 +140,12 @@ void ConveyorBeltPlugin::CalculateContactingLinks()
       collision = contacts.contact(i).collision2();
     }
 
-    // Only consider links ontop of belt
+    // Only consider links ontop of belt (collision normal aligned with +z of belt)
     for (int j = 0; j < contacts.contact(i).position_size(); ++j)
     {
-      if (contacts.contact(i).position(j).z() > (this->beltHeight - 0.001)) {
+      ignition::math::Vector3d contactNormal = msgs::ConvertIgn(contacts.contact(i).normal(j));
+      double alignment = beltTopNormal.Dot(contactNormal);
+      if (alignment > 0.0) {
         physics::CollisionPtr collisionPtr =
           boost::dynamic_pointer_cast<physics::Collision>(this->world->GetEntity(collision));
         if (collisionPtr) { // ensure the collision hasn't been deleted
@@ -160,8 +165,7 @@ void ConveyorBeltPlugin::ActOnContactingLinks(double speed)
 {
   ignition::math::Vector3d velocity_beltFrame(0.0, speed, 0.0);
   auto beltPose = this->beltLink->GetWorldPose().Ign();
-  math::Vector3 velocity_worldFrame = beltPose.Rot().RotateVector(
-    velocity_beltFrame);
+  math::Vector3 velocity_worldFrame = beltPose.Rot().RotateVector(velocity_beltFrame);
   for (auto linkPtr : this->contactingLinks) {
     if (linkPtr) {
       linkPtr->SetLinearVel(velocity_worldFrame);
