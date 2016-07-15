@@ -121,13 +121,13 @@ void ConveyorBeltPlugin::OnUpdate()
 /////////////////////////////////////////////////
 void ConveyorBeltPlugin::CalculateContactingLinks()
 {
-  double beltHeight = this->beltLink->GetBoundingBox().max.z;
+  this->beltHeight = this->beltLink->GetBoundingBox().max.z;
 
   // Get all the contacts
   msgs::Contacts contacts;
   contacts = this->parentSensor->Contacts();
 
-  this->contactingLinkPtrs.clear();
+  this->contactingLinks.clear();
   for (int i = 0; i < contacts.contact_size(); ++i)
   {
     // Get the collision that's not the belt
@@ -137,24 +137,24 @@ void ConveyorBeltPlugin::CalculateContactingLinks()
     }
 
     // Only consider links ontop of belt
-    for (unsigned int j = 0; j < contacts.contact(i).position_size(); ++j)
+    for (int j = 0; j < contacts.contact(i).position_size(); ++j)
     {
-      if (contacts.contact(i).position(j).z() > (beltHeight - 0.001)) {
+      if (contacts.contact(i).position(j).z() > (this->beltHeight - 0.001)) {
         physics::CollisionPtr collisionPtr =
           boost::dynamic_pointer_cast<physics::Collision>(this->world->GetEntity(collision));
         collisionPtr->GetBoundingBox();
         physics::LinkPtr linkPtr = collisionPtr->GetLink();
-        this->contactingLinkPtrs.insert(linkPtr);
+        this->contactingLinks.insert(linkPtr);
       }
     }
   }
-  gzdbg << "Number of links ontop of belt: " << this->contactingLinkPtrs.size() << "\n";
+  gzdbg << "Number of links ontop of belt: " << this->contactingLinks.size() << "\n";
 }
 
 /////////////////////////////////////////////////
 void ConveyorBeltPlugin::ActOnContactingLinks(double speed)
 {
-  for (auto linkPtr : this->contactingLinkPtrs) {
+  for (auto linkPtr : this->contactingLinks) {
     linkPtr->SetLinearVel(math::Vector3(0, speed, 0));
   }
 }

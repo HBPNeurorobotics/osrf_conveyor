@@ -48,7 +48,7 @@ namespace gazebo
     /// \brief Callback that recieves the contact sensor's update signal.
     /// Override this this function to get callbacks when the contact sensor
     /// is updated with new data.
-    private: virtual void OnUpdate();
+    private: void OnUpdate();
 
     /// \brief Pointer to the contact sensor
     private: sensors::ContactSensorPtr parentSensor;
@@ -79,7 +79,7 @@ namespace gazebo
     private: std::mutex stateMutex;
 
     /// \brief Set the state of the conveyor belt
-    private: void SetState(bool state);
+    public: void SetState(bool state);
 
     /// \brief Generate a scoped topic name from a local one
     /// \param local local topic name
@@ -92,13 +92,16 @@ namespace gazebo
     private: physics::LinkPtr beltLink;
 
     /// \brief Set of pointers to links which have collisions with the belt
-    private: std::set<physics::LinkPtr> contactingLinkPtrs;
+    private: std::set<physics::LinkPtr> contactingLinks;
 
     /// \brief Determine which links are ontop of the belt
     private: void CalculateContactingLinks();
 
     /// \brief Act on links that are ontop of the belt
     private: void ActOnContactingLinks(double speed);
+
+    /// \brief Height of conveyor belt for determining if objects are "ontop"
+    private: double beltHeight;
   };
 }
 #endif

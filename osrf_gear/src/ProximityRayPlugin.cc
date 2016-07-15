@@ -165,6 +165,7 @@ void ProximityRayPlugin::OnNewLaserScans()
         // TODO: determine detections in cylindrical shape not spherical
         if (range < maxRange and range > minRange) {
             objectDetected = true;
+            break;
         }
     }
 

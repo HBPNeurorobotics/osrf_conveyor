@@ -84,6 +84,44 @@ install(TARGETS ${ros_vacuum_gripper_plugin_name}
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin)
 
+
+# Create the libConveyorBeltPlugin.so library.
+set(conveyor_belt_plugin_name ConveyorBeltPlugin)
+add_library(${conveyor_belt_plugin_name} src/ConveyorBeltPlugin.cc)
+target_link_libraries(${conveyor_belt_plugin_name}
+  ${GAZEBO_LIBRARIES}
+)
+install(TARGETS ${conveyor_belt_plugin_name}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
+
+# Create the libROSConveyorBeltPlugin.so library.
+set(ros_conveyor_belt_plugin_name ROSConveyorBeltPlugin)
+add_library(${ros_conveyor_belt_plugin_name} src/ROSConveyorBeltPlugin.cc)
+target_link_libraries(${ros_conveyor_belt_plugin_name}
+  ${conveyor_belt_plugin_name}
+  ${GAZEBO_LIBRARIES}
+)
+install(TARGETS ${ros_conveyor_belt_plugin_name}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
+
+# Create the libProximityRayPlugin.so library.
+set(proximity_ray_plugin_name ProximityRayPlugin)
+add_library(${proximity_ray_plugin_name} src/ProximityRayPlugin.cc)
+target_link_libraries(${proximity_ray_plugin_name}
+  ${GAZEBO_LIBRARIES}
+)
+install(TARGETS ${proximity_ray_plugin_name}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
+
 #############
 ## Install ##
 #############
