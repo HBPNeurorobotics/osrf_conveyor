@@ -142,9 +142,10 @@ void ConveyorBeltPlugin::CalculateContactingLinks()
       if (contacts.contact(i).position(j).z() > (this->beltHeight - 0.001)) {
         physics::CollisionPtr collisionPtr =
           boost::dynamic_pointer_cast<physics::Collision>(this->world->GetEntity(collision));
-        collisionPtr->GetBoundingBox();
-        physics::LinkPtr linkPtr = collisionPtr->GetLink();
-        this->contactingLinks.insert(linkPtr);
+        if (collisionPtr) { // ensure the collision hasn't been deleted
+          physics::LinkPtr linkPtr = collisionPtr->GetLink();
+          this->contactingLinks.insert(linkPtr);
+        }
       }
     }
   }
