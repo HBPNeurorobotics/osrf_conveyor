@@ -130,6 +130,7 @@ void ConveyorBeltPlugin::CalculateContactingLinks()
   math::Vector3 beltTopNormal = beltPose.Rot().RotateVector(ignition::math::Vector3d::UnitZ);
 
   // Get all the contacts
+  //FIXME: this does not accurately report the contacts if objects are stationary (when using ODE)
   msgs::Contacts contacts;
   contacts = this->parentSensor->Contacts();
 
