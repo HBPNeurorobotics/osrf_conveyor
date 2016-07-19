@@ -77,29 +77,27 @@ void ProximityRayPlugin::Load(sensors::SensorPtr _parent, sdf::ElementPtr _sdf)
       gzdbg << "Using update rate of parent sensor: " << this->parentSensor->UpdateRate() << " Hz\n";
     }
 
-    std::string interruptionTopic;
     if (_sdf->HasElement("output_state_topic"))
     {
-        interruptionTopic = _sdf->Get<std::string>("output_state_topic");
+        this->stateTopic = _sdf->Get<std::string>("output_state_topic");
     }
     else {
-        interruptionTopic = this->Topic("interruption_state");
+        this->stateTopic = this->Topic("state_state");
     }
-    gzdbg << "Publishing interruption state to topic: " << interruptionTopic << "\n";
-    this->interruptionPub =
-        this->node->Advertise<msgs::Header>(interruptionTopic, 50);
 
-    std::string interruptionChangeTopic;
+    this->statePub =
+        this->node->Advertise<msgs::Header>(this->stateTopic, 50);
+
     if (_sdf->HasElement("output_change_topic"))
     {
-        interruptionChangeTopic = _sdf->Get<std::string>("output_change_topic");
+        this->stateChangeTopic = _sdf->Get<std::string>("output_change_topic");
     }
     else {
-        interruptionChangeTopic = this->Topic("interruption_change");
+        this->stateChangeTopic = this->Topic("state_change");
     }
-    gzdbg << "Publishing interruption state changes to topic: " << interruptionChangeTopic << "\n";
-    this->interruptionChangePub =
-        this->node->Advertise<msgs::Header>(interruptionChangeTopic, 50);
+
+    this->stateChangePub =
+        this->node->Advertise<msgs::Header>(this->stateChangeTopic, 50);
 
     // TODO: override sensor's range values
     /*
@@ -141,7 +139,7 @@ void ProximityRayPlugin::Load(sensors::SensorPtr _parent, sdf::ElementPtr _sdf)
     }
     gzdbg << "Using normally open setting of: " << this->normallyOpen << "\n";
 
-    this->interrupted = false;
+    this->state = false;
     this->newLaserScansConnection =
         this->parentSensor->LaserShape()->ConnectNewLaserScans(
             std::bind(&ProximityRayPlugin::OnNewLaserScans, this));
@@ -150,18 +148,43 @@ void ProximityRayPlugin::Load(sensors::SensorPtr _parent, sdf::ElementPtr _sdf)
 /////////////////////////////////////////////////
 void ProximityRayPlugin::OnNewLaserScans()
 {
+    bool stateChanged = this->ProcessScan();
+
+    // Fill message
+    std::lock_guard<std::mutex> lock(this->mutex);
+    msgs::Set(this->stateMsg.mutable_stamp(), this->world->GetSimTime());
+    this->stateMsg.set_index(this->normallyOpen ? this->state : !this->state);
+    this->stateMsg.set_str_id(this->normallyOpen ? "normally_open" : "normally_closed");
+
+    // Publish state state message
+    if (this->statePub && this->statePub->HasConnections()) {
+        this->statePub->Publish(this->stateMsg);
+    }
+
+    if (stateChanged)
+    {
+        // Publish state state change message
+        if (this->stateChangePub && this->stateChangePub->HasConnections()) {
+            this->stateChangePub->Publish(this->stateMsg);
+        }
+    }
+}
+
+/////////////////////////////////////////////////
+bool ProximityRayPlugin::ProcessScan()
+{
+    bool stateChanged = false;
     // Prevent new scans from arriving while we're processing this one
     this->parentSensor->SetActive(false);
 
     double maxRange = this->parentSensor->RangeMax();
     double minRange = this->parentSensor->RangeMin();
-    int rangeCount = this->parentSensor->RangeCount();
     std::vector<double> ranges;
     this->parentSensor->Ranges(ranges);
 
     bool objectDetected = false;
 
-    for (int i = 0; i<ranges.size(); i++){
+    for (unsigned int i = 0; i<ranges.size(); i++){
         double range = ranges[i];
         // TODO: determine detections in cylindrical shape not spherical
         if (range < maxRange and range > minRange) {
@@ -170,31 +193,23 @@ void ProximityRayPlugin::OnNewLaserScans()
         }
     }
 
-    std::lock_guard<std::mutex> lock(this->mutex);
-    msgs::Set(this->interruptionMsg.mutable_stamp(), this->world->GetSimTime());
-    this->interruptionMsg.set_index(this->normallyOpen ? objectDetected : !objectDetected);
-    this->interruptionMsg.set_str_id(this->normallyOpen ? "normally_open" : "normally_closed");
-    if (this->interruptionPub && this->interruptionPub->HasConnections()) {
-        this->interruptionPub->Publish(this->interruptionMsg);
-    }
-
     if (objectDetected) {
-        gzdbg << "Object detected\n";
-        if (!this->interrupted) {
-            if (this->interruptionChangePub && this->interruptionChangePub->HasConnections()) {
-                this->interruptionChangePub->Publish(this->interruptionMsg);
-            }
+        if (!this->state) {
+          gzdbg << "Object detected\n";
+          stateChanged = true;
         }
-        this->interrupted = true;
-    } else {
-        if (this->interrupted) {
-            if (this->interruptionChangePub && this->interruptionChangePub->HasConnections()) {
-                this->interruptionChangePub->Publish(this->interruptionMsg);
-            }
-        }
-        this->interrupted = false;
+        this->state = true;
     }
+    else
+    {
+        if (this->state) {
+          gzdbg << "Object no longer detected\n";
+          stateChanged = true;
+        }
+        this->state = false;
+    }
+
     this->parentSensor->SetActive(true); // this seems to happen automatically, not sure if a bug
+
+    return stateChanged;
 }
-
-

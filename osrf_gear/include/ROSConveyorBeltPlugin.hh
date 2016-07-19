@@ -15,8 +15,8 @@
  *
 */
 
-#ifndef _ROS_CONVEYOR_BELT_PLUGIN_H_
-#define _ROS_CONVEYOR_BELT_PLUGIN_H_
+#ifndef _ROS_CONVEYOR_BELT_PLUGIN_HH_
+#define _ROS_CONVEYOR_BELT_PLUGIN_HH_
 
 #include <sdf/sdf.hh>
 

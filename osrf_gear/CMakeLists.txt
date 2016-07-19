@@ -122,6 +122,30 @@ install(TARGETS ${proximity_ray_plugin_name}
   RUNTIME DESTINATION bin
 )
 
+# Create the libROSProximityRayPlugin.so library.
+set(ros_proximity_ray_plugin_name ROSProximityRayPlugin)
+add_library(${ros_proximity_ray_plugin_name} src/ROSProximityRayPlugin.cc)
+target_link_libraries(${ros_proximity_ray_plugin_name}
+  ${proximity_ray_plugin_name}
+  ${GAZEBO_LIBRARIES}
+)
+install(TARGETS ${ros_proximity_ray_plugin_name}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
+
+add_library(ConveyorController SHARED src/ConveyorController.cc)
+target_link_libraries(ConveyorController 
+  ${conveyor_belt_plugin_name}
+  ${proximity_ray_plugin_name}
+  ${GAZEBO_LIBRARIES})
+install(TARGETS ConveyorController
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
+
 # Create the libGearTaskPlugin.so library.
 set(gear_task_plugin_name GearTaskPlugin)
 add_library(${gear_task_plugin_name} src/GearTaskPlugin.cc)
@@ -133,7 +157,6 @@ install(TARGETS ${gear_task_plugin_name}
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
 )
-
 
 #############
 ## Install ##
