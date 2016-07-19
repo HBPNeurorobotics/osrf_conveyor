@@ -17,6 +17,11 @@
       <uri>model://simple_arm_vacuum_gripper</uri>
     </include>
 
+    <include>
+      <uri>model://conveyor_belt</uri>
+      <pose>0 4 0.5 0.2 0 -0.6</pose>
+    </include>
+
     <!-- An object to test the gripper -->
     <model name="cylinder">
       <pose>1.6 0 0 0 0 0</pose>
@@ -51,6 +56,28 @@
         </collision>
       </link>
     </model>
+
+    <!-- GEAR task plugin -->
+    <plugin filename="libGearTaskPlugin.so" name="gear_task">
+      <conveyor_belt_name>conveyor_belt</conveyor_belt_name>
+      <object_sequence>
+        <object>
+          <time>8.0</time>
+          <type>coke_can</type>
+          <pose>1 6 1 0 0 0</pose>
+        </object>
+        <object>
+          <time>4.0</time>
+          <type>cordless_drill/</type>
+          <pose>1 6 1 0 0 0</pose>
+        </object>
+        <object>
+          <time>12.0</time>
+          <type>beer</type>
+          <pose>1 6 1 0 0 0</pose>
+        </object>
+      </object_sequence>
+    </plugin>
 
   </world>
 </sdf>

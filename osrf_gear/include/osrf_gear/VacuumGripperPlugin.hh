@@ -20,6 +20,7 @@
 
 #include <memory>
 #include <string>
+#include <gazebo/common/Events.hh>
 #include <gazebo/common/Plugin.hh>
 #include <gazebo/msgs/contacts.pb.h>
 #include <gazebo/physics/PhysicsTypes.hh>

@@ -17,6 +17,7 @@
 #include <functional>
 #include <cstdio>
 
+#include <boost/algorithm/string/replace.hpp>
 #include <gazebo/physics/physics.hh>
 #include <gazebo/transport/Node.hh>
 #include <gazebo/transport/Publisher.hh>

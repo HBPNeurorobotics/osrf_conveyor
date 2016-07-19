@@ -14,6 +14,9 @@
  * limitations under the License.
  *
 */
+
+#include <boost/algorithm/string/replace.hpp>
+
 #include "ConveyorBeltPlugin.hh"
 #include <gazebo/transport/Node.hh>
 #include <gazebo/transport/Publisher.hh>

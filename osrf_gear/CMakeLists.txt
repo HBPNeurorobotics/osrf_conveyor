@@ -122,6 +122,19 @@ install(TARGETS ${proximity_ray_plugin_name}
   RUNTIME DESTINATION bin
 )
 
+# Create the libGearTaskPlugin.so library.
+set(gear_task_plugin_name GearTaskPlugin)
+add_library(${gear_task_plugin_name} src/GearTaskPlugin.cc)
+target_link_libraries(${gear_task_plugin_name}
+  ${GAZEBO_LIBRARIES}
+)
+install(TARGETS ${gear_task_plugin_name}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
+
+
 #############
 ## Install ##
 #############
