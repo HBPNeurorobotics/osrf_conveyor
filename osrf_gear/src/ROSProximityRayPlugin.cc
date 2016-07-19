@@ -71,8 +71,10 @@ void ROSProximityRayPlugin::Load(sensors::SensorPtr _parent, sdf::ElementPtr _sd
   this->rosnode = new ros::NodeHandle(this->robotNamespace);
 
   // Initialize the publishers
-  this->statePub = this->rosnode->advertise<std_msgs::Bool>(this->stateTopic, 1, true);
-  this->stateChangePub = this->rosnode->advertise<std_msgs::Bool>(this->stateChangeTopic, 1, true);
+  this->statePub = this->rosnode->advertise<osrf_gear::ProximitySensorState>(
+    this->stateTopic, 1, true);
+  this->stateChangePub = this->rosnode->advertise<osrf_gear::ProximitySensorState>(
+    this->stateChangeTopic, 1, true);
 
   // Callback for laser scans
   this->newLaserScansConnection =
@@ -86,8 +88,9 @@ void ROSProximityRayPlugin::Load(sensors::SensorPtr _parent, sdf::ElementPtr _sd
 void ROSProximityRayPlugin::OnNewLaserScans()
 {
   bool stateChanged = this->ProcessScan();
-  std_msgs::Bool stateMsg;
-  stateMsg.data = this->state;
+  osrf_gear::ProximitySensorState stateMsg;
+  stateMsg.state = this->normallyOpen ? this->state : !this->state;
+  stateMsg.normally_open = this->normallyOpen;
   this->statePub.publish(stateMsg);
   if (stateChanged)
   {

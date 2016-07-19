@@ -22,7 +22,7 @@
 
 // ROS
 #include <ros/ros.h>
-#include <std_msgs/Bool.h>
+#include <osrf_gear/ProximitySensorState.h>
 #include <std_msgs/String.h>
 
 namespace gazebo
@@ -68,22 +68,17 @@ class ROSConveyorController : public WorldPlugin
     this->controlPub.publish(controlMsg);
   }
 
-  private: void OnSensorStateChange(const std_msgs::Bool::ConstPtr &_msg)
+  private: void OnSensorStateChange(const osrf_gear::ProximitySensorState::ConstPtr &_msg)
   {
     gzdbg << "Sensor state changed\n";
 
-    bool sensorValue = _msg->data;
+    bool sensorValue = _msg->state;
     bool controlCommand;
-    std::string outputFunction = "normally_open";
-    if ("normally_open" == outputFunction) {
+    if (_msg->normally_open) {
       controlCommand = !sensorValue;
     }
-    else if ("normally_closed" == outputFunction) {
-      controlCommand = sensorValue;
-    }
     else {
-      gzerr << "output_function can only be either normally_open or normally_closed" << std::endl;
-      return;
+      controlCommand = sensorValue;
     }
 
     std_msgs::String controlMsg;
