@@ -47,7 +47,6 @@ void ROSProximityRayPlugin::Load(sensors::SensorPtr _parent, sdf::ElementPtr _sd
   }
 
   ProximityRayPlugin::Load(_parent, _sdf);
-  this->rosnode = new ros::NodeHandle(this->robotNamespace);
 
   // Read ROS-specific sdf tags
   this->robotNamespace = "";
@@ -68,6 +67,8 @@ void ROSProximityRayPlugin::Load(sensors::SensorPtr _parent, sdf::ElementPtr _sd
   {
     this->stateChangeTopic = _sdf->Get<std::string>("output_change_topic");
   }
+
+  this->rosnode = new ros::NodeHandle(this->robotNamespace);
 
   // Initialize the publishers
   this->statePub = this->rosnode->advertise<std_msgs::Bool>(this->stateTopic, 1, true);
