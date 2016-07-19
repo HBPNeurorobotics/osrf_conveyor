@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+<xacro:macro name="create_vacuum_gripper">
+
+  <link name="vacuum_gripper_link">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+        <inertia ixx="0.0000063" ixy="0" ixz="0"
+                 iyy="0.0000063" iyz="0"
+                 izz="0.000025" />
+        <mass value="0.01" />
+    </inertial>
+
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <cylinder radius="0.05" length="0.01" />
+      </geometry>
+      <material name="Black">
+        <color rgba="1.0 1.0 1.0 1.0"/>
+      </material>
+    </visual>
+
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.05" length="0.01"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <gazebo>
+    <plugin name="ros_vacuum_gripper" filename="libROSVacuumGripperPlugin.so">
+      <grasp_check>
+        <detach_steps>40</detach_steps>
+        <attach_steps>2</attach_steps>
+        <min_contact_count>1</min_contact_count>
+      </grasp_check>
+      <suction_cup_link>vacuum_gripper_link</suction_cup_link>
+
+      <!-- ROS -->
+      <robot_namespace>vacuum_gripper</robot_namespace>
+      <control_topic>vacuum_gripper_control</control_topic>
+      <state_topic>vacuum_gripper_state</state_topic>
+    </plugin>
+  </gazebo>
+
+</xacro:macro>
+
+</robot>
