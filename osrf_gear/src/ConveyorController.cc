@@ -36,7 +36,7 @@ class ConveyorController : public WorldPlugin
 
     // Create a subscriber for the proximity sensor output 
     std::string sensorStateChangeTopic =
-      "~/laser/proximity_ray_plugin/interruption_change";
+      "~/laser/proximity_ray_plugin/state_change";
     sensorSub =
       node->Subscribe(sensorStateChangeTopic, &ConveyorController::OnSensorStateChange, this);
 
@@ -56,6 +56,7 @@ class ConveyorController : public WorldPlugin
     // Send the message
     this->controlPub->Publish(msg);
   }
+
   private: void OnSensorStateChange(ConstHeaderPtr& _msg)
   {
     gzdbg << "Sensor state changed.\n";

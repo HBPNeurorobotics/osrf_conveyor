@@ -16,6 +16,8 @@
 */
 #include "ROSConveyorBeltPlugin.hh"
 
+#include <string>
+
 using namespace gazebo;
 
 GZ_REGISTER_SENSOR_PLUGIN(ROSConveyorBeltPlugin);
@@ -79,6 +81,7 @@ void ROSConveyorBeltPlugin::Load(sensors::SensorPtr _parent, sdf::ElementPtr _sd
 /////////////////////////////////////////////////
 void ROSConveyorBeltPlugin::OnControlCommand(const std_msgs::String::ConstPtr &_msg)
 {
+  gzdbg << "Control command received\n";
   this->SetState(std::stoi(_msg->data));
 }
 

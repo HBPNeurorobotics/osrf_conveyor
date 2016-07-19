@@ -96,7 +96,6 @@ void ConveyorBeltPlugin::Load(sensors::SensorPtr _sensor, sdf::ElementPtr _sdf)
   else {
       controlCommandTopic = this->Topic("control_command");
   }
-  gzdbg << "Subscribing to control commands on topic: " << controlCommandTopic << "\n";
   this->controlCommandSub = this->node->Subscribe(controlCommandTopic,
       &ConveyorBeltPlugin::OnControlCommand, this);
 
