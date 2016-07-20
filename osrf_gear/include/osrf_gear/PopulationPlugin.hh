@@ -15,8 +15,8 @@
  *
 */
 
-#ifndef GAZEBO_GEARTASK_PLUGIN_HH_
-#define GAZEBO_GEARTASK_PLUGIN_HH_
+#ifndef GAZEBO_POPULATION_PLUGIN_HH_
+#define GAZEBO_POPULATION_PLUGIN_HH_
 
 #include <memory>
 #include <gazebo/common/Plugin.hh>
