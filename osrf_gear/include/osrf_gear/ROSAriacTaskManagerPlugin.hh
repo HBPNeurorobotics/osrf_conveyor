@@ -15,8 +15,8 @@
  *
 */
 
-#ifndef GAZEBO_ARIAC_TASK_MANAGER_PLUGIN_HH_
-#define GAZEBO_ARIAC_TASK_MANAGER_PLUGIN_HH_
+#ifndef GAZEBO_ROS_ARIAC_TASK_MANAGER_PLUGIN_HH_
+#define GAZEBO_ROS_ARIAC_TASK_MANAGER_PLUGIN_HH_
 
 #include <memory>
 #include <gazebo/common/Plugin.hh>
@@ -26,16 +26,16 @@
 namespace gazebo
 {
   // Forward declare private data class
-  class AriacTaskManagerPluginPrivate;
+  class ROSAriacTaskManagerPluginPrivate;
 
   /// \brief A plugin that...
-  class GAZEBO_VISIBLE AriacTaskManagerPlugin : public WorldPlugin
+  class GAZEBO_VISIBLE ROSAriacTaskManagerPlugin : public WorldPlugin
   {
     /// \brief Constructor.
-    public: AriacTaskManagerPlugin();
+    public: ROSAriacTaskManagerPlugin();
 
     /// \brief Destructor.
-    public: virtual ~AriacTaskManagerPlugin();
+    public: virtual ~ROSAriacTaskManagerPlugin();
 
     // Documentation inherited.
     public: virtual void Load(physics::WorldPtr _world, sdf::ElementPtr _sdf);
@@ -47,7 +47,7 @@ namespace gazebo
     protected: void ProcessGoals();
 
     /// \brief Private data pointer.
-    private: std::unique_ptr<AriacTaskManagerPluginPrivate> dataPtr;
+    private: std::unique_ptr<ROSAriacTaskManagerPluginPrivate> dataPtr;
   };
 }
 #endif

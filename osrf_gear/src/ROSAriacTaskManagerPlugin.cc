@@ -28,7 +28,7 @@
 #include <ros/ros.h>
 #include <sdf/sdf.hh>
 
-#include "osrf_gear/AriacTaskManagerPlugin.hh"
+#include "osrf_gear/ROSAriacTaskManagerPlugin.hh"
 #include "osrf_gear/Goal.h"
 #include "osrf_gear/Kit.h"
 #include "osrf_gear/KitObject.h"
@@ -36,8 +36,8 @@
 namespace gazebo
 {
   /// \internal
-  /// \brief Private data for the AriacTaskManagerPlugin class.
-  struct AriacTaskManagerPluginPrivate
+  /// \brief Private data for the ROSAriacTaskManagerPlugin class.
+  struct ROSAriacTaskManagerPluginPrivate
   {
     /// \brief World pointer.
     public: physics::WorldPtr world;
@@ -145,10 +145,10 @@ namespace gazebo
 
 using namespace gazebo;
 
-GZ_REGISTER_WORLD_PLUGIN(AriacTaskManagerPlugin)
+GZ_REGISTER_WORLD_PLUGIN(ROSAriacTaskManagerPlugin)
 
 /////////////////////////////////////////////////
-static void fillGoalMsg(const AriacTaskManagerPluginPrivate::Goal &_goal,
+static void fillGoalMsg(const ROSAriacTaskManagerPluginPrivate::Goal &_goal,
                         osrf_gear::Goal &_msgGoal)
 {
   for (const auto &kit : _goal.kits)
@@ -174,23 +174,23 @@ static void fillGoalMsg(const AriacTaskManagerPluginPrivate::Goal &_goal,
 }
 
 /////////////////////////////////////////////////
-AriacTaskManagerPlugin::AriacTaskManagerPlugin()
-  : dataPtr(new AriacTaskManagerPluginPrivate)
+ROSAriacTaskManagerPlugin::ROSAriacTaskManagerPlugin()
+  : dataPtr(new ROSAriacTaskManagerPluginPrivate)
 {
 }
 
 /////////////////////////////////////////////////
-AriacTaskManagerPlugin::~AriacTaskManagerPlugin()
+ROSAriacTaskManagerPlugin::~ROSAriacTaskManagerPlugin()
 {
   this->dataPtr->rosnode->shutdown();
 }
 
 /////////////////////////////////////////////////
-void AriacTaskManagerPlugin::Load(physics::WorldPtr _world,
+void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
   sdf::ElementPtr _sdf)
 {
-  GZ_ASSERT(_world, "AriacTaskManagerPlugin world pointer is NULL");
-  GZ_ASSERT(_sdf, "AriacTaskManagerPlugin sdf pointer is NULL");
+  GZ_ASSERT(_world, "ROSAriacTaskManagerPlugin world pointer is NULL");
+  GZ_ASSERT(_sdf, "ROSAriacTaskManagerPlugin sdf pointer is NULL");
   this->dataPtr->world = _world;
   this->dataPtr->sdf = _sdf;
 
@@ -234,7 +234,7 @@ void AriacTaskManagerPlugin::Load(physics::WorldPtr _world,
     }
 
     // Store all kits for a goal.
-    std::vector<AriacTaskManagerPluginPrivate::Kit> kits;
+    std::vector<ROSAriacTaskManagerPluginPrivate::Kit> kits;
 
     sdf::ElementPtr kitElem = goalElem->GetElement("kit");
     while (kitElem)
@@ -248,7 +248,7 @@ void AriacTaskManagerPlugin::Load(physics::WorldPtr _world,
         continue;
       }
 
-      AriacTaskManagerPluginPrivate::Kit kit;
+      ROSAriacTaskManagerPluginPrivate::Kit kit;
 
       sdf::ElementPtr objectElem = kitElem->GetElement("object");
       while (objectElem)
@@ -274,7 +274,7 @@ void AriacTaskManagerPlugin::Load(physics::WorldPtr _world,
         math::Pose pose = poseElement->Get<math::Pose>();
 
         // Add the object to the kit.
-        AriacTaskManagerPluginPrivate::KitObject obj = {type, pose};
+        ROSAriacTaskManagerPluginPrivate::KitObject obj = {type, pose};
         kit.objects.push_back(obj);
 
         objectElem = objectElem->GetNextElement("object");
@@ -287,7 +287,7 @@ void AriacTaskManagerPlugin::Load(physics::WorldPtr _world,
     }
 
     // Add a new goal.
-    AriacTaskManagerPluginPrivate::Goal goal = {time, kits};
+    ROSAriacTaskManagerPluginPrivate::Goal goal = {time, kits};
     this->dataPtr->goals.push_back(goal);
 
     goalElem = goalElem->GetNextElement("goal");
@@ -309,17 +309,17 @@ void AriacTaskManagerPlugin::Load(physics::WorldPtr _world,
   this->dataPtr->startTime = this->dataPtr->world->GetSimTime();
 
   this->dataPtr->connection = event::Events::ConnectWorldUpdateEnd(
-    boost::bind(&AriacTaskManagerPlugin::OnUpdate, this));
+    boost::bind(&ROSAriacTaskManagerPlugin::OnUpdate, this));
 }
 
 /////////////////////////////////////////////////
-void AriacTaskManagerPlugin::OnUpdate()
+void ROSAriacTaskManagerPlugin::OnUpdate()
 {
   this->ProcessGoals();
 }
 
 /////////////////////////////////////////////////
-void AriacTaskManagerPlugin::ProcessGoals()
+void ROSAriacTaskManagerPlugin::ProcessGoals()
 {
   if (this->dataPtr->goals.empty())
     return;

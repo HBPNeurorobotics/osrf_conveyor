@@ -42,7 +42,7 @@
     </plugin>
 
     <!-- The NIST-ARIAC task manager -->
-    <plugin filename="libAriacTaskManagerPlugin.so" name="task_manager">
+    <plugin filename="libROSAriacTaskManagerPlugin.so" name="task_manager">
       <robot_namespace>ariac_task_manager</robot_namespace>
       <goals_topic>goals</goals_topic>
       <goal>
