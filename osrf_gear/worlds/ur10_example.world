@@ -12,53 +12,34 @@
       <uri>model://ground_plane</uri>
     </include>
 
-    <!-- A simple arm with a vacuum gripper-->
-    <!--
+    <!-- the conveyor belt -->
     <include>
-      <uri>model://ur10_with_vacuum_gripper</uri>
+      <uri>model://conveyor_belt</uri>
+      <pose>0.8 1.0 0 0 0 3.14159</pose>
     </include>
-    -->
 
-    <!-- An object to test the gripper -->
-    <model name="cylinder">
-      <pose>1.6 0 0 0 0 0</pose>
-      <link name="base">
-        <inertial>
-        <pose>0 0 0 0 0 0</pose>
-        <inertia>
-          <ixx>0.003083</ixx>
-          <ixy>0</ixy>
-          <ixz>0</ixz>
-          <iyy>0.003083</iyy>
-          <iyz>0</iyz>
-          <izz>0.002</izz>
-        </inertia>
-        <mass>0.1</mass>
-      </inertial>
-        <visual name="cylinder_visual">
-          <geometry>
-            <box>
-              <size>0.2 0.2 0.2</size>
-            </box>
-            <!-- <cylinder>
-              <radius>0.2</radius>
-              <length>0.5</length>
-            </cylinder> -->
-          </geometry>
-        </visual>
-        <collision name="cylinder_collision">
-          <geometry>
-            <box>
-              <size>0.2 0.2 0.2</size>
-            </box>
-            <!-- <cylinder>
-              <radius>0.2</radius>
-              <length>0.5</length>
-            </cylinder> -->
-          </geometry>
-        </collision>
-      </link>
-    </model>
+    <!-- Populate the conveyor belt -->
+    <plugin filename="libPopulationPlugin.so" name="populate_conveyor">
+      <!--<activation_topic>~/conveyor/control</activation_topic> -->
+      <loop_forever>true</loop_forever>
+      <object_sequence>
+        <object>
+          <time>8.0</time>
+          <type>coke_can</type>
+          <pose>0.8 3.0 0 0 0 0</pose>
+        </object>
+        <object>
+          <time>4.0</time>
+          <type>cordless_drill</type>
+          <pose>0.8 3.0 0 0 0 0</pose>
+        </object>
+        <object>
+          <time>12.0</time>
+          <type>beer</type>
+          <pose>0.8 3.0 0 0 0 0</pose>
+        </object>
+      </object_sequence>
+    </plugin>
 
   </world>
 </sdf>
