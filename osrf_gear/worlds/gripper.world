@@ -57,9 +57,10 @@
       </link>
     </model>
 
-    <!-- GEAR task plugin -->
-    <plugin filename="libGearTaskPlugin.so" name="gear_task">
-      <conveyor_belt_name>conveyor_belt</conveyor_belt_name>
+    <!-- Populate the conveyor belt -->
+    <plugin filename="libPopulationPlugin.so" name="populate_conveyor">
+      <!--<activation_topic>~/conveyor/control</activation_topic> -->
+      <loop_forever>true</loop_forever>
       <object_sequence>
         <object>
           <time>8.0</time>
