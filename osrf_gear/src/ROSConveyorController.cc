@@ -21,9 +21,9 @@
 #include <string>
 
 // ROS
-#include <ros/ros.h>
+#include <osrf_gear/ConveyorBeltState.h>
 #include <osrf_gear/ProximitySensorState.h>
-#include <std_msgs/String.h>
+#include <ros/ros.h>
 
 namespace gazebo
 {
@@ -33,6 +33,7 @@ class ROSConveyorController : public WorldPlugin
   private: ros::Publisher controlPub;
   private: ros::Subscriber sensorSub;
   private: physics::WorldPtr world;
+  private: double beltVelocity;
 
   public: ~ROSConveyorController()
   {
@@ -60,11 +61,14 @@ class ROSConveyorController : public WorldPlugin
 
     // Create a publisher for the conveyor control commands 
     std::string conveyorControlTopic = "conveyor_control";
-    this->controlPub = this->rosnode->advertise<std_msgs::String>(conveyorControlTopic, 1, true);
+    this->controlPub = this->rosnode->advertise<osrf_gear::ConveyorBeltState>(
+      conveyorControlTopic, 1, true);
+
+    this->beltVelocity = 0.5;
 
     // Turn belt on
-    std_msgs::String controlMsg;
-    controlMsg.data = "1";
+    osrf_gear::ConveyorBeltState controlMsg;
+    controlMsg.velocity = this->beltVelocity;
     this->controlPub.publish(controlMsg);
   }
 
@@ -73,7 +77,7 @@ class ROSConveyorController : public WorldPlugin
     gzdbg << "Sensor state changed\n";
 
     bool sensorValue = _msg->state;
-    bool controlCommand;
+    bool controlCommand; // on (true) or off (false)
     if (_msg->normally_open) {
       controlCommand = !sensorValue;
     }
@@ -81,8 +85,8 @@ class ROSConveyorController : public WorldPlugin
       controlCommand = sensorValue;
     }
 
-    std_msgs::String controlMsg;
-    controlMsg.data = std::to_string(controlCommand);
+    osrf_gear::ConveyorBeltState controlMsg;
+    controlMsg.velocity = this->beltVelocity * controlCommand;
     this->controlPub.publish(controlMsg);
   }
 };

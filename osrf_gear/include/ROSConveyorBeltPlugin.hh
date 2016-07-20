@@ -24,10 +24,8 @@
 #include "ConveyorBeltPlugin.hh"
 
 // ROS
+#include <osrf_gear/ConveyorBeltState.h>
 #include <ros/ros.h>
-#include <std_msgs/String.h>
-#include <ros/callback_queue.h>
-#include <ros/advertise_options.h>
 
 namespace gazebo
 {
@@ -47,10 +45,7 @@ namespace gazebo
 
     /// \brief Receives messages on the conveyor belt's topic.
     /// \param[in] _msg The string message that contains a command.
-    public: void OnControlCommand(const std_msgs::String::ConstPtr &_msg);
-
-    /// \brief Queu to handle callbacks.
-    private: void QueueThread();
+    public: void OnControlCommand(const osrf_gear::ConveyorBeltState::ConstPtr &_msg);
 
     /// \brief for setting ROS name space
     private: std::string robotNamespace_;
@@ -60,12 +55,6 @@ namespace gazebo
 
     /// \brief Subscribes to a topic that controls the elevator.
     private: ros::Subscriber controlCommandSub_;
-
-    /// \brief Custom Callback Queue
-    private: ros::CallbackQueue queue_;
-
-    // \brief Custom Callback Queue thread
-    private: boost::thread callbackQueueThread_;
   };
 }
 #endif

@@ -65,14 +65,14 @@ void ConveyorBeltPlugin::Load(sensors::SensorPtr _sensor, sdf::ElementPtr _sdf)
   this->node = transport::NodePtr(new transport::Node());
   this->node->Init(worldName);
 
-  if (_sdf->HasElement("belt_speed"))
+  if (_sdf->HasElement("belt_velocity"))
   {
-    this->beltSpeed = _sdf->Get<double>("belt_speed");
+    this->beltVelocity = _sdf->Get<double>("belt_velocity");
   }
   else {
-    this->beltSpeed = 0.1;
+    this->beltVelocity = 0.5;
   }
-  gzdbg << "Using belt speed of: " << this->beltSpeed << " m/s\n";
+  gzdbg << "Using belt velocity of: " << this->beltVelocity << " m/s\n";
 
   std::string beltLinkName = this->parentSensor->ParentName();
   this->beltLink =
@@ -99,9 +99,6 @@ void ConveyorBeltPlugin::Load(sensors::SensorPtr _sensor, sdf::ElementPtr _sdf)
   this->controlCommandSub = this->node->Subscribe(controlCommandTopic,
       &ConveyorBeltPlugin::OnControlCommand, this);
 
-  std::lock_guard<std::mutex> lock(this->stateMutex);
-  this->state = false;
-
   // Connect to the sensor update event.
   this->updateConnection = this->parentSensor->ConnectUpdated(
       std::bind(&ConveyorBeltPlugin::OnUpdate, this));
@@ -113,12 +110,10 @@ void ConveyorBeltPlugin::Load(sensors::SensorPtr _sensor, sdf::ElementPtr _sdf)
 /////////////////////////////////////////////////
 void ConveyorBeltPlugin::OnUpdate()
 {
-  this->beltHeight = this->beltLink->GetBoundingBox().max.z;
-
   this->CalculateContactingLinks();
-  std::lock_guard<std::mutex> lock(this->stateMutex);
-  double speed = this->state ? this->beltSpeed : 0.0;
-  this->ActOnContactingLinks(speed);
+  std::lock_guard<std::mutex> lock(this->mutex);
+  double velocity = this->beltVelocity;
+  this->ActOnContactingLinks(velocity);
 
 }
 
@@ -164,9 +159,9 @@ void ConveyorBeltPlugin::CalculateContactingLinks()
 }
 
 /////////////////////////////////////////////////
-void ConveyorBeltPlugin::ActOnContactingLinks(double speed)
+void ConveyorBeltPlugin::ActOnContactingLinks(double velocity)
 {
-  ignition::math::Vector3d velocity_beltFrame(0.0, speed, 0.0);
+  ignition::math::Vector3d velocity_beltFrame(0.0, velocity, 0.0);
   auto beltPose = this->beltLink->GetWorldPose().Ign();
   math::Vector3 velocity_worldFrame = beltPose.Rot().RotateVector(velocity_beltFrame);
   for (auto linkPtr : this->contactingLinks) {
@@ -180,13 +175,13 @@ void ConveyorBeltPlugin::ActOnContactingLinks(double speed)
 void ConveyorBeltPlugin::OnControlCommand(ConstHeaderPtr& _msg)
 {
   gzdbg << "Received control command of: " << _msg->index() << "\n";
-  this->SetState(_msg->index());
+  this->SetVelocity(_msg->index()*this->beltVelocity);
 }
 
 /////////////////////////////////////////////////
-void ConveyorBeltPlugin::SetState(bool state)
+void ConveyorBeltPlugin::SetVelocity(double velocity)
 {
-  std::lock_guard<std::mutex> lock(this->stateMutex);
-  gzdbg << "Setting state to: " << state << "\n";
-  this->state = state;
+  std::lock_guard<std::mutex> lock(this->mutex);
+  gzdbg << "Setting velocity to: " << velocity << "\n";
+  this->beltVelocity = velocity;
 }

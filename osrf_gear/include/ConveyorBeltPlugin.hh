@@ -48,60 +48,54 @@ namespace gazebo
     /// \brief Callback that recieves the contact sensor's update signal.
     /// Override this this function to get callbacks when the contact sensor
     /// is updated with new data.
-    private: void OnUpdate();
+    protected: void OnUpdate();
 
     /// \brief Pointer to the contact sensor
-    private: sensors::ContactSensorPtr parentSensor;
+    protected: sensors::ContactSensorPtr parentSensor;
 
     /// \brief Connection that maintains a link between the contact sensor's
     /// updated signal and the OnUpdate callback.
-    private: event::ConnectionPtr updateConnection;
+    protected: event::ConnectionPtr updateConnection;
 
     /// \brief Pointer to the world
-    private: physics::WorldPtr world;
+    protected: physics::WorldPtr world;
 
     /// \brief Pointer to this node for publishing/subscribing
-    private: transport::NodePtr node;
+    protected: transport::NodePtr node;
 
     /// \brief Subscriber for the control commands
-    private: transport::SubscriberPtr controlCommandSub;
+    protected: transport::SubscriberPtr controlCommandSub;
 
     /// \brief Callback for responding to control commands
-    private: void OnControlCommand(ConstHeaderPtr& _msg);
+    protected: void OnControlCommand(ConstHeaderPtr& _msg);
 
-    /// \brief Belt speed (m/s)
-    private: double beltSpeed;
+    /// \brief Belt velocity (m/s, in the +Y direction of the belt frame)
+    protected: double beltVelocity;
 
-    /// \brief Belt state (true: on, false: off)
-    private: bool state;
-
-    /// \brief Mutex to protect the belt state
-    private: std::mutex stateMutex;
+    /// \brief Mutex to protect the belt velocity
+    protected: std::mutex mutex;
 
     /// \brief Set the state of the conveyor belt
-    public: void SetState(bool state);
+    public: void SetVelocity(double velocity);
 
     /// \brief Generate a scoped topic name from a local one
     /// \param local local topic name
-    private: std::string Topic(std::string topicName) const;
+    protected: std::string Topic(std::string topicName) const;
 
     /// \brief Name of the collision of the belt
-    private: std::string beltCollisionName;
+    protected: std::string beltCollisionName;
 
     /// \brief Pointer to the belt link
-    private: physics::LinkPtr beltLink;
+    protected: physics::LinkPtr beltLink;
 
     /// \brief Set of pointers to links which have collisions with the belt
-    private: std::set<physics::LinkPtr> contactingLinks;
+    protected: std::set<physics::LinkPtr> contactingLinks;
 
     /// \brief Determine which links are ontop of the belt
-    private: void CalculateContactingLinks();
+    protected: void CalculateContactingLinks();
 
     /// \brief Act on links that are ontop of the belt
-    private: void ActOnContactingLinks(double speed);
-
-    /// \brief Height of conveyor belt for determining if objects are "ontop"
-    private: double beltHeight;
+    protected: void ActOnContactingLinks(double velocity);
   };
 }
 #endif

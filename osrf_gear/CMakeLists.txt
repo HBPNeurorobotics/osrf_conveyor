@@ -21,8 +21,9 @@ find_package(gazebo REQUIRED)
 
 add_message_files(DIRECTORY msg
   FILES
-  VacuumGripperState.msg
+  ConveyorBeltState.msg
   ProximitySensorState.msg
+  VacuumGripperState.msg
 )
 
 add_service_files(DIRECTORY srv
