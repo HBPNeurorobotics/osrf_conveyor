@@ -14,6 +14,8 @@
  * limitations under the License.
  *
 */
+#include <string>
+
 #include "gazebo/physics/physics.hh"
 #include "gazebo/common/common.hh"
 #include "gazebo/gazebo.hh"
@@ -25,6 +27,8 @@ class ConveyorController : public WorldPlugin
   private: transport::PublisherPtr controlPub;
   private: transport::SubscriberPtr sensorSub;
   private: physics::WorldPtr world;
+  private: double beltVelocity;
+
   public: void Load(physics::WorldPtr _parent, sdf::ElementPtr /*_sdf*/)
   {
     this->world = _parent;
@@ -46,11 +50,14 @@ class ConveyorController : public WorldPlugin
     this->controlPub =
       node->Advertise<msgs::Header>(conveyorControlTopic);
 
-    // Create the message
-    msgs::Header msg;
+    this->beltVelocity = 0.5;
 
+    // Create the message
+    // TODO: make custom belt control message (or add Double to standard gazebo msgs...)
+    msgs::Header msg;
     bool controlCommand = true;
-    msg.set_index(controlCommand);
+    double desiredVelocity = controlCommand*this->beltVelocity;
+    msg.set_str_id(std::to_string(desiredVelocity));
     msgs::Set(msg.mutable_stamp(), _parent->GetSimTime());
 
     // Send the message
@@ -75,7 +82,8 @@ class ConveyorController : public WorldPlugin
       gzerr << "output_function can only be either normally_open or normally_closed" << std::endl;
       return;
     }
-    msg.set_index(controlCommand);
+    double desiredVelocity = controlCommand*this->beltVelocity;
+    msg.set_str_id(std::to_string(desiredVelocity));
     msgs::Set(msg.mutable_stamp(), this->world->GetSimTime());
 
     // Send the message

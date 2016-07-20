@@ -16,6 +16,7 @@
 */
 
 #include <boost/algorithm/string/replace.hpp>
+#include <string>
 
 #include "ConveyorBeltPlugin.hh"
 #include <gazebo/transport/Node.hh>
@@ -174,8 +175,9 @@ void ConveyorBeltPlugin::ActOnContactingLinks(double velocity)
 /////////////////////////////////////////////////
 void ConveyorBeltPlugin::OnControlCommand(ConstHeaderPtr& _msg)
 {
-  gzdbg << "Received control command of: " << _msg->index() << "\n";
-  this->SetVelocity(_msg->index()*this->beltVelocity);
+  double requestedVelocity = std::stod(_msg->str_id());
+  gzdbg << "Received control command of: " << requestedVelocity << "\n";
+  this->SetVelocity(requestedVelocity);
 }
 
 /////////////////////////////////////////////////
