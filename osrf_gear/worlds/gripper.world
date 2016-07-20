@@ -80,5 +80,44 @@
       </object_sequence>
     </plugin>
 
+    <!-- The NIST-ARIAC task manager -->
+    <plugin filename="libAriacTaskManagerPlugin.so" name="task_manager">
+      <robot_namespace>ariac_task_manager</robot_namespace>
+      <goals_topic>goals</goals_topic>
+      <goal>
+        <time>5.0</time>
+        <!-- 1st kit -->
+        <kit>
+          <object>
+            <type>coke_can</type>
+            <pose>-1 2.5 0.2 0 0 0</pose>
+          </object>
+          <object>
+            <type>cordless_drill/</type>
+            <pose>-1 2.5 0.2 0 0 0</pose>
+          </object>
+          <object>
+            <type>beer</type>
+            <pose>-1 2.5 0.2 0 0 0</pose>
+          </object>
+        </kit>
+        <!-- 2nd kit -->
+        <kit>
+          <object>
+            <type>coke_can</type>
+            <pose>-1 2.5 0.2 0 0 0</pose>
+          </object>
+          <object>
+            <type>cordless_drill/</type>
+            <pose>-1 2.5 0.2 0 0 0</pose>
+          </object>
+          <object>
+            <type>beer</type>
+            <pose>-1 2.5 0.2 0 0 0</pose>
+          </object>
+        </kit>
+      </goal>
+    </plugin>
+
   </world>
 </sdf>

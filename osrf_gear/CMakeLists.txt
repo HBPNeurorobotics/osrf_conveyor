@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   gazebo_plugins
   roscpp
   std_msgs
+  geometry_msgs
   message_generation
 )
 
@@ -22,6 +23,9 @@ find_package(gazebo REQUIRED)
 add_message_files(DIRECTORY msg
   FILES
   ConveyorBeltState.msg
+  Goal.msg
+  Kit.msg
+  KitObject.msg
   ProximitySensorState.msg
   VacuumGripperState.msg
 )
@@ -35,6 +39,7 @@ add_service_files(DIRECTORY srv
 generate_messages(
   DEPENDENCIES
   std_msgs
+  geometry_msgs
 )
 
 catkin_package(
@@ -165,13 +170,25 @@ install(TARGETS ${ros_conveyor_controller_name}
   RUNTIME DESTINATION bin
 )
 
-# Create the libGearTaskPlugin.so library.
+# Create the libPopulationPlugin.so library.
 set(population_plugin_name PopulationPlugin)
 add_library(${population_plugin_name} src/PopulationPlugin.cc)
 target_link_libraries(${population_plugin_name}
   ${GAZEBO_LIBRARIES}
 )
 install(TARGETS ${population_plugin_name}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
+
+# Create the libAriacTaskManagerPlugin.so library.
+set(task_plugin_name AriacTaskManagerPlugin)
+add_library(${task_plugin_name} src/AriacTaskManagerPlugin.cc)
+target_link_libraries(${task_plugin_name}
+  ${GAZEBO_LIBRARIES}
+)
+install(TARGETS ${task_plugin_name}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
