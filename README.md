@@ -51,7 +51,7 @@ catkin config --install
 
 ```
 cd $GEAR_WS
-catkin build
+catkin build  # add the -i option to see streaming output from builds
 ```
 
 1. Run
