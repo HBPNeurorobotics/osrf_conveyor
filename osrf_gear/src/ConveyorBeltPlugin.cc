@@ -126,6 +126,7 @@ void ConveyorBeltPlugin::CalculateContactingLinks()
 
   // Get all the contacts
   //FIXME: this does not accurately report the contacts if objects are stationary (when using ODE)
+  // This is because the conveyor model is static for now.. hopefully just temporary.
   msgs::Contacts contacts;
   contacts = this->parentSensor->Contacts();
 
