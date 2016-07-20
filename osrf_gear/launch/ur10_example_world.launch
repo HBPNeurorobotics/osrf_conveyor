@@ -9,6 +9,7 @@
     <arg name="world_name" default="$(find osrf_gear)/worlds/ur10_example.world"/>
     <arg name="paused" value="$(arg paused)"/>
     <arg name="gui" value="$(arg gui)"/>
+    <arg name="extra_gazebo_args" value="--verbose" />
   </include>
 
   <!-- load ur10 -->

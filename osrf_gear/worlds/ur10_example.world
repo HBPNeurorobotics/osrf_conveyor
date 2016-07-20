@@ -37,18 +37,24 @@
       </inertial>
         <visual name="cylinder_visual">
           <geometry>
-            <cylinder>
+            <box>
+              <size>0.2 0.2 0.2</size>
+            </box>
+            <!-- <cylinder>
               <radius>0.2</radius>
               <length>0.5</length>
-            </cylinder>
+            </cylinder> -->
           </geometry>
         </visual>
         <collision name="cylinder_collision">
           <geometry>
-            <cylinder>
+            <box>
+              <size>0.2 0.2 0.2</size>
+            </box>
+            <!-- <cylinder>
               <radius>0.2</radius>
               <length>0.5</length>
-            </cylinder>
+            </cylinder> -->
           </geometry>
         </collision>
       </link>
