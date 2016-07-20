@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro"
+       name="ur10" >
+
+  <!-- common stuff -->
+  <xacro:include filename="$(find ur_description)/urdf/common.gazebo.xacro" />
+
+  <!-- ur10 -->
+  <xacro:include filename="$(find ur_description)/urdf/ur10.urdf.xacro" />
+
+  <!-- arm -->
+  <xacro:ur10_robot prefix="" joint_limited="false" />
+
+  <!-- vacuum gripper -->
+  <xacro:include filename="$(find osrf_gear)/launch/ur10/vacuum_gripper.urdf.xacro" />
+
+  <xacro:create_vacuum_gripper suction_cup_link_name="robot::vacuum_gripper_link" />
+
+  <joint name="vacuum_gripper_joint" type="revolute">
+    <origin xyz="0 0.1 0" rpy="${90 * 0.0174533} 0 0" />
+    <axis xyz="0 0 1" />
+    <limit lower="0" upper="0" effort="0" velocity="0" />
+    <parent link="wrist_3_link" />
+    <child link="vacuum_gripper_link" />
+
+    <dynamics damping="0.0" friction="0.0"/>
+  </joint>
+
+  <!-- world link -->
+  <link name="world" />
+
+  <joint name="world_joint" type="fixed">
+    <parent link="world" />
+    <child link="base_link" />
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+  </joint>
+
+</robot>

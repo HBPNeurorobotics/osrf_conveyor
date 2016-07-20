@@ -15,8 +15,8 @@
  *
 */
 
-#ifndef _ROS_CONVEYOR_BELT_PLUGIN_H_
-#define _ROS_CONVEYOR_BELT_PLUGIN_H_
+#ifndef _ROS_CONVEYOR_BELT_PLUGIN_HH_
+#define _ROS_CONVEYOR_BELT_PLUGIN_HH_
 
 #include <sdf/sdf.hh>
 
@@ -24,10 +24,8 @@
 #include "ConveyorBeltPlugin.hh"
 
 // ROS
+#include <osrf_gear/ConveyorBeltControl.h>
 #include <ros/ros.h>
-#include <std_msgs/String.h>
-#include <ros/callback_queue.h>
-#include <ros/advertise_options.h>
 
 namespace gazebo
 {
@@ -45,12 +43,12 @@ namespace gazebo
     /// \param[in] _sdf Pointer to the SDF element of the plugin.
     public: void Load(sensors::SensorPtr _parent, sdf::ElementPtr _sdf);
 
-    /// \brief Receives messages on the conveyor belt's topic.
-    /// \param[in] _msg The string message that contains a command.
-    public: void OnControlCommand(const std_msgs::String::ConstPtr &_msg);
-
-    /// \brief Queu to handle callbacks.
-    private: void QueueThread();
+    /// \brief Receives requests on the conveyor belt's topic.
+    /// \param[in] _req The desired state of the conveyor belt.
+    /// \param[in] _res If the service succeeded or not.
+    public: bool OnControlCommand(
+      osrf_gear::ConveyorBeltControl::Request &_req,
+      osrf_gear::ConveyorBeltControl::Response &_res);
 
     /// \brief for setting ROS name space
     private: std::string robotNamespace_;
@@ -58,14 +56,8 @@ namespace gazebo
     /// \brief ros node handle
     private: ros::NodeHandle *rosnode_;
 
-    /// \brief Subscribes to a topic that controls the elevator.
-    private: ros::Subscriber controlCommandSub_;
-
-    /// \brief Custom Callback Queue
-    private: ros::CallbackQueue queue_;
-
-    // \brief Custom Callback Queue thread
-    private: boost::thread callbackQueueThread_;
+    /// \brief Receives service calls to control the conveyor belt.
+    public: ros::ServiceServer controlService_;
   };
 }
 #endif

@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="limited" default="false"/>
+  <arg name="paused" default="false"/>
+  <arg name="gui" default="true"/>
+
+  <!-- startup simulated world -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" default="$(find osrf_gear)/worlds/ur10_example.world"/>
+    <arg name="paused" value="$(arg paused)"/>
+    <arg name="gui" value="$(arg gui)"/>
+    <arg name="extra_gazebo_args" value="--verbose" />
+  </include>
+
+  <!-- load ur10 -->
+  <include file="$(find osrf_gear)/launch/ur10/ur10.xml">
+    <arg name="limited" value="$(arg limited)"/>
+  </include>
+
+</launch>

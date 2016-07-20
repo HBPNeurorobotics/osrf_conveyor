@@ -42,49 +42,59 @@ namespace gazebo
     /// \brief Update callback
     public: virtual void OnNewLaserScans();
 
+    /// \brief Process the scan data and update state
+    /// \returns true if the state has changed since processing the last scan
+    public: virtual bool ProcessScan();
+
     /// \brief Load the plugin
     /// \param take in SDF root element
     public: void Load(sensors::SensorPtr _parent, sdf::ElementPtr _sdf);
 
-    /// \brief Generate a global topic name from a local one
+    /// \brief Generate a scoped topic name from a local one
     /// \param local local topic name
-    private: std::string Topic(std::string topicName) const;
+    protected: std::string Topic(std::string topicName) const;
 
-    /// \brief Publisher for the beam interruption state
-    private: transport::PublisherPtr interruptionPub;
+    /// \brief Publisher for the sensor state
+    protected: transport::PublisherPtr statePub;
 
-    /// \brief Publisher for the beam interruption state change
-    private: transport::PublisherPtr interruptionChangePub;
+    /// \brief Publisher for the sensor state change
+    protected: transport::PublisherPtr stateChangePub;
 
-    /// \brief Beam interruption message
-    private: msgs::Header interruptionMsg;
+    /// \brief State message
+    protected: msgs::Header stateMsg;
 
     /// \brief Mutex to protect interruptionMsg
-    private: std::mutex mutex;
+    protected: std::mutex mutex;
 
-    /// \brief Interruption state
-    private: bool interrupted;
+    /// \brief Topic name for state message
+    protected: std::string stateTopic;
+
+    /// \brief Topic name for state change message
+    protected: std::string stateChangeTopic;
+
+    /// \brief Sensor state
+    protected: bool state;
 
     /// \brief Minimum sensing range in meters
-    private: double sensingRangeMin;
+    protected: double sensingRangeMin;
 
     /// \brief Maximum sensing range in meters
-    private: double sensingRangeMax;
+    protected: double sensingRangeMax;
 
     /// \brief Whether or not the output function is normally open (default) or normally closed
-    private: bool normallyOpen;
+    protected: bool normallyOpen;
 
     /// \brief Pointer to parent
     protected: physics::WorldPtr world;
 
     /// \brief Pointer to this node for publishing
-    private: transport::NodePtr node;
+    protected: transport::NodePtr node;
 
     /// \brief The parent sensor
-    private: sensors::RaySensorPtr parentSensor;
+    protected: sensors::RaySensorPtr parentSensor;
 
     /// \brief The connection tied to ProximityRayPlugin::OnNewLaserScans()
-    private: event::ConnectionPtr newLaserScansConnection;
+    protected: event::ConnectionPtr newLaserScansConnection;
 
   };
 }

@@ -16,6 +16,8 @@
 */
 #include "ROSConveyorBeltPlugin.hh"
 
+#include <string>
+
 using namespace gazebo;
 
 GZ_REGISTER_SENSOR_PLUGIN(ROSConveyorBeltPlugin);
@@ -28,12 +30,7 @@ ROSConveyorBeltPlugin::ROSConveyorBeltPlugin()
 /////////////////////////////////////////////////
 ROSConveyorBeltPlugin::~ROSConveyorBeltPlugin()
 {
-  this->queue_.clear();
-  this->queue_.disable();
   this->rosnode_->shutdown();
-  this->callbackQueueThread_.join();
-
-  delete this->rosnode_;
 }
 
 /////////////////////////////////////////////////
@@ -64,29 +61,17 @@ void ROSConveyorBeltPlugin::Load(sensors::SensorPtr _parent, sdf::ElementPtr _sd
 
   this->rosnode_ = new ros::NodeHandle(this->robotNamespace_);
 
-  ros::SubscribeOptions so =
-    ros::SubscribeOptions::create<std_msgs::String>(topic, 1,
-        boost::bind(&ROSConveyorBeltPlugin::OnControlCommand, this, _1),
-        ros::VoidPtr(), &this->queue_);
-
-  this->controlCommandSub_ = this->rosnode_->subscribe(so);
-
-  // start custom queue
-  this->callbackQueueThread_ =
-    boost::thread(boost::bind(&ROSConveyorBeltPlugin::QueueThread, this));
+  this->controlService_ = this->rosnode_->advertiseService(topic,
+    &ROSConveyorBeltPlugin::OnControlCommand, this);
 }
 
 /////////////////////////////////////////////////
-void ROSConveyorBeltPlugin::OnControlCommand(const std_msgs::String::ConstPtr &_msg)
+bool ROSConveyorBeltPlugin::OnControlCommand(
+  osrf_gear::ConveyorBeltControl::Request &_req,
+  osrf_gear::ConveyorBeltControl::Response &_res)
 {
-  this->SetState(std::stoi(_msg->data));
-}
-
-/////////////////////////////////////////////////
-void ROSConveyorBeltPlugin::QueueThread()
-{
-  static const double timeout = 0.01;
-
-  while (this->rosnode_->ok())
-    this->queue_.callAvailable(ros::WallDuration(timeout));
+  gzdbg << "Control command received\n";
+  this->SetVelocity(_req.state.velocity);
+  _res.success = true;
+  return true;
 }

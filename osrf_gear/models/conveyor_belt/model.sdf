@@ -9,7 +9,7 @@
                     <collision>belt_collision</collision>
                 </contact>
                 <plugin name="conveyor_belt_plugin" filename="libROSConveyorBeltPlugin.so">
-                    <belt_speed>0.2</belt_speed>
+                    <belt_velocity>0.2</belt_velocity>
                 </plugin>
             </sensor>
             <inertial>
