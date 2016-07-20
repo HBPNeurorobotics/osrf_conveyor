@@ -31,7 +31,7 @@ namespace gazebo
 
   /// \brief A plugin that allows models to be spawned at a given location in
   /// a specific simulation time. As an example, this plugin might be used for
-  /// placing objects in a conbeyor belt.
+  /// placing objects in a conveyor belt.
 
   /// The plugin accepts the following SDF parameters:
 
