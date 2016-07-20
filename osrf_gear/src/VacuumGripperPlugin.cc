@@ -270,11 +270,11 @@ void VacuumGripperPlugin::OnUpdate()
   {
     this->HandleAttach();
   }
-  else if (this->dataPtr->zeroCount > this->dataPtr->detachSteps &&
-           this->dataPtr->attached)
-  {
-    this->HandleDetach();
-  }
+  // else if (this->dataPtr->zeroCount > this->dataPtr->detachSteps &&
+  //          this->dataPtr->attached)
+  // {
+  //   this->HandleDetach();
+  // }
 
   this->dataPtr->contacts.clear();
   this->dataPtr->prevUpdateTime = common::Time::GetWallTime();
