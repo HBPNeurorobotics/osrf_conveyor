@@ -28,6 +28,7 @@ add_message_files(DIRECTORY msg
 
 add_service_files(DIRECTORY srv
   FILES
+  ConveyorBeltControl.srv
   VacuumGripperControl.srv
 )
 

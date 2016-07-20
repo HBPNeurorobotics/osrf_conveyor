@@ -21,6 +21,7 @@
 #include <string>
 
 // ROS
+#include <osrf_gear/ConveyorBeltControl.h>
 #include <osrf_gear/ConveyorBeltState.h>
 #include <osrf_gear/ProximitySensorState.h>
 #include <ros/ros.h>
@@ -30,7 +31,7 @@ namespace gazebo
 class ROSConveyorController : public WorldPlugin
 {
   private: ros::NodeHandle* rosnode;
-  private: ros::Publisher controlPub;
+  private: ros::ServiceClient controlClient;
   private: ros::Subscriber sensorSub;
   private: physics::WorldPtr world;
   private: double beltVelocity;
@@ -59,17 +60,19 @@ class ROSConveyorController : public WorldPlugin
       this->rosnode->subscribe(sensorStateChangeTopic, 1000,
         &ROSConveyorController::OnSensorStateChange, this);
 
-    // Create a publisher for the conveyor control commands 
+    // Create a client for the conveyor control commands 
     std::string conveyorControlTopic = "conveyor_control";
-    this->controlPub = this->rosnode->advertise<osrf_gear::ConveyorBeltState>(
-      conveyorControlTopic, 1, true);
+    this->controlClient = this->rosnode->serviceClient<osrf_gear::ConveyorBeltControl>(
+      conveyorControlTopic);
 
     this->beltVelocity = 0.5;
 
     // Turn belt on
     osrf_gear::ConveyorBeltState controlMsg;
     controlMsg.velocity = this->beltVelocity;
-    this->controlPub.publish(controlMsg);
+    osrf_gear::ConveyorBeltControl controlRequest;
+    controlRequest.request.state = controlMsg;
+    this->controlClient.call(controlRequest);
   }
 
   private: void OnSensorStateChange(const osrf_gear::ProximitySensorState::ConstPtr &_msg)
@@ -87,7 +90,9 @@ class ROSConveyorController : public WorldPlugin
 
     osrf_gear::ConveyorBeltState controlMsg;
     controlMsg.velocity = this->beltVelocity * controlCommand;
-    this->controlPub.publish(controlMsg);
+    osrf_gear::ConveyorBeltControl controlRequest;
+    controlRequest.request.state = controlMsg;
+    this->controlClient.call(controlRequest);
   }
 };
 

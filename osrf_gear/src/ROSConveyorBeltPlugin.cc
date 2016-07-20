@@ -61,13 +61,17 @@ void ROSConveyorBeltPlugin::Load(sensors::SensorPtr _parent, sdf::ElementPtr _sd
 
   this->rosnode_ = new ros::NodeHandle(this->robotNamespace_);
 
-  this->controlCommandSub_ = this->rosnode_->subscribe(topic, 1000,
+  this->controlService_ = this->rosnode_->advertiseService(topic,
     &ROSConveyorBeltPlugin::OnControlCommand, this);
 }
 
 /////////////////////////////////////////////////
-void ROSConveyorBeltPlugin::OnControlCommand(const osrf_gear::ConveyorBeltState::ConstPtr &_msg)
+bool ROSConveyorBeltPlugin::OnControlCommand(
+  osrf_gear::ConveyorBeltControl::Request &_req,
+  osrf_gear::ConveyorBeltControl::Response &_res)
 {
   gzdbg << "Control command received\n";
-  this->SetVelocity(_msg->velocity);
+  this->SetVelocity(_req.state.velocity);
+  _res.success = true;
+  return true;
 }
