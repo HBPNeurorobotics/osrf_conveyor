@@ -24,8 +24,10 @@
 #include <gazebo/common/Console.hh>
 #include <gazebo/common/Events.hh>
 #include <gazebo/math/Pose.hh>
+#include <gazebo/msgs/gz_string.pb.h>
 #include <gazebo/physics/PhysicsTypes.hh>
 #include <gazebo/physics/World.hh>
+#include <gazebo/transport/transport.hh>
 #include <ros/ros.h>
 #include <sdf/sdf.hh>
 #include <std_msgs/String.h>
@@ -143,6 +145,12 @@ namespace gazebo
     /// \brief Subscribes to the team task state.
     public: ros::Subscriber teamTaskStateSub;
 
+    /// \brief Transportation node.
+    public: transport::NodePtr node;
+
+    /// \brief Publisher for enabling the object population on the conveyor.
+    public: transport::PublisherPtr populatePub;
+
     /// \brief Connection event.
     public: event::ConnectionPtr connection;
 
@@ -222,6 +230,10 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
   std::string gazeboTaskStateTopic = "gazebo_task/state";
   if (_sdf->HasElement("gazebo_task_state_topic"))
     gazeboTaskStateTopic = _sdf->Get<std::string>("gazebo_task_state_topic");
+
+  std::string conveyorActivationTopic = "activation_topic";
+  if (_sdf->HasElement("conveyor_activation_topic"))
+    conveyorActivationTopic = _sdf->Get<std::string>("conveyor_activation_topic");
 
   std::string goalsTopic = "goals";
   if (_sdf->HasElement("goals_topic"))
@@ -339,6 +351,13 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
     this->dataPtr->rosnode->subscribe(teamTaskStateTopic, 1000,
       &ROSAriacTaskManagerPlugin::StatusCallback, this);
 
+
+  // Initialize Gazebo transport.
+  this->dataPtr->node = transport::NodePtr(new transport::Node());
+  this->dataPtr->node->Init();
+  this->dataPtr->populatePub =
+    this->dataPtr->node->Advertise<msgs::GzString>(conveyorActivationTopic);
+
   this->dataPtr->startTime = this->dataPtr->world->GetSimTime();
 
   this->dataPtr->connection = event::Events::ConnectWorldUpdateEnd(
@@ -354,11 +373,16 @@ void ROSAriacTaskManagerPlugin::OnUpdate()
   {
     this->dataPtr->startTime = this->dataPtr->world->GetSimTime();
     this->dataPtr->currentState = "go";
+
+    this->PopulateConveyorBelt();
   }
   else if (this->dataPtr->currentState == "go")
   {
     // Update the goal manager.
     this->ProcessGoals();
+
+    // ToDo: Determine if the task has been solved or the maximum time limit
+    // has been reached.
   }
 
   std_msgs::String msg;
@@ -391,10 +415,19 @@ void ROSAriacTaskManagerPlugin::ProcessGoals()
 void ROSAriacTaskManagerPlugin::StatusCallback(
   const std_msgs::String::ConstPtr &_msg)
 {
-  std::cout << "Task status update: " << _msg->data << std::endl;
+  gzdbg << "Task status update: " << _msg->data << std::endl;
 
   std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
+
   if (this->dataPtr->currentState == "init" && _msg->data == "ready")
     this->dataPtr->currentState = "ready";
 }
 
+/////////////////////////////////////////////////
+void ROSAriacTaskManagerPlugin::PopulateConveyorBelt()
+{
+  // Publish a message on the activation_plugin of the PopulationPlugin.
+  gazebo::msgs::GzString msg;
+  msg.set_data("restart");
+  this->dataPtr->populatePub->Publish(msg);
+}

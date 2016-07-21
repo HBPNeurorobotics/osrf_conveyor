@@ -59,7 +59,7 @@
 
     <!-- Populate the conveyor belt -->
     <plugin filename="libPopulationPlugin.so" name="populate_conveyor">
-      <!--<activation_topic>~/conveyor/control</activation_topic> -->
+      <!--<activation_topic>~/conveyor/control</activation_topic>-->
       <loop_forever>true</loop_forever>
       <object_sequence>
         <object>
@@ -83,6 +83,7 @@
     <!-- The NIST-ARIAC task manager -->
     <plugin filename="libROSAriacTaskManagerPlugin.so" name="task_manager">
       <robot_namespace>ariac_task_manager</robot_namespace>
+      <conveyor_activation_topic>~/conveyor/control</conveyor_activation_topic>
       <goals_topic>goals</goals_topic>
       <goal>
         <time>5.0</time>

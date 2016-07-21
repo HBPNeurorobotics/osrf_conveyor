@@ -47,6 +47,9 @@ namespace gazebo
     /// \brief Decide whether to announce a new goal.
     protected: void ProcessGoals();
 
+    /// \brief Start populating the conveyor belt.
+    protected: void PopulateConveyorBelt();
+
     /// \brief Callback received when there's an status update.
     public: void StatusCallback(const std_msgs::String::ConstPtr &_msg);
 
