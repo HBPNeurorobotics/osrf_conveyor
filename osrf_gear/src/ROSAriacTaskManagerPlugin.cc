@@ -16,6 +16,7 @@
 */
 
 #include <algorithm>
+#include <mutex>
 #include <ostream>
 #include <string>
 #include <vector>
@@ -27,6 +28,7 @@
 #include <gazebo/physics/World.hh>
 #include <ros/ros.h>
 #include <sdf/sdf.hh>
+#include <std_msgs/String.h>
 
 #include "osrf_gear/ROSAriacTaskManagerPlugin.hh"
 #include "osrf_gear/Goal.h"
@@ -135,11 +137,23 @@ namespace gazebo
     /// \brief Publishes a goal.
     public: ros::Publisher goalPub;
 
+    /// \brief Publishes the Gazebo task state.
+    public: ros::Publisher gazeboTaskStatePub;
+
+    /// \brief Subscribes to the team task state.
+    public: ros::Subscriber teamTaskStateSub;
+
     /// \brief Connection event.
     public: event::ConnectionPtr connection;
 
     /// \brief The time specified in the object is relative to this time.
     public: common::Time startTime;
+
+    /// \brief Pointer to the current state.
+    public: std::string currentState = "init";
+
+    /// \brief A mutex to protect currentState.
+    public: std::mutex mutex;
   };
 }
 
@@ -200,6 +214,14 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
     robotNamespace = _sdf->GetElement(
       "robot_namespace")->Get<std::string>() + "/";
   }
+
+  std::string teamTaskStateTopic = "team_task/state";
+  if (_sdf->HasElement("team_task_state_topic"))
+    teamTaskStateTopic = _sdf->Get<std::string>("team_task_state_topic");
+
+  std::string gazeboTaskStateTopic = "gazebo_task/state";
+  if (_sdf->HasElement("gazebo_task_state_topic"))
+    gazeboTaskStateTopic = _sdf->Get<std::string>("gazebo_task_state_topic");
 
   std::string goalsTopic = "goals";
   if (_sdf->HasElement("goals_topic"))
@@ -301,10 +323,21 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
   // for (auto goal : this->dataPtr->goals)
   //   gzdbg << goal << std::endl;
 
-  // Initialize ROS for publishing goals in the future.
+  // Initialize ROS
   this->dataPtr->rosnode.reset(new ros::NodeHandle(robotNamespace));
+
+  // Publisher for announcing new goals.
   this->dataPtr->goalPub = this->dataPtr->rosnode->advertise<
     osrf_gear::Goal>(goalsTopic, 1000);
+
+  // Publisher for announcing new state of Gazebo's task.
+  this->dataPtr->gazeboTaskStatePub = this->dataPtr->rosnode->advertise<
+    std_msgs::String>(gazeboTaskStateTopic, 1000);
+
+  // Subscribe to the topic for receiving the state of the team's task.
+  this->dataPtr->teamTaskStateSub =
+    this->dataPtr->rosnode->subscribe(teamTaskStateTopic, 1000,
+      &ROSAriacTaskManagerPlugin::StatusCallback, this);
 
   this->dataPtr->startTime = this->dataPtr->world->GetSimTime();
 
@@ -315,7 +348,22 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
 /////////////////////////////////////////////////
 void ROSAriacTaskManagerPlugin::OnUpdate()
 {
-  this->ProcessGoals();
+  std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
+
+  if (this->dataPtr->currentState == "ready")
+  {
+    this->dataPtr->startTime = this->dataPtr->world->GetSimTime();
+    this->dataPtr->currentState = "go";
+  }
+  else if (this->dataPtr->currentState == "go")
+  {
+    // Update the goal manager.
+    this->ProcessGoals();
+  }
+
+  std_msgs::String msg;
+  msg.data = this->dataPtr->currentState;
+  this->dataPtr->gazeboTaskStatePub.publish(msg);
 }
 
 /////////////////////////////////////////////////
@@ -338,3 +386,15 @@ void ROSAriacTaskManagerPlugin::ProcessGoals()
     this->dataPtr->goals.erase(this->dataPtr->goals.begin());
   }
 }
+
+/////////////////////////////////////////////////
+void ROSAriacTaskManagerPlugin::StatusCallback(
+  const std_msgs::String::ConstPtr &_msg)
+{
+  std::cout << "Task status update: " << _msg->data << std::endl;
+
+  std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
+  if (this->dataPtr->currentState == "init" && _msg->data == "ready")
+    this->dataPtr->currentState = "ready";
+}
+

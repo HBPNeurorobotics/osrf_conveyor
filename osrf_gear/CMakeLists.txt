@@ -184,7 +184,9 @@ install(TARGETS ${population_plugin_name}
 
 # Create the libAriacTaskManagerPlugin.so library.
 set(task_plugin_name ROSAriacTaskManagerPlugin)
-add_library(${task_plugin_name} src/ROSAriacTaskManagerPlugin.cc)
+add_library(${task_plugin_name}
+  src/ROSAriacTaskManagerPlugin.cc
+)
 target_link_libraries(${task_plugin_name}
   ${GAZEBO_LIBRARIES}
 )

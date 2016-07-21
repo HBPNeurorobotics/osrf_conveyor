@@ -22,6 +22,7 @@
 #include <gazebo/common/Plugin.hh>
 #include <gazebo/physics/PhysicsTypes.hh>
 #include <sdf/sdf.hh>
+#include <std_msgs/String.h>
 
 namespace gazebo
 {
@@ -45,6 +46,9 @@ namespace gazebo
 
     /// \brief Decide whether to announce a new goal.
     protected: void ProcessGoals();
+
+    /// \brief Callback received when there's an status update.
+    public: void StatusCallback(const std_msgs::String::ConstPtr &_msg);
 
     /// \brief Private data pointer.
     private: std::unique_ptr<ROSAriacTaskManagerPluginPrivate> dataPtr;
