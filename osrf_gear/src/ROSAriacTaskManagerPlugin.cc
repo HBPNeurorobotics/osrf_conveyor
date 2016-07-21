@@ -385,6 +385,7 @@ void ROSAriacTaskManagerPlugin::OnUpdate()
     // has been reached.
   }
 
+  // ToDo: Publish at a lower frequency.
   std_msgs::String msg;
   msg.data = this->dataPtr->currentState;
   this->dataPtr->gazeboTaskStatePub.publish(msg);
