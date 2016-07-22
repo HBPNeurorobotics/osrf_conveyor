@@ -19,17 +19,17 @@
 #define _ROS_LOGICAL_CAMERA_PLUGIN_HH_
 
 #include <sdf/sdf.hh>
+
 #include "gazebo/common/Plugin.hh"
 #include "gazebo/common/UpdateInfo.hh"
-#include "gazebo/transport/Node.hh"
+#include "gazebo/msgs/logical_camera_image.pb.h"
 #include "gazebo/physics/PhysicsTypes.hh"
+#include "gazebo/transport/Node.hh"
 #include "gazebo/transport/Subscriber.hh"
 #include "gazebo/transport/TransportTypes.hh"
-#include "gazebo/msgs/logical_camera_image.pb.h"
 
 // ROS
 #include <ros/ros.h>
-//#include <osrf_gear/LogicalCameraImage.h>
 
 namespace gazebo
 {
@@ -45,10 +45,19 @@ namespace gazebo
     /// \brief Model that contains the logical camera
     protected: physics::ModelPtr model;
 
+    /// \brief Link that holds the logical camera
+    protected: physics::LinkPtr cameraLink;
+
+    /// \brief The logical camera sensor
+    protected: sensors::SensorPtr sensor;
+
     /// \brief Load the plugin.
     /// \param[in] _parent Pointer to the parent model
     /// \param[in] _sdf Pointer to the SDF element of the plugin.
     public: void Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf);
+
+    /// \brief Searches the model links for a logical camera sensor
+    protected: void FindLogicalCamera();
 
     /// \brief Callback for when logical camera images are received
     /// \param[in] _msg The logical camera image 
