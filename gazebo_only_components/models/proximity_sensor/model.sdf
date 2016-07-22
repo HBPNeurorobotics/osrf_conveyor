@@ -23,10 +23,14 @@
           <resolution>0.001</resolution>
           -->
         </plugin>
+
+        <!-- using min angle of 0.005: -->
+        <!-- dx = diameter / 0.01 - length -->
+        <pose>-1.154 0 0 0 0 0</pose>                   <!-- -dx 0 0 0 0 0 -->
         <ray>
           <range>
-            <min>0.06</min>
-            <max>0.12</max>
+            <min>1.214</min>                            <!-- dx + min range -->
+            <max>1.274</max>                            <!-- dx + max range -->
             <resolution>0.001</resolution>
           </range>
 
@@ -34,16 +38,16 @@
 
           <scan>
             <horizontal>
-              <samples>30</samples>
+              <samples>10</samples>
               <resolution>1</resolution>
-              <min_angle>-0.7854</min_angle>
-              <max_angle>0.7854</max_angle>
+              <min_angle>-0.005</min_angle>
+              <max_angle>0.005</max_angle>
             </horizontal>
             <vertical>
-              <samples>30</samples>
+              <samples>10</samples>
               <resolution>1</resolution>
-              <min_angle>-0.7854</min_angle>
-              <max_angle>0.7854</max_angle>
+              <min_angle>-0.005</min_angle>
+              <max_angle>0.005</max_angle>
             </vertical>
           </scan>
           <noise>
