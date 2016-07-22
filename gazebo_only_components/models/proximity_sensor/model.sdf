@@ -2,6 +2,15 @@
 <sdf version="1.6">
   <model name="proximity_sick_mm12">
     <link name="link">
+      <visual name="visual">
+        <pose>0 0 0 0 1.5708 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.006</radius> <!-- diameter of sensing head -->
+            <length>0.046</length> <!-- length of sensor body -->
+          </cylinder>
+        </geometry>
+      </visual>
       <sensor name="laser" type="ray">
         <plugin name="proximity_ray_plugin" filename="libProximityRayPlugin.so" >
           <output_state_topic>sensor_output</output_state_topic>
@@ -45,19 +54,12 @@
         </ray>
 
         <always_on>1</always_on>
-        <visualize>true</visualize>
+        <visualize>false</visualize>
       </sensor>
       <gravity>false</gravity>
       <inertial>
         <mass>0.1</mass>
       </inertial>
-      <visual name="visual">
-        <geometry>
-          <mesh>
-            <uri>model://hokuyo/meshes/hokuyo.dae</uri>
-          </mesh>
-        </geometry>
-      </visual>
     </link>
   </model>
 </sdf>
