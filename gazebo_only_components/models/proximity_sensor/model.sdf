@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <sdf version="1.6">
   <model name="proximity_sick_mm12">
-    <link name="link">
+    <link name="body">
       <visual name="visual">
         <pose>0 0 0 0 1.5708 0</pose>
         <geometry>
@@ -64,6 +64,18 @@
       <inertial>
         <mass>0.1</mass>
       </inertial>
+    </link>
+    <link name="cord">
+      <gravity>false</gravity>
+      <visual name="visual">
+        <pose>-0.025 0 0 0 1.5708 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.001</radius> <!-- diameter of sensing head -->
+            <length>0.02</length> <!-- length of sensor body -->
+          </cylinder>
+        </geometry>
+      </visual>
     </link>
   </model>
 </sdf>
