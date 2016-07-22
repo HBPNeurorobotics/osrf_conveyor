@@ -1,6 +1,8 @@
 <?xml version="1.0" ?>
 <sdf version="1.6">
     <model name="logical_camera">
+        <plugin name="ros_logical_camera" filename="libROSLogicalCameraPlugin.so">
+        </plugin>
       <link name="link">
         <gravity>false</gravity>
      <inertial>

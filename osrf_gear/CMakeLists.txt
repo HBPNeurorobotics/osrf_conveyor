@@ -26,6 +26,8 @@ add_message_files(DIRECTORY msg
   Goal.msg
   Kit.msg
   KitObject.msg
+  LogicalCameraImage.msg
+  Model.msg
   ProximitySensorState.msg
   VacuumGripperState.msg
 )
@@ -38,8 +40,8 @@ add_service_files(DIRECTORY srv
 
 generate_messages(
   DEPENDENCIES
-  std_msgs
   geometry_msgs
+  std_msgs
 )
 
 catkin_package(
@@ -112,6 +114,9 @@ target_link_libraries(${ros_conveyor_belt_plugin_name}
   ${conveyor_belt_plugin_name}
   ${GAZEBO_LIBRARIES}
 )
+target_link_libraries(${ros_conveyor_belt_plugin_name}
+  ${GAZEBO_LIBRARIES}
+)
 install(TARGETS ${ros_conveyor_belt_plugin_name}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
@@ -135,6 +140,9 @@ set(ros_proximity_ray_plugin_name ROSProximityRayPlugin)
 add_library(${ros_proximity_ray_plugin_name} src/ROSProximityRayPlugin.cc)
 target_link_libraries(${ros_proximity_ray_plugin_name}
   ${proximity_ray_plugin_name}
+  ${GAZEBO_LIBRARIES}
+)
+target_link_libraries(${ros_proximity_ray_plugin_name}
   ${GAZEBO_LIBRARIES}
 )
 install(TARGETS ${ros_proximity_ray_plugin_name}
@@ -164,6 +172,9 @@ target_link_libraries(${ros_conveyor_controller_name}
   ${proximity_ray_plugin_name}
   ${roscpp_LIBRARIES}
   ${GAZEBO_LIBRARIES})
+target_link_libraries(${ros_conveyor_controller_name}
+  ${GAZEBO_LIBRARIES}
+)
 install(TARGETS ${ros_conveyor_controller_name}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
@@ -191,6 +202,22 @@ target_link_libraries(${task_plugin_name}
   ${GAZEBO_LIBRARIES}
 )
 install(TARGETS ${task_plugin_name}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
+
+# Create the libROSLogicalCameraPlugin.so library.
+set(ros_logical_camera_plugin_name ROSLogicalCameraPlugin)
+add_library(${ros_logical_camera_plugin_name} src/ROSLogicalCameraPlugin.cc)
+target_link_libraries(${ros_logical_camera_plugin_name}
+  ${GAZEBO_LIBRARIES}
+  ${roscpp_LIBRARIES}
+)
+add_dependencies(${ros_logical_camera_plugin_name}
+    ${${PROJECT_NAME}_EXPORTED_TARGETS}
+)
+install(TARGETS ${ros_logical_camera_plugin_name}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
