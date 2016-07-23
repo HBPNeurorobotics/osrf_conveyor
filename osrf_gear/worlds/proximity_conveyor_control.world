@@ -2,17 +2,29 @@
 <sdf version='1.6'>
   <world name='default'>
     <plugin name="conveyor_controller" filename="libROSConveyorController.so"/>
+
+    <include>
+      <uri>model://conveyor_belt</uri>
+    </include>
+
+    <!-- if an object trips the beam, the belt will stop -->
+    <include>
+      <uri>model://break_beam</uri>
+      <pose frame=''>-0.57 -0.10 0.5 0 -0 0</pose>
+    </include>
+
+    <!-- if an object is hanging off the edge of the belt and trips the sensor, the belt will stop -->
+    <include>
+      <uri>model://proximity_sensor</uri>
+      <pose frame=''>0.6 -1.65 -0.01 0 -1.5708 0</pose>
+    </include>
+
+    <!-- this camera does not currently control the belt -->
     <include>
       <uri>model://logical_camera</uri>
       <pose>0 0 1.5 0 1.5708 0</pose>
     </include>
-    <include>
-      <uri>model://break_beam</uri>
-      <pose frame=''>-0.575983 -0.101408 0.5 0 -0 0</pose>
-    </include>
-    <include>
-      <uri>model://conveyor_belt</uri>
-    </include>
+
     <light name='sun' type='directional'>
       <cast_shadows>1</cast_shadows>
       <pose frame=''>0 0 10 0 -0 0</pose>
