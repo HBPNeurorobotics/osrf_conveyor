@@ -37,7 +37,7 @@ cd catkin_tools
 sudo -H python -m pip install -U .
 ```
 
-If you don't want to do this, use `catkin_make_isolated` instead.
+If you don't want to do this, use `catkin_make_isolated --install` instead the `catkin build` command.
 
 1. Configure the catkin build
 
