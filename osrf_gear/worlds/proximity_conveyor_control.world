@@ -19,10 +19,10 @@
       <pose frame=''>0.6 -1.65 -0.01 0 -1.5708 0</pose>
     </include>
 
-    <!-- this camera does not currently control the belt -->
+    <!-- if the "unit_box" model is detected by the camera, the belt will stop -->
     <include>
       <uri>model://logical_camera</uri>
-      <pose>0 0 1.5 0 1.5708 0</pose>
+      <pose>0 2.5 1.5 0 1.5708 0</pose>
     </include>
 
     <light name='sun' type='directional'>

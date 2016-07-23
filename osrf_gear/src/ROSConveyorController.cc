@@ -23,6 +23,8 @@
 // ROS
 #include <osrf_gear/ConveyorBeltControl.h>
 #include <osrf_gear/ConveyorBeltState.h>
+#include <osrf_gear/LogicalCameraImage.h>
+#include <osrf_gear/Model.h>
 #include <osrf_gear/ProximitySensorState.h>
 #include <ros/ros.h>
 
@@ -35,6 +37,10 @@ class ROSConveyorController : public WorldPlugin
   private: ros::Subscriber sensorSub;
   private: physics::WorldPtr world;
   private: double beltVelocity;
+
+  private: ros::Subscriber logicalCameraImageSub;
+  private: std::string searchModelName = "unit_box";
+  private: bool modelDetected = false;
 
   public: ~ROSConveyorController()
   {
@@ -59,6 +65,12 @@ class ROSConveyorController : public WorldPlugin
     this->sensorSub = 
       this->rosnode->subscribe(sensorStateChangeTopic, 1000,
         &ROSConveyorController::OnSensorStateChange, this);
+
+    // Create a subscriber for the logical camera images 
+    std::string logicalCameraImageTopic = "logical_camera/image";
+    this->logicalCameraImageSub = 
+      this->rosnode->subscribe(logicalCameraImageTopic, 1000,
+        &ROSConveyorController::OnLogicalCameraImage, this);
 
     // Create a client for the conveyor control commands 
     std::string conveyorControlTopic = "conveyor_control";
@@ -87,12 +99,38 @@ class ROSConveyorController : public WorldPlugin
     else {
       controlCommand = sensorValue;
     }
+    this->SendControlRequest(this->beltVelocity * controlCommand);
+  }
 
+  private: void SendControlRequest(double velocity)
+  {
     osrf_gear::ConveyorBeltState controlMsg;
-    controlMsg.velocity = this->beltVelocity * controlCommand;
+    controlMsg.velocity = velocity;
     osrf_gear::ConveyorBeltControl controlRequest;
     controlRequest.request.state = controlMsg;
     this->controlClient.call(controlRequest);
+  }
+
+  private: void OnLogicalCameraImage(const osrf_gear::LogicalCameraImage::ConstPtr &_msg)
+  {
+    bool modelDetected = false;
+    for (osrf_gear::Model model : _msg->models)
+    {
+      if (model.name == this->searchModelName)
+      {
+        modelDetected = true;
+        break;
+      }
+    }
+    if (modelDetected != this->modelDetected)
+    {
+      this->SendControlRequest(!modelDetected * this->beltVelocity);
+      this->modelDetected = modelDetected;
+      if (!modelDetected)
+        gzdbg << "Object no longer detected by logical camera\n";
+      else
+        gzdbg << "Object detected by logical camera\n";
+    }
   }
 };
 
