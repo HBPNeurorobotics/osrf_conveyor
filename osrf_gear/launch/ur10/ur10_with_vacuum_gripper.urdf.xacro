@@ -9,7 +9,7 @@
   <xacro:include filename="$(find ur_description)/urdf/ur10.urdf.xacro" />
 
   <!-- arm -->
-  <xacro:ur10_robot prefix="" joint_limited="false" />
+  <xacro:ur10_robot prefix="" />
 
   <!-- vacuum gripper -->
   <xacro:include filename="$(find osrf_gear)/launch/ur10/vacuum_gripper.urdf.xacro" />
@@ -26,13 +26,30 @@
     <dynamics damping="0.0" friction="0.0"/>
   </joint>
 
+  <!-- linear arm actuator -->
+  <xacro:include filename="$(find osrf_gear)/launch/linear_arm_actuator/linear_arm_actuator.urdf.xacro" />
+
+  <xacro:create_linear_arm_actuator base_link="base_link" />
+
   <!-- world link -->
   <link name="world" />
 
   <joint name="world_joint" type="fixed">
     <parent link="world" />
-    <child link="base_link" />
-    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+    <child link="linear_arm_actuator" />
+    <origin xyz="0.0 0.0 0.1" rpy="0.0 0.0 0.0" />
   </joint>
+
+  <!-- plugin to spawn gazebo scene data into the moveit scene -->
+  <!--
+  <gazebo>
+    <plugin filename="libgazebo_ros_moveit_planning_scene.so" name="gazebo_ros_moveit_planning_scene">
+      <topicName>/planning_scene</topicName>
+      <sceneName>workcell</sceneName>
+      <robotName>robot</robotName>
+      <updatePeriod>0.5</updatePeriod>
+    </plugin>
+  </gazebo>
+  -->
 
 </robot>
