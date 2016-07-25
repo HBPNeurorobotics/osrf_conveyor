@@ -10,7 +10,7 @@
     <!-- if an object trips the beam, the belt will stop -->
     <include>
       <uri>model://break_beam</uri>
-      <pose frame=''>-0.57 -0.10 0.5 0 -0 0</pose>
+      <pose frame=''>-0.57 -0.10 0.1 0 -0 0</pose>
     </include>
 
     <!-- if an object is hanging off the edge of the belt and trips the sensor, the belt will stop -->
@@ -22,7 +22,13 @@
     <!-- if the "unit_box" model is detected by the camera, the belt will stop -->
     <include>
       <uri>model://logical_camera</uri>
-      <pose>0 2.5 1.5 0 1.5708 0</pose>
+      <pose>0 2.5 1.0 0 1.5708 -1.5708</pose>
+    </include>
+
+    <!-- this doesn't control anything yet -->
+    <include>
+      <uri>model://laser_profiler</uri>
+      <pose>0 0.5 0.4 0 1.5708 -1.5708</pose>
     </include>
 
     <light name='sun' type='directional'>
@@ -122,7 +128,7 @@
         <collision name='collision'>
           <geometry>
             <box>
-              <size>1 1 1</size>
+              <size>0.1 0.1 0.1</size>
             </box>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -142,7 +148,7 @@
         <visual name='visual'>
           <geometry>
             <box>
-              <size>1 1 1</size>
+              <size>0.1 0.1 0.1</size>
             </box>
           </geometry>
           <material>
