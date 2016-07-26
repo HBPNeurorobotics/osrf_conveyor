@@ -35,7 +35,7 @@
       </collision>
       <visual name='visual'>
         <!-- make invisible -->
-        <transparency>00</transparency>
+        <transparency>100</transparency>
         <geometry>
           <box>
             <size>1.55317 1.01293 0.034945</size>
