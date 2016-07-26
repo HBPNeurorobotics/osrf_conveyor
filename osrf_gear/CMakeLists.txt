@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   gazebo_plugins
   roscpp
   std_msgs
+  std_srvs
   geometry_msgs
   message_generation
 )
@@ -45,7 +46,7 @@ generate_messages(
 )
 
 catkin_package(
-  CATKIN_DEPENDS message_runtime
+  CATKIN_DEPENDS message_runtime std_srvs
 )
 
 ###########

@@ -31,6 +31,7 @@
 #include <ros/ros.h>
 #include <sdf/sdf.hh>
 #include <std_msgs/String.h>
+#include <std_srvs/Trigger.h>
 
 #include "osrf_gear/ROSAriacTaskManagerPlugin.hh"
 #include "osrf_gear/Goal.h"
@@ -142,8 +143,8 @@ namespace gazebo
     /// \brief Publishes the Gazebo task state.
     public: ros::Publisher gazeboTaskStatePub;
 
-    /// \brief Subscribes to the team task state.
-    public: ros::Subscriber teamTaskStateSub;
+    /// \brief Service that allows the user to start the competition.
+    public: ros::ServiceServer teamStartServiceServer;
 
     /// \brief Transportation node.
     public: transport::NodePtr node;
@@ -223,9 +224,9 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
       "robot_namespace")->Get<std::string>() + "/";
   }
 
-  std::string teamTaskStateTopic = "team_task/state";
-  if (_sdf->HasElement("team_task_state_topic"))
-    teamTaskStateTopic = _sdf->Get<std::string>("team_task_state_topic");
+  std::string teamStartServiceName = "start";
+  if (_sdf->HasElement("team_start_service_name"))
+    teamStartServiceName = _sdf->Get<std::string>("team_start_service_name");
 
   std::string gazeboTaskStateTopic = "gazebo_task/state";
   if (_sdf->HasElement("gazebo_task_state_topic"))
@@ -340,17 +341,16 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
 
   // Publisher for announcing new goals.
   this->dataPtr->goalPub = this->dataPtr->rosnode->advertise<
-    osrf_gear::Goal>(goalsTopic, 1000);
+    osrf_gear::Goal>(goalsTopic, 1000, true);  // latched=true
 
   // Publisher for announcing new state of Gazebo's task.
   this->dataPtr->gazeboTaskStatePub = this->dataPtr->rosnode->advertise<
     std_msgs::String>(gazeboTaskStateTopic, 1000);
 
   // Subscribe to the topic for receiving the state of the team's task.
-  this->dataPtr->teamTaskStateSub =
-    this->dataPtr->rosnode->subscribe(teamTaskStateTopic, 1000,
-      &ROSAriacTaskManagerPlugin::StatusCallback, this);
-
+  this->dataPtr->teamStartServiceServer =
+    this->dataPtr->rosnode->advertiseService(teamStartServiceName,
+      &ROSAriacTaskManagerPlugin::HandleStartService, this);
 
   // Initialize Gazebo transport.
   this->dataPtr->node = transport::NodePtr(new transport::Node());
@@ -413,15 +413,22 @@ void ROSAriacTaskManagerPlugin::ProcessGoals()
 }
 
 /////////////////////////////////////////////////
-void ROSAriacTaskManagerPlugin::StatusCallback(
-  const std_msgs::String::ConstPtr &_msg)
+bool ROSAriacTaskManagerPlugin::HandleStartService(
+  std_srvs::Trigger::Request & req,
+  std_srvs::Trigger::Response & res)
 {
-  gzdbg << "Task status update: " << _msg->data << std::endl;
-
+  (void)req;
   std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
 
-  if (this->dataPtr->currentState == "init" && _msg->data == "ready")
+  if (this->dataPtr->currentState == "init") {
     this->dataPtr->currentState = "ready";
+    res.success = true;
+    res.message = "competition started successfully!";
+    return true;
+  }
+  res.success = false;
+  res.message = "cannot start if not in 'init' state";
+  return true;
 }
 
 /////////////////////////////////////////////////

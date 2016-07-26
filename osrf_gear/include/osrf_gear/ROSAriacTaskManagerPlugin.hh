@@ -23,6 +23,7 @@
 #include <gazebo/physics/PhysicsTypes.hh>
 #include <sdf/sdf.hh>
 #include <std_msgs/String.h>
+#include <std_srvs/Trigger.h>
 
 namespace gazebo
 {
@@ -124,8 +125,9 @@ namespace gazebo
     /// \brief Start populating the conveyor belt.
     protected: void PopulateConveyorBelt();
 
-    /// \brief Callback received when there's an status update.
-    public: void StatusCallback(const std_msgs::String::ConstPtr &_msg);
+    /// \brief Callback received when the team requests the competition start.
+    public: bool HandleStartService(
+      std_srvs::Trigger::Request & req, std_srvs::Trigger::Response & res);
 
     /// \brief Private data pointer.
     private: std::unique_ptr<ROSAriacTaskManagerPluginPrivate> dataPtr;
