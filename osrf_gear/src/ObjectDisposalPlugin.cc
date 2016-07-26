@@ -15,6 +15,7 @@
  *
 */
 
+#include <limits>
 #include <string>
 
 #include "ObjectDisposalPlugin.hh"
@@ -118,9 +119,6 @@ void ObjectDisposalPlugin::CalculateContactingModels()
           this->contactingModels.insert(model);
         }
       }
-      else {
-      gzdbg << alignment << "\n";
-      }
     }
   }
 }
@@ -128,10 +126,35 @@ void ObjectDisposalPlugin::CalculateContactingModels()
 /////////////////////////////////////////////////
 void ObjectDisposalPlugin::ActOnContactingModels()
 {
+  // Only remove models if their center of gravity is "above" the link
+  auto linkBox = this->link->GetBoundingBox();
+  auto linkBoxMax = linkBox.max;
+  auto linkBoxMin = linkBox.min;
+  linkBoxMin.z = std::numeric_limits<double>::lowest();
+  linkBoxMax.z = std::numeric_limits<double>::max();
+  auto disposalBox = math::Box(linkBoxMin, linkBoxMax);
+
   for (auto model : this->contactingModels) {
     if (model) {
-      gzdbg << "Removing model: " << model->GetName() << "\n";
-      this->world->RemoveModel(model);
+      // Calculate the center of gravity of the model
+      math::Vector3 modelCog = math::Vector3::Zero;
+      double modelMass = 0.0;
+      for (auto modelLink : model->GetLinks())
+      {
+        //FIXME: how to access the link mass?
+        double linkMass = 1.0;
+        modelCog += modelLink->GetWorldCoGPose().pos * linkMass;
+        modelMass += linkMass;
+      }
+      if (modelMass > 0.0)
+      {
+        modelCog /= modelMass;
+      }
+      if (disposalBox.Contains(modelCog))
+      {
+        gzdbg << "Removing model: " << model->GetName() << "\n";
+        this->world->RemoveModel(model);
+      }
     }
   }
 }
