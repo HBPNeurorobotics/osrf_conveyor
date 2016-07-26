@@ -141,8 +141,7 @@ void ObjectDisposalPlugin::ActOnContactingModels()
       double modelMass = 0.0;
       for (auto modelLink : model->GetLinks())
       {
-        //FIXME: how to access the link mass?
-        double linkMass = 1.0;
+        double linkMass = modelLink->GetInertial()->GetMass();
         modelCog += modelLink->GetWorldCoGPose().pos * linkMass;
         modelMass += linkMass;
       }
