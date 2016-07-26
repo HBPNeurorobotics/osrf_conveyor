@@ -22,21 +22,22 @@
     <plugin filename="libPopulationPlugin.so" name="populate_conveyor">
       <activation_topic>~/conveyor/control</activation_topic>
       <loop_forever>true</loop_forever>
+      <link_frame>conveyor_belt::belt</link_frame>
       <object_sequence>
         <object>
           <time>8.0</time>
           <type>coke_can</type>
-          <pose>0.8 3.0 0 0 0 0</pose>
+          <pose>0. -2.0 0 0 0 0</pose>
         </object>
         <object>
           <time>4.0</time>
           <type>cordless_drill</type>
-          <pose>0.8 3.0 0 0 0 0</pose>
+          <pose>0. -2.0 0 0 0 0</pose>
         </object>
         <object>
           <time>12.0</time>
           <type>beer</type>
-          <pose>0.8 3.0 0 0 0 0</pose>
+          <pose>0. -2.0 0 0 0 0</pose>
         </object>
       </object_sequence>
     </plugin>

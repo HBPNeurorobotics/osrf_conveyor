@@ -45,6 +45,9 @@ namespace gazebo
   /// <loop_forever>: Optional parameter. If true, all objects will be spawned
   /// as a circular buffer. After spawning the last element of the collection,
   /// the first one will be inserted.
+  /// 
+  /// <link_frame>: Optional parameter. If present, the poses of the objects
+  /// will be in the frame of this link. Otherwise the world frame is used.
   ///
   /// <activation_topic>: Optional parameter. If present, the objects won't be
   /// inserted in simulation until the proper command is received in the

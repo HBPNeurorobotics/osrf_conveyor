@@ -25,9 +25,11 @@
 #include <gazebo/common/Events.hh>
 #include <gazebo/math/Pose.hh>
 #include <gazebo/msgs/gz_string.pb.h>
+#include <gazebo/physics/Link.hh>
 #include <gazebo/physics/PhysicsTypes.hh>
 #include <gazebo/physics/World.hh>
 #include <gazebo/transport/transport.hh>
+#include <ignition/math/Matrix4.hh>
 #include <sdf/sdf.hh>
 
 #include "osrf_gear/PopulationPlugin.hh"
@@ -95,6 +97,9 @@ namespace gazebo
     /// is empty, creating an infinite supply of objects.
     public: bool loopForever = false;
 
+    /// \brief Link which the object poses use as their frame of reference.
+    public: physics::LinkPtr link;
+
     /// \brief Node for communication.
     public: transport::NodePtr node;
 
@@ -139,6 +144,12 @@ void PopulationPlugin::Load(physics::WorldPtr _world, sdf::ElementPtr _sdf)
     this->dataPtr->loopForever = loopElem->Get<bool>();
   }
 
+  if (_sdf->HasElement("link_frame"))
+  {
+    std::string linkName = _sdf->Get<std::string>("link_frame");
+    this->dataPtr->link =
+      boost::dynamic_pointer_cast<physics::Link>(this->dataPtr->world->GetEntity(linkName));
+  }
 
   if (!_sdf->HasElement("object_sequence"))
   {
@@ -237,6 +248,13 @@ void PopulationPlugin::OnUpdate()
   if (elapsed.Double() >= this->dataPtr->objects.front().time)
   {
     auto obj = this->dataPtr->objects.front();
+    if (this->dataPtr->link)
+    {
+      auto linkPose = this->dataPtr->link->GetWorldPose().Ign();
+      ignition::math::Matrix4d transMat(linkPose);
+      ignition::math::Matrix4d pose_local(obj.pose.Ign());
+      obj.pose = (transMat * pose_local).Pose();
+    }
     gzdbg << "Object spawned: " << obj << std::endl;
 
     std::ostringstream newModelStr;
