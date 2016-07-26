@@ -224,6 +224,18 @@ install(TARGETS ${ros_logical_camera_plugin_name}
   RUNTIME DESTINATION bin
 )
 
+# Create the libObjectDisposalPlugin.so library.
+set(object_disposal_plugin_name ObjectDisposalPlugin)
+add_library(${object_disposal_plugin_name} src/ObjectDisposalPlugin.cc)
+target_link_libraries(${object_disposal_plugin_name}
+  ${GAZEBO_LIBRARIES}
+)
+install(TARGETS ${object_disposal_plugin_name}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
+
 #############
 ## Install ##
 #############
