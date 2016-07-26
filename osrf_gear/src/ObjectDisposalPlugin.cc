@@ -94,6 +94,7 @@ void ObjectDisposalPlugin::CalculateContactingModels()
   msgs::Contacts contacts;
   contacts = this->parentSensor->Contacts();
   this->contactingModels.clear();
+  double factor = 1.0;
 
   for (int i = 0; i < contacts.contact_size(); ++i)
   {
@@ -101,13 +102,14 @@ void ObjectDisposalPlugin::CalculateContactingModels()
     std::string collision = contacts.contact(i).collision1();
     if (this->collisionName == contacts.contact(i).collision1()) {
       collision = contacts.contact(i).collision2();
+      factor = -1.0; // the frames are reversed for the alignment check
     }
 
     // Only consider models ontop of the link (collision normal aligned with +z of link)
     for (int j = 0; j < contacts.contact(i).position_size(); ++j)
     {
       ignition::math::Vector3d contactNormal = msgs::ConvertIgn(contacts.contact(i).normal(j));
-      double alignment = linkTopNormal.Dot(contactNormal);
+      double alignment = factor * linkTopNormal.Dot(contactNormal);
       if (alignment > 0.0) {
         physics::CollisionPtr collisionPtr =
           boost::dynamic_pointer_cast<physics::Collision>(this->world->GetEntity(collision));
@@ -115,6 +117,9 @@ void ObjectDisposalPlugin::CalculateContactingModels()
           physics::ModelPtr model = collisionPtr->GetLink()->GetModel();
           this->contactingModels.insert(model);
         }
+      }
+      else {
+      gzdbg << alignment << "\n";
       }
     }
   }

@@ -14,7 +14,7 @@
 
     <!-- add a link that is sensing collisions (the "mouth" of the dumpster) -->
     <link name="top_link">
-      <pose frame=''>-0.013994 -0.010193 1.1 0.12526 -0 0</pose>
+      <pose frame=''>-0.013994 -0.010193 1.15 0.12526 -0 0</pose>
       <gravity>false</gravity>
       <sensor name='object_disposal_contact' type='contact'>
         <update_rate>10</update_rate>
@@ -35,7 +35,7 @@
       </collision>
       <visual name='visual'>
         <!-- make invisible -->
-        <transparency>100</transparency>
+        <transparency>00</transparency>
         <geometry>
           <box>
             <size>1.55317 1.01293 0.034945</size>
