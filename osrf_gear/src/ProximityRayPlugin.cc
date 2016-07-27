@@ -82,7 +82,7 @@ void ProximityRayPlugin::Load(sensors::SensorPtr _parent, sdf::ElementPtr _sdf)
         this->stateTopic = _sdf->Get<std::string>("output_state_topic");
     }
     else {
-        this->stateTopic = this->Topic("state_state");
+        this->stateTopic = this->Topic("sensor_state");
     }
 
     this->statePub =
@@ -120,26 +120,7 @@ void ProximityRayPlugin::Load(sensors::SensorPtr _parent, sdf::ElementPtr _sdf)
     gzdbg << "Using maximum sensing range of: " << this->sensingRangeMax << " m\n";
     */
 
-    if (_sdf->HasElement("output_function"))
-    {
-      std::string outputFunction = _sdf->Get<std::string>("output_function");
-      if ("normally_open" == outputFunction) {
-        this->normallyOpen = true;
-      }
-      else if ("normally_closed" == outputFunction) {
-        this->normallyOpen = false;
-      }
-      else {
-        gzerr << "output_function can only be either normally_open or normally_closed" << std::endl;
-        return;
-      }
-    }
-    else {
-      this->normallyOpen = true;
-    }
-    gzdbg << "Using normally open setting of: " << this->normallyOpen << "\n";
-
-    this->state = false;
+    this->objectDetected = false;
     this->newLaserScansConnection =
         this->parentSensor->LaserShape()->ConnectNewLaserScans(
             std::bind(&ProximityRayPlugin::OnNewLaserScans, this));
@@ -153,10 +134,9 @@ void ProximityRayPlugin::OnNewLaserScans()
     // Fill message
     std::lock_guard<std::mutex> lock(this->mutex);
     msgs::Set(this->stateMsg.mutable_stamp(), this->world->GetSimTime());
-    this->stateMsg.set_index(this->normallyOpen ? this->state : !this->state);
-    this->stateMsg.set_str_id(this->normallyOpen ? "normally_open" : "normally_closed");
+    this->stateMsg.set_index(this->objectDetected);
 
-    // Publish state state message
+    // Publish sensor state message
     if (this->statePub && this->statePub->HasConnections()) {
         this->statePub->Publish(this->stateMsg);
     }
@@ -177,8 +157,8 @@ bool ProximityRayPlugin::ProcessScan()
     // Prevent new scans from arriving while we're processing this one
     this->parentSensor->SetActive(false);
 
-    double maxRange = this->parentSensor->RangeMax();
-    double minRange = this->parentSensor->RangeMin();
+    this->sensingRangeMax = this->parentSensor->RangeMax();
+    this->sensingRangeMin = this->parentSensor->RangeMin();
     std::vector<double> ranges;
     this->parentSensor->Ranges(ranges);
 
@@ -187,26 +167,26 @@ bool ProximityRayPlugin::ProcessScan()
     for (unsigned int i = 0; i<ranges.size(); i++){
         double range = ranges[i];
         // TODO: determine detections in cylindrical shape not spherical
-        if (range < maxRange and range > minRange) {
+        if (range < this->sensingRangeMax and range > this->sensingRangeMin) {
             objectDetected = true;
             break;
         }
     }
 
     if (objectDetected) {
-        if (!this->state) {
+        if (!this->objectDetected) {
           gzdbg << "Object detected\n";
           stateChanged = true;
         }
-        this->state = true;
+        this->objectDetected = true;
     }
     else
     {
-        if (this->state) {
+        if (this->objectDetected) {
           gzdbg << "Object no longer detected\n";
           stateChanged = true;
         }
-        this->state = false;
+        this->objectDetected = false;
     }
 
     this->parentSensor->SetActive(true); // this seems to happen automatically, not sure if a bug

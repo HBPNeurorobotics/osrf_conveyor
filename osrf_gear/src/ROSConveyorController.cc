@@ -25,7 +25,7 @@
 #include <osrf_gear/ConveyorBeltState.h>
 #include <osrf_gear/LogicalCameraImage.h>
 #include <osrf_gear/Model.h>
-#include <osrf_gear/ProximitySensorState.h>
+#include <osrf_gear/Proximity.h>
 #include <ros/ros.h>
 
 namespace gazebo
@@ -34,7 +34,8 @@ class ROSConveyorController : public WorldPlugin
 {
   private: ros::NodeHandle* rosnode;
   private: ros::ServiceClient controlClient;
-  private: ros::Subscriber sensorSub;
+  private: ros::Subscriber proximitySensorSub;
+  private: ros::Subscriber breakBeamSub;
   private: physics::WorldPtr world;
   private: double beltVelocity;
 
@@ -61,19 +62,25 @@ class ROSConveyorController : public WorldPlugin
     this->rosnode = new ros::NodeHandle("");
 
     // Create a subscriber for the proximity sensor output 
-    std::string sensorStateChangeTopic = "sensor_output_change";
-    this->sensorSub = 
+    std::string sensorStateChangeTopic = "/ariac/proximity_sensor_changed";
+    this->proximitySensorSub = 
       this->rosnode->subscribe(sensorStateChangeTopic, 1000,
         &ROSConveyorController::OnSensorStateChange, this);
 
+    // Create a subscriber for the break beam output 
+    std::string breakBeamStateChangeTopic = "/ariac/break_beam_changed";
+    this->breakBeamSub = 
+      this->rosnode->subscribe(breakBeamStateChangeTopic, 1000,
+        &ROSConveyorController::OnSensorStateChange, this);
+
     // Create a subscriber for the logical camera images 
-    std::string logicalCameraImageTopic = "logical_camera/image";
+    std::string logicalCameraImageTopic = "/ariac/logical_camera";
     this->logicalCameraImageSub = 
       this->rosnode->subscribe(logicalCameraImageTopic, 1000,
         &ROSConveyorController::OnLogicalCameraImage, this);
 
     // Create a client for the conveyor control commands 
-    std::string conveyorControlTopic = "conveyor_control";
+    std::string conveyorControlTopic = "/sim/conveyor_control";
     this->controlClient = this->rosnode->serviceClient<osrf_gear::ConveyorBeltControl>(
       conveyorControlTopic);
 
@@ -87,18 +94,12 @@ class ROSConveyorController : public WorldPlugin
     this->controlClient.call(controlRequest);
   }
 
-  private: void OnSensorStateChange(const osrf_gear::ProximitySensorState::ConstPtr &_msg)
+  private: void OnSensorStateChange(const osrf_gear::Proximity::ConstPtr &_msg)
   {
     gzdbg << "Sensor state changed\n";
 
-    bool sensorValue = _msg->state;
-    bool controlCommand; // on (true) or off (false)
-    if (_msg->normally_open) {
-      controlCommand = !sensorValue;
-    }
-    else {
-      controlCommand = sensorValue;
-    }
+    bool sensorValue = _msg->object_detected;
+    bool controlCommand = !sensorValue; // on (true) or off (false)
     this->SendControlRequest(this->beltVelocity * controlCommand);
   }
 

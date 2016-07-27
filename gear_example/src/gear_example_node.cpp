@@ -18,7 +18,7 @@
 
 #include <osrf_gear/Goal.h>
 #include <osrf_gear/LogicalCameraImage.h>
-#include <osrf_gear/ProximitySensorState.h>
+#include <osrf_gear/Proximity.h>
 #include <sensor_msgs/JointState.h>
 #include <std_srvs/Trigger.h>
 #include <trajectory_msgs/JointTrajectory.h>
@@ -93,9 +93,9 @@ public:
     ROS_INFO_STREAM_THROTTLE(10, "Logical camera sees '" << image_msg->models.size() << "' objects.");
   }
 
-  /// Called when a new ProximitySensorState message is received on the '/ariac/break_beam_changed' topic.
-  void break_beam_callback(const osrf_gear::ProximitySensorState::ConstPtr & msg) {
-    if (msg->normally_open != msg->state) {  // If there is an object in proximity.
+  /// Called when a new Proximity message is received on the '/ariac/break_beam_changed' topic.
+  void break_beam_callback(const osrf_gear::Proximity::ConstPtr & msg) {
+    if (msg->object_detected) {  // If there is an object in proximity.
       ROS_INFO("Break beam triggered.");
     }
   }
@@ -107,8 +107,8 @@ private:
   bool has_been_zeroed_;
 };
 
-void proximity_sensor_callback(const osrf_gear::ProximitySensorState::ConstPtr & msg) {
-  if (msg->normally_open != msg->state) {  // If there is an object in proximity.
+void proximity_sensor_callback(const osrf_gear::Proximity::ConstPtr & msg) {
+  if (msg->object_detected) {  // If there is an object in proximity.
     ROS_INFO("Proximity sensor triggered.");
   }
 }

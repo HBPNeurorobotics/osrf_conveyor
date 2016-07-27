@@ -72,8 +72,8 @@ namespace gazebo
     /// \brief Topic name for state change message
     protected: std::string stateChangeTopic;
 
-    /// \brief Sensor state
-    protected: bool state;
+    /// \brief Sensor detection state
+    protected: bool objectDetected;
 
     /// \brief Minimum sensing range in meters
     protected: double sensingRangeMin;

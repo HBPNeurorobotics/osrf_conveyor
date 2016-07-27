@@ -30,7 +30,7 @@
 
 // ROS
 #include <ros/ros.h>
-#include <osrf_gear/ProximitySensorState.h>
+#include <osrf_gear/Proximity.h>
 
 namespace gazebo
 {
@@ -63,7 +63,7 @@ namespace gazebo
     protected: ros::Publisher stateChangePub;
 
     /// \brief ROS message for the sensor state
-    protected: osrf_gear::ProximitySensorState state_msg;
+    protected: osrf_gear::Proximity state_msg;
 
     /// \brief for setting ROS namespace
     protected: std::string robotNamespace;

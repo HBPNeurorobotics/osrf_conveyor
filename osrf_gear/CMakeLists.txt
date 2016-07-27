@@ -29,7 +29,7 @@ add_message_files(DIRECTORY msg
   KitObject.msg
   LogicalCameraImage.msg
   Model.msg
-  ProximitySensorState.msg
+  Proximity.msg
   VacuumGripperState.msg
 )
 

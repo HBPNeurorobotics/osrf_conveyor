@@ -71,9 +71,9 @@ void ROSProximityRayPlugin::Load(sensors::SensorPtr _parent, sdf::ElementPtr _sd
   this->rosnode = new ros::NodeHandle(this->robotNamespace);
 
   // Initialize the publishers
-  this->statePub = this->rosnode->advertise<osrf_gear::ProximitySensorState>(
+  this->statePub = this->rosnode->advertise<osrf_gear::Proximity>(
     this->stateTopic, 1, true);
-  this->stateChangePub = this->rosnode->advertise<osrf_gear::ProximitySensorState>(
+  this->stateChangePub = this->rosnode->advertise<osrf_gear::Proximity>(
     this->stateChangeTopic, 1, true);
 
   // Callback for laser scans
@@ -87,15 +87,18 @@ void ROSProximityRayPlugin::Load(sensors::SensorPtr _parent, sdf::ElementPtr _sd
 // Update the controller
 void ROSProximityRayPlugin::OnNewLaserScans()
 {
+  auto now = this->world->GetSimTime();
   bool stateChanged = this->ProcessScan();
-  osrf_gear::ProximitySensorState stateMsg;
-  stateMsg.state = this->normallyOpen ? this->state : !this->state;
-  stateMsg.normally_open = this->normallyOpen;
-  this->statePub.publish(stateMsg);
+  this->state_msg.header.stamp.sec = now.sec;
+  this->state_msg.header.stamp.nsec = now.nsec;
+  this->state_msg.object_detected = this->objectDetected;
+  this->state_msg.min_range = this->sensingRangeMin;
+  this->state_msg.max_range = this->sensingRangeMax;
+  this->statePub.publish(this->state_msg);
   if (stateChanged)
   {
     gzdbg << this->parentSensor->Name() << ": change in sensor state\n";
-    this->stateChangePub.publish(stateMsg);
+    this->stateChangePub.publish(this->state_msg);
   }
 }
 

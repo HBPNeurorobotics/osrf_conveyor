@@ -53,7 +53,7 @@ void ROSConveyorBeltPlugin::Load(sensors::SensorPtr _parent, sdf::ElementPtr _sd
     return;
   }
 
-  std::string topic = "conveyor_control";
+  std::string topic = "/sim/conveyor_control";
   if (_sdf->HasElement("topic"))
     topic = _sdf->Get<std::string>("topic");
 
