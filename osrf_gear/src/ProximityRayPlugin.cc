@@ -120,6 +120,17 @@ void ProximityRayPlugin::Load(sensors::SensorPtr _parent, sdf::ElementPtr _sdf)
     gzdbg << "Using maximum sensing range of: " << this->sensingRangeMax << " m\n";
     */
 
+    this->useLinkFrame = true;
+    if (_sdf->HasElement("use_link_frame"))
+    {
+      this->useLinkFrame = _sdf->Get<bool>("use_link_frame");
+    }
+    if (this->useLinkFrame)
+    {
+      std::string linkName = this->parentSensor->ParentName();
+      this->link = boost::dynamic_pointer_cast<physics::Link>(this->world->GetEntity(linkName));
+    }
+
     this->objectDetected = false;
     this->newLaserScansConnection =
         this->parentSensor->LaserShape()->ConnectNewLaserScans(
@@ -187,6 +198,14 @@ bool ProximityRayPlugin::ProcessScan()
           stateChanged = true;
         }
         this->objectDetected = false;
+    }
+
+    if (this->useLinkFrame)
+    {
+      // TODO: deal with sensors oriented differently
+      auto sensorPose = this->parentSensor->Pose();
+      this->sensingRangeMin += sensorPose.Pos().X();
+      this->sensingRangeMax += sensorPose.Pos().X();
     }
 
     this->parentSensor->SetActive(true); // this seems to happen automatically, not sure if a bug

@@ -75,6 +75,9 @@ namespace gazebo
     /// \brief Sensor detection state
     protected: bool objectDetected;
 
+    /// \brief Convert sensor ranges to parent link frame?
+    protected: bool useLinkFrame;
+
     /// \brief Minimum sensing range in meters
     protected: double sensingRangeMin;
 
@@ -84,7 +87,10 @@ namespace gazebo
     /// \brief Whether or not the output function is normally open (default) or normally closed
     protected: bool normallyOpen;
 
-    /// \brief Pointer to parent
+    /// \brief Pointer to parent link
+    protected: physics::LinkPtr link;
+
+    /// \brief Pointer to world
     protected: physics::WorldPtr world;
 
     /// \brief Pointer to this node for publishing
