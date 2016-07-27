@@ -13,7 +13,8 @@
       </visual>
       <sensor name="laser" type="ray">
         <plugin name="proximity_ray_plugin" filename="libROSProximityRayPlugin.so" >
-          <output_state_topic>sensor_output</output_state_topic>
+          <output_state_topic>/ariac/proximity_sensor</output_state_topic>
+          <output_change_topic>/ariac/proximity_sensor_changed</output_change_topic>
           <time_delay>0.02</time_delay><!-- this modifies the update rate of the ray sensor -->
           <output_function>normally_open</output_function> <!-- energized when target detected -->
           <!-- the ray sensor doesn't have setters for these yet unfortunately so they have to be set in the ray tags -->

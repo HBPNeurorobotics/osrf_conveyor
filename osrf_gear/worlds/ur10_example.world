@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <sdf version="1.5">
-  <world name="default">
+  <world name="gear_ur10_example">
 
     <!-- A global light source -->
     <include>
@@ -24,6 +24,23 @@
       <pose>0.8 3 0 0 0 0</pose>
     </include>
 
+    <!-- a break beam sensor -->
+    <include>
+      <uri>model://break_beam</uri>
+      <pose>1.4 1 1.3 0 0 3.14159</pose>
+    </include>
+
+    <!-- a proximity sensor -->
+    <include>
+      <uri>model://proximity_sensor</uri>
+      <pose>0.8 2.5 1.172 0 -1.5708 0</pose>
+    </include>
+
+    <!-- a logical camera -->
+    <include>
+      <uri>model://logical_camera</uri>
+      <pose>0.8 -2 2.2 0 1.5708 -1.5708</pose>
+    </include>
 
     <!-- Populate the conveyor belt -->
     <plugin filename="libPopulationPlugin.so" name="populate_conveyor">
@@ -33,12 +50,12 @@
       <object_sequence>
         <object>
           <time>8.0</time>
-          <type>coke_can</type>
+          <type>beer</type>
           <pose>0. -2.0 0 0 0 0</pose>
         </object>
         <object>
           <time>4.0</time>
-          <type>cordless_drill</type>
+          <type>beer</type>
           <pose>0. -2.0 0 0 0 0</pose>
         </object>
         <object>
@@ -52,8 +69,9 @@
     <!-- The NIST-ARIAC task manager -->
     <plugin filename="libROSAriacTaskManagerPlugin.so" name="task_manager">
       <robot_namespace>ariac_task_manager</robot_namespace>
+      <team_start_service_name>/ariac/start_competition</team_start_service_name>
       <conveyor_activation_topic>~/conveyor/control</conveyor_activation_topic>
-      <goals_topic>goals</goals_topic>
+      <goals_topic>/ariac/goals</goals_topic>
       <goal>
         <time>5.0</time>
         <!-- 1st kit -->

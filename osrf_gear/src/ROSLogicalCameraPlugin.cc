@@ -66,7 +66,7 @@ void ROSLogicalCameraPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sd
   this->node = transport::NodePtr(new transport::Node());
   this->node->Init(this->model->GetWorld()->GetName());
   this->rosnode = new ros::NodeHandle(this->robotNamespace);
-  
+
   this->FindLogicalCamera();
   if (!this->sensor)
   {

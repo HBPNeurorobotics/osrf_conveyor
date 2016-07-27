@@ -37,7 +37,7 @@
   <joint name="world_joint" type="fixed">
     <parent link="world" />
     <child link="linear_arm_actuator" />
-    <origin xyz="0.0 0.0 1.0" rpy="0.0 0.0 0.0" />
+    <origin xyz="0.0 0.0 1.2" rpy="0.0 0.0 0.0" />
   </joint>
 
   <!-- plugin to spawn gazebo scene data into the moveit scene -->

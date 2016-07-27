@@ -4,7 +4,8 @@
     <link name="link">
       <sensor name="laser" type="ray">
         <plugin name="proximity_ray_plugin" filename="libROSProximityRayPlugin.so" >
-          <output_state_topic>sensor_output</output_state_topic>
+          <output_state_topic>/ariac/break_beam</output_state_topic>
+          <output_change_topic>/ariac/break_beam_changed</output_change_topic>
           <time_delay>0.0005</time_delay><!-- this modifies the update rate of the ray sensor -->
           <output_function>normally_closed</output_function> <!-- energized when target detected -->
         </plugin>

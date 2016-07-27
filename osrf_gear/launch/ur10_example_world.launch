@@ -1,5 +1,9 @@
 <?xml version="1.0"?>
 <launch>
+
+<arg name="sim_namespace" default="sim" />
+
+<group ns="$(arg sim_namespace)">
   <arg name="limited" default="false"/>
   <arg name="gui" default="true"/>
 
@@ -15,6 +19,23 @@
   <!-- load ur10 -->
   <include file="$(find osrf_gear)/launch/ur10/ur10.xml">
     <arg name="limited" value="$(arg limited)"/>
+    <arg name="gazebo_namespace" value="/$(arg sim_namespace)/gazebo" />
   </include>
+</group>
 
+<!-- remap some topics out to the /ariac namespace -->
+<node pkg="topic_tools" type="relay" name="relay_command"
+      args="/ariac/arm/command sim/arm_controller/command" />
+<node pkg="topic_tools" type="relay" name="relay_joint_states"
+      args="sim/joint_states /ariac/arm/joint_states" />
+<node pkg="topic_tools" type="relay" name="relay_action_cancel"
+      args="/ariac/arm/follow_joint_trajectory/cancel sim/arm_controller/follow_joint_trajectory/cancel" />
+<node pkg="topic_tools" type="relay" name="relay_action_feedback"
+      args="/ariac/arm/follow_joint_trajectory/feedback sim/arm_controller/follow_joint_trajectory/feedback" />
+<node pkg="topic_tools" type="relay" name="relay_action_goal"
+      args="/ariac/arm/follow_joint_trajectory/goal sim/arm_controller/follow_joint_trajectory/goal" />
+<node pkg="topic_tools" type="relay" name="relay_action_result"
+      args="/ariac/arm/follow_joint_trajectory/result sim/arm_controller/follow_joint_trajectory/result" />
+<node pkg="topic_tools" type="relay" name="relay_action_status"
+      args="/ariac/arm/follow_joint_trajectory/status sim/arm_controller/follow_joint_trajectory/status" />
 </launch>

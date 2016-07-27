@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <launch>
   <arg name="limited" default="false"/>
+  <arg name="gazebo_namespace" default="/gazebo" />
 
   <!-- send robot urdf to param server -->
   <param name="robot_description"
@@ -9,6 +10,7 @@
   <!-- push robot_description to factory and spawn robot in gazebo -->
   <node name="spawn_gazebo_model" pkg="gazebo_ros" type="spawn_model"
         args="
+          -gazebo_namespace $(arg gazebo_namespace)
           -urdf
           -param robot_description
           -model robot
@@ -20,7 +22,8 @@
           -J wrist_3_joint 0
           -z 0.1
           -unpause"
-        respawn="false" output="screen" />
+        respawn="false" output="screen">
+  </node>
 
   <include file="$(find ur_gazebo)/launch/controller_utils.launch"/>
 

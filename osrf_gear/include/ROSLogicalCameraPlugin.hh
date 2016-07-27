@@ -33,7 +33,7 @@
 
 namespace gazebo
 {
-  /// \brief ROS publisher for the logical camera 
+  /// \brief ROS publisher for the logical camera
   class ROSLogicalCameraPlugin : public ModelPlugin
   {
     /// \brief Constructor
@@ -60,9 +60,9 @@ namespace gazebo
     protected: void FindLogicalCamera();
 
     /// \brief Callback for when logical camera images are received
-    /// \param[in] _msg The logical camera image 
+    /// \param[in] _msg The logical camera image
     public: void OnImage(ConstLogicalCameraImagePtr &_msg);
-               
+
     /// \brief Node for communication with gazebo
     protected: transport::NodePtr node;
 
