@@ -12,11 +12,18 @@
       <uri>model://ground_plane</uri>
     </include>
 
-    <!-- the conveyor belt -->
+    <!-- Conveyor belt -->
     <include>
       <uri>model://conveyor_belt</uri>
-      <pose>0.8 1.0 0 0 0 3.14159</pose>
+      <pose>0.8 0.0 1.2 0 0 0</pose>
     </include>
+
+    <!-- Dumpster for deleting objects that fall off the conveyor-->
+    <include>
+      <uri>model://object_disposal</uri>
+      <pose>0.8 3 0 0 0 0</pose>
+    </include>
+
 
     <!-- Populate the conveyor belt -->
     <plugin filename="libPopulationPlugin.so" name="populate_conveyor">
