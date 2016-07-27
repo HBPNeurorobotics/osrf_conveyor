@@ -9,7 +9,7 @@
           </box>
         </geometry>
       </visual>
-      <sensor name="laser" type="ray">
+      <sensor name="laser_profiler" type="ray">
         <pose>0 0 0.06 0 0 0</pose>
         <plugin name="proximity_ray_plugin" filename="libgazebo_ros_laser.so" >
           <robotNamespace>laser_profiler</robotNamespace>

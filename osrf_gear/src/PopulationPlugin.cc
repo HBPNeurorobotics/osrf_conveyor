@@ -255,7 +255,7 @@ void PopulationPlugin::OnUpdate()
       ignition::math::Matrix4d pose_local(obj.pose.Ign());
       obj.pose = (transMat * pose_local).Pose();
     }
-    gzdbg << "Object spawned: " << obj << std::endl;
+    gzdbg << "Object spawned: " << obj.type << std::endl;
 
     std::ostringstream newModelStr;
 

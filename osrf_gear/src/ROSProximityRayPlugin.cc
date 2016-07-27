@@ -94,7 +94,7 @@ void ROSProximityRayPlugin::OnNewLaserScans()
   this->statePub.publish(stateMsg);
   if (stateChanged)
   {
-    gzdbg << "change in sensor state\n";
+    gzdbg << this->parentSensor->GetName() << ": change in sensor state\n";
     this->stateChangePub.publish(stateMsg);
   }
 }

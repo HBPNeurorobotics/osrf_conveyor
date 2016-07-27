@@ -11,7 +11,7 @@
           </cylinder>
         </geometry>
       </visual>
-      <sensor name="laser" type="ray">
+      <sensor name="proximity_sensor" type="ray">
         <plugin name="proximity_ray_plugin" filename="libROSProximityRayPlugin.so" >
           <output_state_topic>/ariac/proximity_sensor</output_state_topic>
           <output_change_topic>/ariac/proximity_sensor_changed</output_change_topic>

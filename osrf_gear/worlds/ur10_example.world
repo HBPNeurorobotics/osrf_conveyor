@@ -33,13 +33,19 @@
     <!-- a proximity sensor -->
     <include>
       <uri>model://proximity_sensor</uri>
-      <pose>0.8 2.5 1.172 0 -1.5708 0</pose>
+      <pose>0.8 2.53 1.172 0 -1.5708 0</pose>
     </include>
 
     <!-- a logical camera -->
     <include>
       <uri>model://logical_camera</uri>
       <pose>0.8 -2 2.2 0 1.5708 -1.5708</pose>
+    </include>
+
+    <!-- a laser profiler -->
+    <include>
+      <uri>model://laser_profiler</uri>
+      <pose>0.8 -1.5 1.7 0 1.5708 -1.5708</pose>
     </include>
 
     <!-- Populate the conveyor belt -->
