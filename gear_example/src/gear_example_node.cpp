@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <algorithm>
 #include <vector>
 
 #include <ros/ros.h>
@@ -20,6 +21,7 @@
 #include <osrf_gear/LogicalCameraImage.h>
 #include <osrf_gear/Proximity.h>
 #include <sensor_msgs/JointState.h>
+#include <sensor_msgs/LaserScan.h>
 #include <std_srvs/Trigger.h>
 #include <trajectory_msgs/JointTrajectory.h>
 
@@ -113,6 +115,13 @@ void proximity_sensor_callback(const osrf_gear::Proximity::ConstPtr & msg) {
   }
 }
 
+void laser_profiler_callback(const sensor_msgs::LaserScan::ConstPtr & msg) {
+  size_t number_of_valid_ranges = std::count_if(msg->ranges.begin(), msg->ranges.end(), std::isfinite<float>);
+  if (number_of_valid_ranges > 0) {
+    ROS_INFO_THROTTLE(1, "Laser profiler sees something.");
+  }
+}
+
 int main(int argc, char ** argv) {
   ros::init(argc, argv, "gear_example_node");  // Last argument is the default name of the node.
 
@@ -128,12 +137,15 @@ int main(int argc, char ** argv) {
   // "Connect" new data on the '/ariac/proximity_sensor_changed' topic to the free-function callback.
   ros::Subscriber proximity_sensor_subscriber = node.subscribe(
     "/ariac/proximity_sensor_changed", 10, proximity_sensor_callback);
-  // "Connect" new data on the '/ariac/break_beam_changed' topic to the free-function callback.
+  // "Connect" new data on the '/ariac/break_beam_changed' topic to the callback in the custom class.
   ros::Subscriber break_beam_subscriber = node.subscribe(
     "/ariac/break_beam_changed", 10, &MyCompetitionClass::break_beam_callback, &comp_class);
-  // "Connect" new data on the '/ariac/logical_camera' topic to the free-function callback.
+  // "Connect" new data on the '/ariac/logical_camera' topic to the callback in the custom class.
   ros::Subscriber logical_camera_subscriber = node.subscribe(
     "/ariac/logical_camera", 10, &MyCompetitionClass::logical_camera_callback, &comp_class);
+  // "Connect" new data on the '/ariac/laser_profiler' topic to the free-function callback.
+  ros::Subscriber laser_profiler_subscriber = node.subscribe(
+    "/ariac/laser_profiler", 10, laser_profiler_callback);
 
   ROS_INFO("Setup complete.");
   start_competition(node);

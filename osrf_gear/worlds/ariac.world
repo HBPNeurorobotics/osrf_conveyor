@@ -56,12 +56,12 @@
       <object_sequence>
         <object>
           <time>8.0</time>
-          <type>beer</type>
+          <type>coke_can</type>
           <pose>0. 0.1 0 0 0 0</pose>
         </object>
         <object>
           <time>4.0</time>
-          <type>beer</type>
+          <type>cordless_drill</type>
           <pose>0. 0.2 0 0 0 0</pose>
         </object>
         <object>

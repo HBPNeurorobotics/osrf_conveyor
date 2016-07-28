@@ -12,9 +12,9 @@
       <sensor name="laser_profiler" type="ray">
         <pose>0 0 0.06 0 0 0</pose>
         <plugin name="proximity_ray_plugin" filename="libgazebo_ros_laser.so" >
-          <robotNamespace>laser_profiler</robotNamespace>
+          <robotNamespace>ariac</robotNamespace>
           <frameName>laser_profiler</frameName>
-          <topicName>scan</topicName>
+          <topicName>laser_profiler</topicName>
         </plugin>
         <ray>
           <range>
