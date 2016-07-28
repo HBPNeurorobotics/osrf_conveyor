@@ -97,8 +97,8 @@ namespace gazebo
     /// is empty, creating an infinite supply of objects.
     public: bool loopForever = false;
 
-    /// \brief Link which the object poses use as their frame of reference.
-    public: physics::LinkPtr link;
+    /// \brief Link/model that the object poses use as their frame of reference.
+    public: physics::EntityPtr frame;
 
     /// \brief Node for communication.
     public: transport::NodePtr node;
@@ -144,11 +144,15 @@ void PopulationPlugin::Load(physics::WorldPtr _world, sdf::ElementPtr _sdf)
     this->dataPtr->loopForever = loopElem->Get<bool>();
   }
 
-  if (_sdf->HasElement("link_frame"))
+  if (_sdf->HasElement("frame"))
   {
-    std::string linkName = _sdf->Get<std::string>("link_frame");
-    this->dataPtr->link =
-      boost::dynamic_pointer_cast<physics::Link>(this->dataPtr->world->GetEntity(linkName));
+    std::string frameName = _sdf->Get<std::string>("frame");
+    this->dataPtr->frame = this->dataPtr->world->GetEntity(frameName);
+    if (!this->dataPtr->frame->HasType(physics::Base::LINK) &&
+      !this->dataPtr->frame->HasType(physics::Base::MODEL))
+    {
+      gzthrow("'frame' tag must list the name of a link or model");
+    }
   }
 
   if (!_sdf->HasElement("object_sequence"))
@@ -248,10 +252,10 @@ void PopulationPlugin::OnUpdate()
   if (elapsed.Double() >= this->dataPtr->objects.front().time)
   {
     auto obj = this->dataPtr->objects.front();
-    if (this->dataPtr->link)
+    if (this->dataPtr->frame)
     {
-      auto linkPose = this->dataPtr->link->GetWorldPose().Ign();
-      ignition::math::Matrix4d transMat(linkPose);
+      auto framePose = this->dataPtr->frame->GetWorldPose().Ign();
+      ignition::math::Matrix4d transMat(framePose);
       ignition::math::Matrix4d pose_local(obj.pose.Ign());
       obj.pose = (transMat * pose_local).Pose();
     }

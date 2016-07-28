@@ -1,8 +1,10 @@
 <?xml version="1.0" ?>
 <sdf version="1.6">
+    <!-- the origin of this model is at the middle of the 'top' of the belt -->
     <model name="conveyor_belt">
         <static>true</static>
         <link name="belt">
+            <pose>0 2.5 0 0 0 0</pose>
             <sensor name='conveyor_belt_contact' type='contact'>
                 <update_rate>10</update_rate>
                 <contact>

@@ -15,7 +15,7 @@
     <!-- Conveyor belt -->
     <include>
       <uri>model://conveyor_belt</uri>
-      <pose>0.8 0.0 1.2 0 0 0</pose>
+      <pose>0.8 -2.5 1.2 0 0 0</pose>
     </include>
 
     <!-- Dumpster for deleting objects that fall off the conveyor-->
@@ -52,22 +52,22 @@
     <plugin filename="libPopulationPlugin.so" name="populate_conveyor">
       <activation_topic>~/conveyor/control</activation_topic>
       <loop_forever>true</loop_forever>
-      <link_frame>conveyor_belt::belt</link_frame>
+      <frame>conveyor_belt</frame>
       <object_sequence>
         <object>
           <time>8.0</time>
           <type>beer</type>
-          <pose>0. -2.0 0 0 0 0</pose>
+          <pose>0. 0.1 0 0 0 0</pose>
         </object>
         <object>
           <time>4.0</time>
           <type>beer</type>
-          <pose>0. -2.0 0 0 0 0</pose>
+          <pose>0. 0.2 0 0 0 0</pose>
         </object>
         <object>
           <time>12.0</time>
           <type>beer</type>
-          <pose>0. -2.0 0 0 0 0</pose>
+          <pose>0. 0.1 0 0 0 0</pose>
         </object>
       </object_sequence>
     </plugin>
