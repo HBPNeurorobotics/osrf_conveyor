@@ -128,6 +128,12 @@ int main(int argc, char ** argv) {
   // "Connect" new data on the '/ariac/proximity_sensor_changed' topic to the free-function callback.
   ros::Subscriber proximity_sensor_subscriber = node.subscribe(
     "/ariac/proximity_sensor_changed", 10, proximity_sensor_callback);
+  // "Connect" new data on the '/ariac/break_beam_changed' topic to the free-function callback.
+  ros::Subscriber break_beam_subscriber = node.subscribe(
+    "/ariac/break_beam_changed", 10, &MyCompetitionClass::break_beam_callback, &comp_class);
+  // "Connect" new data on the '/ariac/logical_camera' topic to the free-function callback.
+  ros::Subscriber logical_camera_subscriber = node.subscribe(
+    "/ariac/logical_camera", 10, &MyCompetitionClass::logical_camera_callback, &comp_class);
 
   ROS_INFO("Setup complete.");
   start_competition(node);
