@@ -27,9 +27,8 @@
 
   <include file="$(find ur_gazebo)/launch/controller_utils.launch"/>
 
-  <!-- <rosparam file="$(find ur_gazebo)/controller/arm_controller_ur10_effort.yaml" command="load"/> -->
-  <rosparam file="$(find osrf_gear)/launch/ur10/arm_controller_ur10_custom.yaml" command="load"/>
+  <rosparam file="$(find osrf_gear)/launch/ur10/arm_controller_ur10_custom.yaml" ns="ariac" command="load"/>
   <node name="arm_controller_spawner" pkg="controller_manager" type="controller_manager"
-        args="spawn arm_controller" respawn="false" output="screen"/>
+        args="spawn ariac/arm" respawn="false" output="screen"/>
 
 </launch>
