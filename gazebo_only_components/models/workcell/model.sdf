@@ -1,0 +1,882 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+  <model name="workcell">
+    <static>true</static>
+    <link name="link">
+      <visual name="visual">
+        <geometry>
+          <mesh>
+            <uri>model://workcell/meshes/mesh.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+
+      <collision name="floor">
+        <pose>0 0 -0.1 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>20.1026 20.1026 0.2</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <collision name="wall1">
+        <pose>4.13686 -10.02116 3.48855 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>12.07683 0.72902 6.97771</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <collision name="wall2">
+        <pose>-6.58151 -8.924 3.48855 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>10.59206 5.00198 6.97771</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <collision name="wall3">
+        <pose>-9.25721 0.6135 3.48855 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.72902 15.29079 6.97771</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <collision name="rack1">
+        <pose>7.35056 1.74430 1.41643054 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.84444041 1.95580823 2.83286108</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <collision name="rack2">
+        <pose>5.36795 1.74430 1.41643054 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.84444041 1.95580823 2.83286108</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <collision name="rack3">
+        <pose>7.00142 -7.64670 1.41643054 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.84444041 3.91161646 2.83286108</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <collision name="rack4">
+        <pose>4.97338 -7.64670 1.41643054 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.84444041 3.91161646 2.83286108</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <collision name="rack5">
+        <pose>2.66949 -7.64670 1.41643054 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.84444041 3.91161646 2.83286108</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <collision name="large_pallet1">
+        <pose>-3.33609 5.70937 1.04257 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>2.14726 1.79349 2.08514</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <collision name="large_pallet2">
+        <pose>-5.74492 5.70937 1.04257 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>2.14726 1.79349 2.08514</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <collision name="large_pallet3">
+        <pose>-7.39561 2.53882 1.04257 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>2.14726 1.79349 2.08514</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <collision name="empty_pallet1">
+        <pose>-5.13359 2.53882 0.1636 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>2.14726 1.79349 0.32720</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <collision name="box_pallet1">
+        <pose>-1.09806 5.70937 0.61958 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>2.14726 1.79349 1.23916</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <collision name="pole1">
+        <pose>5.02174 -2.39478 3.022075 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.49161 0.49161 6.04415</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <collision name="pole2">
+        <pose>0.47071 -2.39478 3.022075 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.49161 0.49161 6.04415</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <collision name="pole3">
+        <pose>-3.93786 -2.39478 3.022075 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.49161 0.49161 6.04415</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <collision name="control_panel">
+        <pose>2.07015 1.16224 0.561315 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.86733 0.6001 1.12263</size>
+          </box>
+        </geometry>
+      </collision>
+
+    </link>
+
+    <model name="bin1">
+      <static>true</static>
+      <pose>0.96768 1.38385 0 0 0 0</pose>
+      <link name="link">
+        <collision name="base">
+          <pose>0 0 0.100245 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.66836 0.66836 0.20049</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="left_wall">
+          <pose>-0.319 0 0.395445 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.003 0.63803 0.79089</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="right_wall">
+          <pose>0.319 0 0.395445 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.003 0.63803 0.79089</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="front_left_wall">
+          <pose>-0.25331 0.31899 0.395445 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.13437 0.003 0.79089</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="front_mid_wall">
+          <pose>0 0.31899 0.252845 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.37226 0.003 0.50569</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="front_right_wall">
+          <pose>0.25331 0.31899 0.395445 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.13437 0.003 0.79089</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="back_left_wall">
+          <pose>-0.25331 -0.31899 0.395445 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.13437 0.003 0.79089</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="back_mid_wall">
+          <pose>0 -0.31899 0.252845 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.37226 0.003 0.50569</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="back_right_wall">
+          <pose>0.25331 -0.31899 0.395445 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.13437 0.003 0.79089</size>
+            </box>
+          </geometry>
+        </collision>
+
+      </link>
+    </model>
+
+    <model name="bin2">
+      <static>true</static>
+      <pose>0.20268 1.38385 0 0 0 0</pose>
+      <link name="link">
+        <collision name="base">
+          <pose>0 0 0.100245 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.66836 0.66836 0.20049</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="left_wall">
+          <pose>-0.319 0 0.395445 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.003 0.63803 0.79089</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="right_wall">
+          <pose>0.319 0 0.395445 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.003 0.63803 0.79089</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="front_left_wall">
+          <pose>-0.25331 0.31899 0.395445 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.13437 0.003 0.79089</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="front_mid_wall">
+          <pose>0 0.31899 0.252845 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.37226 0.003 0.50569</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="front_right_wall">
+          <pose>0.25331 0.31899 0.395445 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.13437 0.003 0.79089</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="back_left_wall">
+          <pose>-0.25331 -0.31899 0.395445 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.13437 0.003 0.79089</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="back_mid_wall">
+          <pose>0 -0.31899 0.252845 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.37226 0.003 0.50569</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="back_right_wall">
+          <pose>0.25331 -0.31899 0.395445 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.13437 0.003 0.79089</size>
+            </box>
+          </geometry>
+        </collision>
+
+      </link>
+    </model>
+
+    <model name="bin3">
+      <static>true</static>
+      <pose>-0.56232 1.38385 0 0 0 0</pose>
+      <link name="link">
+        <collision name="base">
+          <pose>0 0 0.100245 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.66836 0.66836 0.20049</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="left_wall">
+          <pose>-0.319 0 0.395445 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.003 0.63803 0.79089</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="right_wall">
+          <pose>0.319 0 0.395445 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.003 0.63803 0.79089</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="front_left_wall">
+          <pose>-0.25331 0.31899 0.395445 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.13437 0.003 0.79089</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="front_mid_wall">
+          <pose>0 0.31899 0.252845 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.37226 0.003 0.50569</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="front_right_wall">
+          <pose>0.25331 0.31899 0.395445 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.13437 0.003 0.79089</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="back_left_wall">
+          <pose>-0.25331 -0.31899 0.395445 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.13437 0.003 0.79089</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="back_mid_wall">
+          <pose>0 -0.31899 0.252845 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.37226 0.003 0.50569</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="back_right_wall">
+          <pose>0.25331 -0.31899 0.395445 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.13437 0.003 0.79089</size>
+            </box>
+          </geometry>
+        </collision>
+
+      </link>
+    </model>
+
+    <model name="bin4">
+      <static>true</static>
+      <pose>-1.32732 1.38385 0 0 0 0</pose>
+      <link name="link">
+        <collision name="base">
+          <pose>0 0 0.100245 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.66836 0.66836 0.20049</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="left_wall">
+          <pose>-0.319 0 0.395445 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.003 0.63803 0.79089</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="right_wall">
+          <pose>0.319 0 0.395445 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.003 0.63803 0.79089</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="front_left_wall">
+          <pose>-0.25331 0.31899 0.395445 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.13437 0.003 0.79089</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="front_mid_wall">
+          <pose>0 0.31899 0.252845 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.37226 0.003 0.50569</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="front_right_wall">
+          <pose>0.25331 0.31899 0.395445 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.13437 0.003 0.79089</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="back_left_wall">
+          <pose>-0.25331 -0.31899 0.395445 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.13437 0.003 0.79089</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="back_mid_wall">
+          <pose>0 -0.31899 0.252845 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.37226 0.003 0.50569</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="back_right_wall">
+          <pose>0.25331 -0.31899 0.395445 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.13437 0.003 0.79089</size>
+            </box>
+          </geometry>
+        </collision>
+      </link>
+    </model>
+
+    <model name="bin5">
+      <static>true</static>
+      <pose>-1.32732 0.61434 0 0 0 0</pose>
+      <link name="link">
+        <collision name="base">
+          <pose>0 0 0.100245 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.66836 0.66836 0.20049</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="left_wall">
+          <pose>-0.319 0 0.395445 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.003 0.63803 0.79089</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="right_wall">
+          <pose>0.319 0 0.395445 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.003 0.63803 0.79089</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="front_left_wall">
+          <pose>-0.25331 0.31899 0.395445 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.13437 0.003 0.79089</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="front_mid_wall">
+          <pose>0 0.31899 0.252845 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.37226 0.003 0.50569</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="front_right_wall">
+          <pose>0.25331 0.31899 0.395445 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.13437 0.003 0.79089</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="back_left_wall">
+          <pose>-0.25331 -0.31899 0.395445 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.13437 0.003 0.79089</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="back_mid_wall">
+          <pose>0 -0.31899 0.252845 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.37226 0.003 0.50569</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="back_right_wall">
+          <pose>0.25331 -0.31899 0.395445 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.13437 0.003 0.79089</size>
+            </box>
+          </geometry>
+        </collision>
+      </link>
+    </model>
+
+    <model name="bin6">
+      <static>true</static>
+      <pose>-0.56232 0.61434 0 0 0 0</pose>
+      <link name="link">
+        <collision name="base">
+          <pose>0 0 0.100245 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.66836 0.66836 0.20049</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="left_wall">
+          <pose>-0.319 0 0.395445 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.003 0.63803 0.79089</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="right_wall">
+          <pose>0.319 0 0.395445 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.003 0.63803 0.79089</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="front_left_wall">
+          <pose>-0.25331 0.31899 0.395445 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.13437 0.003 0.79089</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="front_mid_wall">
+          <pose>0 0.31899 0.252845 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.37226 0.003 0.50569</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="front_right_wall">
+          <pose>0.25331 0.31899 0.395445 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.13437 0.003 0.79089</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="back_left_wall">
+          <pose>-0.25331 -0.31899 0.395445 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.13437 0.003 0.79089</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="back_mid_wall">
+          <pose>0 -0.31899 0.252845 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.37226 0.003 0.50569</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="back_right_wall">
+          <pose>0.25331 -0.31899 0.395445 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.13437 0.003 0.79089</size>
+            </box>
+          </geometry>
+        </collision>
+
+      </link>
+    </model>
+
+    <model name="bin7">
+      <static>true</static>
+      <pose>0.20268 0.61434 0 0 0 0</pose>
+      <link name="link">
+        <collision name="base">
+          <pose>0 0 0.100245 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.66836 0.66836 0.20049</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="left_wall">
+          <pose>-0.319 0 0.395445 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.003 0.63803 0.79089</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="right_wall">
+          <pose>0.319 0 0.395445 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.003 0.63803 0.79089</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="front_left_wall">
+          <pose>-0.25331 0.31899 0.395445 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.13437 0.003 0.79089</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="front_mid_wall">
+          <pose>0 0.31899 0.252845 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.37226 0.003 0.50569</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="front_right_wall">
+          <pose>0.25331 0.31899 0.395445 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.13437 0.003 0.79089</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="back_left_wall">
+          <pose>-0.25331 -0.31899 0.395445 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.13437 0.003 0.79089</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="back_mid_wall">
+          <pose>0 -0.31899 0.252845 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.37226 0.003 0.50569</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="back_right_wall">
+          <pose>0.25331 -0.31899 0.395445 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.13437 0.003 0.79089</size>
+            </box>
+          </geometry>
+        </collision>
+
+      </link>
+    </model>
+
+    <model name="bin8">
+      <static>true</static>
+      <pose>0.96768 0.61434 0 0 0 0</pose>
+      <link name="link">
+        <collision name="base">
+          <pose>0 0 0.100245 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.66836 0.66836 0.20049</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="left_wall">
+          <pose>-0.319 0 0.395445 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.003 0.63803 0.79089</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="right_wall">
+          <pose>0.319 0 0.395445 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.003 0.63803 0.79089</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="front_left_wall">
+          <pose>-0.25331 0.31899 0.395445 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.13437 0.003 0.79089</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="front_mid_wall">
+          <pose>0 0.31899 0.252845 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.37226 0.003 0.50569</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="front_right_wall">
+          <pose>0.25331 0.31899 0.395445 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.13437 0.003 0.79089</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="back_left_wall">
+          <pose>-0.25331 -0.31899 0.395445 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.13437 0.003 0.79089</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="back_mid_wall">
+          <pose>0 -0.31899 0.252845 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.37226 0.003 0.50569</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <collision name="back_right_wall">
+          <pose>0.25331 -0.31899 0.395445 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.13437 0.003 0.79089</size>
+            </box>
+          </geometry>
+        </collision>
+
+      </link>
+    </model>
+
+
+  </model>
+</sdf>
