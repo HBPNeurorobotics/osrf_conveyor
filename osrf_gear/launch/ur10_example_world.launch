@@ -7,7 +7,7 @@
 
   <!-- startup simulated world -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
-    <arg name="world_name" default="$(find osrf_gear)/worlds/ur10_example.world"/>
+    <arg name="world_name" default="$(find osrf_gear)/worlds/ariac.world"/>
     <!-- Always start paused because the ur10 spanw needs it that way. -->
     <arg name="paused" value="true"/>
     <arg name="gui" value="$(arg gui)"/>
