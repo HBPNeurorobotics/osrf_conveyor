@@ -33,6 +33,8 @@
 #include <std_msgs/String.h>
 #include <std_srvs/Trigger.h>
 
+
+#include "ARIAC.hh"
 #include "osrf_gear/ROSAriacTaskManagerPlugin.hh"
 #include "osrf_gear/Goal.h"
 #include "osrf_gear/Kit.h"
@@ -50,89 +52,8 @@ namespace gazebo
     /// \brief SDF pointer.
     public: sdf::ElementPtr sdf;
 
-    /// \brief Class to store information about each object contained in a kit.
-    public: class KitObject
-            {
-              /// \brief Stream insertion operator.
-              /// \param[in] _out output stream.
-              /// \param[in] _obj Kit object to output.
-              /// \return The output stream
-              public: friend std::ostream &operator<<(std::ostream &_out,
-                                                      const KitObject &_obj)
-              {
-                _out << "<object>" << std::endl;
-                _out << "Type: [" << _obj.type << "]" << std::endl;
-                _out << "Pose: [" << _obj.pose << "]" << std::endl;
-                _out << "</object>" << std::endl;
-                return _out;
-              }
-
-               /// \brief Object type.
-               public: std::string type;
-
-               /// \brief Pose in which the object should be placed.
-               public: math::Pose pose;
-            };
-
-    /// \brief Class to store information about a kit.
-    public: class Kit
-            {
-              /// \brief Stream insertion operator.
-              /// \param[in] _out output stream.
-              /// \param[in] _kit kit to output.
-              /// \return The output stream.
-              public: friend std::ostream &operator<<(std::ostream &_out,
-                                                      const Kit &_kit)
-              {
-                _out << "<kit>" << std::endl;
-                for (auto obj : _kit.objects)
-                  _out << obj << std::endl;
-                _out << "/<kit>" << std::endl;
-
-                return _out;
-              }
-
-              /// \brief A kit is composed by multiple objects.
-              public: std::vector<KitObject> objects;
-           };
-
-    /// \brief Class to store information about a goal.
-    public: class Goal
-            {
-              /// \brief Less than operator.
-              /// \param[in] _goal Other goal to compare.
-              /// \return True if this < _goal.
-              public: bool operator<(const Goal &_goal) const
-              {
-                return this->time < _goal.time;
-              }
-
-              /// \brief Stream insertion operator.
-              /// \param[in] _out output stream.
-              /// \param[in] _goal Goal to output.
-              /// \return The output stream.
-              public: friend std::ostream &operator<<(std::ostream &_out,
-                                                      const Goal &_goal)
-              {
-                _out << "<Goal>" << std::endl;
-                _out << "Time: [" << _goal.time << "]" << std::endl;
-                _out << "Kits:" << std::endl;
-                for (auto kit : _goal.kits)
-                  _out << kit << std::endl;
-                _out << "</goal>" << std::endl;
-
-                return _out;
-              }
-
-              /// \brief Simulation time in which the goal should be triggered.
-              public: double time;
-
-              /// \brief A goal is composed by multiple kits.
-              public: std::vector<Kit> kits;
-            };
-
     /// \brief Collection of goals.
-    public: std::vector<Goal> goals;
+    public: std::vector<ariac::Goal> goals;
 
     /// \brief ROS node handle.
     public: std::unique_ptr<ros::NodeHandle> rosnode;
@@ -171,7 +92,7 @@ using namespace gazebo;
 GZ_REGISTER_WORLD_PLUGIN(ROSAriacTaskManagerPlugin)
 
 /////////////////////////////////////////////////
-static void fillGoalMsg(const ROSAriacTaskManagerPluginPrivate::Goal &_goal,
+static void fillGoalMsg(const ariac::Goal &_goal,
                         osrf_gear::Goal &_msgGoal)
 {
   for (const auto &kit : _goal.kits)
@@ -269,7 +190,7 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
     }
 
     // Store all kits for a goal.
-    std::vector<ROSAriacTaskManagerPluginPrivate::Kit> kits;
+    std::vector<ariac::Kit> kits;
 
     sdf::ElementPtr kitElem = goalElem->GetElement("kit");
     while (kitElem)
@@ -283,7 +204,7 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
         continue;
       }
 
-      ROSAriacTaskManagerPluginPrivate::Kit kit;
+      ariac::Kit kit;
 
       sdf::ElementPtr objectElem = kitElem->GetElement("object");
       while (objectElem)
@@ -309,7 +230,7 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
         math::Pose pose = poseElement->Get<math::Pose>();
 
         // Add the object to the kit.
-        ROSAriacTaskManagerPluginPrivate::KitObject obj = {type, pose};
+        ariac::KitObject obj = {type, pose};
         kit.objects.push_back(obj);
 
         objectElem = objectElem->GetNextElement("object");
@@ -322,7 +243,7 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
     }
 
     // Add a new goal.
-    ROSAriacTaskManagerPluginPrivate::Goal goal = {time, kits};
+    ariac::Goal goal = {time, kits};
     this->dataPtr->goals.push_back(goal);
 
     goalElem = goalElem->GetNextElement("goal");
