@@ -102,13 +102,13 @@ static void fillGoalMsg(const ariac::Goal &_goal,
     {
       osrf_gear::KitObject msgObj;
       msgObj.type = obj.type;
-      msgObj.target.position.x = obj.pose.pos.x;
-      msgObj.target.position.y = obj.pose.pos.y;
-      msgObj.target.position.z = obj.pose.pos.z;
-      msgObj.target.orientation.x = obj.pose.rot.x;
-      msgObj.target.orientation.y = obj.pose.rot.y;
-      msgObj.target.orientation.z = obj.pose.rot.z;
-      msgObj.target.orientation.w = obj.pose.rot.w;
+      msgObj.pose.position.x = obj.pose.pos.x;
+      msgObj.pose.position.y = obj.pose.pos.y;
+      msgObj.pose.position.z = obj.pose.pos.z;
+      msgObj.pose.orientation.x = obj.pose.rot.x;
+      msgObj.pose.orientation.y = obj.pose.rot.y;
+      msgObj.pose.orientation.z = obj.pose.rot.z;
+      msgObj.pose.orientation.w = obj.pose.rot.w;
 
       // Add the object to the kit.
       msgKit.objects.push_back(msgObj);

@@ -5,4 +5,4 @@
 string type
 
 # Target pose
-geometry_msgs/Pose target
+geometry_msgs/Pose pose

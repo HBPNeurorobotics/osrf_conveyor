@@ -19,6 +19,8 @@
 #include <string>
 #include <vector>
 
+#include <gazebo/gazebo.hh>
+
 namespace ariac
 {
   using namespace gazebo;
