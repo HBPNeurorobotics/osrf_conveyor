@@ -21,12 +21,13 @@
 #include "ConveyorBeltPlugin.hh"
 #include <gazebo/transport/Node.hh>
 #include <gazebo/transport/Publisher.hh>
+#include <ignition/math/Vector3.hh>
 
 using namespace gazebo;
 GZ_REGISTER_SENSOR_PLUGIN(ConveyorBeltPlugin)
 
 /////////////////////////////////////////////////
-ConveyorBeltPlugin::ConveyorBeltPlugin() : TopContactPlugin()
+ConveyorBeltPlugin::ConveyorBeltPlugin() : SideContactPlugin()
 {
 }
 
@@ -50,12 +51,10 @@ std::string ConveyorBeltPlugin::Topic(std::string topicName) const
 /////////////////////////////////////////////////
 void ConveyorBeltPlugin::Load(sensors::SensorPtr _sensor, sdf::ElementPtr _sdf)
 {
-  TopContactPlugin::Load(_sensor, _sdf);
+  SideContactPlugin::Load(_sensor, _sdf);
 
-    std::string worldName = this->parentSensor->WorldName();
-  this->world = physics::get_world(worldName);
   this->node = transport::NodePtr(new transport::Node());
-  this->node->Init(worldName);
+  this->node->Init(this->world->GetName());
 
   if (_sdf->HasElement("belt_velocity"))
   {
@@ -76,16 +75,6 @@ void ConveyorBeltPlugin::Load(sensors::SensorPtr _sensor, sdf::ElementPtr _sdf)
   }
   this->controlCommandSub = this->node->Subscribe(controlCommandTopic,
       &ConveyorBeltPlugin::OnControlCommand, this);
-  gzdbg << "Watching contacts on link: " << this->parentLink->GetScopedName()<<"\n";
-  gzdbg << "Watching contacts on link: " << this->collisionName<<"\n";
-
-    // Connect to the sensor update event.
-  this->updateConnection = this->parentSensor->ConnectUpdated(
-      std::bind(&ConveyorBeltPlugin::OnUpdate, this));
-
-  // Make sure the parent sensor is active.
-  this->parentSensor->SetActive(true);
-
 }
 
 /////////////////////////////////////////////////
@@ -105,7 +94,7 @@ void ConveyorBeltPlugin::OnUpdate()
 /////////////////////////////////////////////////
 void ConveyorBeltPlugin::ActOnContactingLinks(double velocity)
 {
-  ignition::math::Vector3d velocity_beltFrame(0.0, velocity, 0.0);
+  ignition::math::Vector3d velocity_beltFrame(0, velocity, 0);
   auto beltPose = this->parentLink->GetWorldPose().Ign();
   math::Vector3 velocity_worldFrame = beltPose.Rot().RotateVector(velocity_beltFrame);
   for (auto linkPtr : this->contactingLinks) {

@@ -15,11 +15,11 @@
  *
 */
 /*
- * Desc: Plugin for monitoring the top of a ContactSensor
+ * Desc: Plugin for monitoring the side of a ContactSensor
  * Author: Deanna Hood
  */
-#ifndef _GAZEBO_TOP_CONTACT_PLUGIN_HH_
-#define _GAZEBO_TOP_CONTACT_PLUGIN_HH_
+#ifndef _GAZEBO_SIDE_CONTACT_PLUGIN_HH_
+#define _GAZEBO_SIDE_CONTACT_PLUGIN_HH_
 
 #include <gazebo/common/Plugin.hh>
 #include <gazebo/sensors/sensors.hh>
@@ -27,14 +27,14 @@
 
 namespace gazebo
 {
-  /// \brief A plugin for a contact sensor that only monitors collisions on its top.
-  class GAZEBO_VISIBLE TopContactPlugin : public SensorPlugin
+  /// \brief A plugin for a contact sensor that only monitors collisions on one of its sides.
+  class GAZEBO_VISIBLE SideContactPlugin : public SensorPlugin
   {
     /// \brief Constructor.
-    public: TopContactPlugin();
+    public: SideContactPlugin();
 
     /// \brief Destructor.
-    public: virtual ~TopContactPlugin();
+    public: virtual ~SideContactPlugin();
 
     /// \brief Load the sensor plugin.
     /// \param[in] _sensor Pointer to the sensor that loaded this plugin.
@@ -47,6 +47,10 @@ namespace gazebo
     /// \brief Pointer to the contact sensor
     protected: sensors::ContactSensorPtr parentSensor;
 
+    /// \brief The normal, in local frame, to the side that is to have contacts monitored
+    /// (default (0, 0, 1))
+    protected: math::Vector3 sideNormal;
+
     /// \brief Connection that maintains a link between the contact sensor's
     /// updated signal and the OnUpdate callback.
     protected: event::ConnectionPtr updateConnection;
@@ -54,22 +58,22 @@ namespace gazebo
     /// \brief Pointer to the world
     protected: physics::WorldPtr world;
 
-    /// \brief Name of the collision of the link
+    /// \brief Name of the collision of the parent's link
     protected: std::string collisionName;
 
     /// \brief Pointer to the sensor's parent's link
     protected: physics::LinkPtr parentLink;
 
-    /// \brief Set of pointers to links that have collisions with the link
+    /// \brief Set of pointers to links that have collisions with the parent link's side
     protected: std::set<physics::LinkPtr> contactingLinks;
 
-    /// \brief Set of pointers to models that have collisions with the link
+    /// \brief Set of pointers to models that have collisions with the parent link's side
     protected: std::set<physics::ModelPtr> contactingModels;
 
-    /// \brief Determine which links are ontop of the link
+    /// \brief Determine which links are in contact with the side of the parent link
     protected: virtual void CalculateContactingLinks();
 
-    /// \brief Determine which models are ontop of the link
+    /// \brief Determine which models are in contact with the side of the parent link
     protected: virtual void CalculateContactingModels();
 
   };

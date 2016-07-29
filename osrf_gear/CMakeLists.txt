@@ -96,13 +96,13 @@ install(TARGETS ${ros_vacuum_gripper_plugin_name}
   RUNTIME DESTINATION bin)
 
 
-# Create the libTopContactPlugin.so library.
-set(top_contact_plugin_name TopContactPlugin)
-add_library(${top_contact_plugin_name} src/TopContactPlugin.cc)
-target_link_libraries(${top_contact_plugin_name}
+# Create the libSideContactPlugin.so library.
+set(side_contact_plugin_name SideContactPlugin)
+add_library(${side_contact_plugin_name} src/SideContactPlugin.cc)
+target_link_libraries(${side_contact_plugin_name}
   ${GAZEBO_LIBRARIES}
 )
-install(TARGETS ${top_contact_plugin_name}
+install(TARGETS ${side_contact_plugin_name}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
@@ -114,7 +114,7 @@ set(conveyor_belt_plugin_name ConveyorBeltPlugin)
 add_library(${conveyor_belt_plugin_name} src/ConveyorBeltPlugin.cc)
 target_link_libraries(${conveyor_belt_plugin_name}
   ${GAZEBO_LIBRARIES}
-  ${top_contact_plugin_name}
+  ${side_contact_plugin_name}
 )
 install(TARGETS ${conveyor_belt_plugin_name}
   ARCHIVE DESTINATION lib
@@ -248,7 +248,7 @@ set(object_disposal_plugin_name ObjectDisposalPlugin)
 add_library(${object_disposal_plugin_name} src/ObjectDisposalPlugin.cc)
 target_link_libraries(${object_disposal_plugin_name}
   ${GAZEBO_LIBRARIES}
-  ${top_contact_plugin_name}
+  ${side_contact_plugin_name}
 )
 install(TARGETS ${object_disposal_plugin_name}
   ARCHIVE DESTINATION lib
@@ -262,7 +262,7 @@ add_library(${kit_tray_plugin_name} src/KitTrayPlugin.cc)
 target_link_libraries(${kit_tray_plugin_name}
   ${GAZEBO_LIBRARIES}
   ${roscpp_LIBRARIES}
-  ${top_contact_plugin_name}
+  ${side_contact_plugin_name}
 )
 add_dependencies(${kit_tray_plugin_name}
     ${${PROJECT_NAME}_EXPORTED_TARGETS}

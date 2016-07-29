@@ -17,25 +17,26 @@
 
 #include <string>
 
-#include "TopContactPlugin.hh"
+#include "SideContactPlugin.hh"
+#include <ignition/math/Vector3.hh>
 
 using namespace gazebo;
-GZ_REGISTER_SENSOR_PLUGIN(TopContactPlugin)
+GZ_REGISTER_SENSOR_PLUGIN(SideContactPlugin)
 
 /////////////////////////////////////////////////
-TopContactPlugin::TopContactPlugin() : SensorPlugin()
+SideContactPlugin::SideContactPlugin() : SensorPlugin()
 {
 }
 
 /////////////////////////////////////////////////
-TopContactPlugin::~TopContactPlugin()
+SideContactPlugin::~SideContactPlugin()
 {
   this->parentSensor.reset();
   this->world.reset();
 }
 
 /////////////////////////////////////////////////
-void TopContactPlugin::Load(sensors::SensorPtr _sensor, sdf::ElementPtr /*_sdf*/)
+void SideContactPlugin::Load(sensors::SensorPtr _sensor, sdf::ElementPtr /*_sdf*/)
 {
   // Get the parent sensor.
   this->parentSensor =
@@ -44,13 +45,13 @@ void TopContactPlugin::Load(sensors::SensorPtr _sensor, sdf::ElementPtr /*_sdf*/
   // Make sure the parent sensor is valid.
   if (!this->parentSensor)
   {
-    gzerr << "TopContactPlugin requires a ContactSensor.\n";
+    gzerr << "SideContactPlugin requires a ContactSensor.\n";
     return;
   }
 
   // Connect to the sensor update event.
   this->updateConnection = this->parentSensor->ConnectUpdated(
-      std::bind(&TopContactPlugin::OnUpdate, this));
+      std::bind(&SideContactPlugin::OnUpdate, this));
 
   // Make sure the parent sensor is active.
   this->parentSensor->SetActive(true);
@@ -65,7 +66,7 @@ void TopContactPlugin::Load(sensors::SensorPtr _sensor, sdf::ElementPtr /*_sdf*/
   std::string defaultCollisionName = parentLinkName + "::__default__";
   if (this->parentSensor->GetCollisionCount() != 1)
   {
-    gzerr << "TopContactPlugin requires a single collision to observe contacts for\n";
+    gzerr << "SideContactPlugin requires a single collision to observe contacts for\n";
     return;
   }
 
@@ -81,25 +82,27 @@ void TopContactPlugin::Load(sensors::SensorPtr _sensor, sdf::ElementPtr /*_sdf*/
     unsigned int index = 0;
     this->collisionName = this->parentLink->GetCollision(index)->GetScopedName();
   }
+
+  // TODO: get this from SDF
+  this->sideNormal = math::Vector3(0, 0, 1);
 }
 
 /////////////////////////////////////////////////
-void TopContactPlugin::OnUpdate()
+void SideContactPlugin::OnUpdate()
 {
   this->CalculateContactingModels();
 }
 
 /////////////////////////////////////////////////
-void TopContactPlugin::CalculateContactingLinks()
+void SideContactPlugin::CalculateContactingLinks()
 {
   auto parentLinkPose = this->parentLink->GetWorldPose().Ign();
-  math::Vector3 parentLinkTopNormal =
-    parentLinkPose.Rot().RotateVector(ignition::math::Vector3d::UnitZ);
+  ignition::math::Vector3d sideNormal(this->sideNormal.x, this->sideNormal.y, this->sideNormal.z);
+  math::Vector3 parentLinkTopNormal = parentLinkPose.Rot().RotateVector(sideNormal);
 
   // Get all the contacts
   msgs::Contacts contacts;
   contacts = this->parentSensor->Contacts();
-  gzdbg << this->parentSensor->GetName() << " " << contacts.contact_size()<<"\n";
   this->contactingLinks.clear();
   double factor = 1.0;
 
@@ -112,7 +115,7 @@ void TopContactPlugin::CalculateContactingLinks()
       factor = -1.0; // the frames are reversed for the alignment check
     }
 
-    // Only consider models ontop of the parent link (collision normal aligned with +z of link)
+    // Only consider links with collision normals aligned with the normal of the link's side
     for (int j = 0; j < contacts.contact(i).position_size(); ++j)
     {
       ignition::math::Vector3d contactNormal = msgs::ConvertIgn(contacts.contact(i).normal(j));
@@ -130,7 +133,7 @@ void TopContactPlugin::CalculateContactingLinks()
 }
 
 /////////////////////////////////////////////////
-void TopContactPlugin::CalculateContactingModels()
+void SideContactPlugin::CalculateContactingModels()
 {
   this->CalculateContactingLinks();
   this->contactingModels.clear();

@@ -23,7 +23,7 @@
 
 #include <string>
 
-#include "TopContactPlugin.hh"
+#include "SideContactPlugin.hh"
 #include <gazebo/common/Plugin.hh>
 #include <gazebo/sensors/sensors.hh>
 #include <gazebo/util/system.hh>
@@ -31,7 +31,7 @@
 namespace gazebo
 {
   /// \brief A plugin for a contact sensor attached to an model disposal unit.
-  class GAZEBO_VISIBLE ObjectDisposalPlugin : public TopContactPlugin
+  class GAZEBO_VISIBLE ObjectDisposalPlugin : public SideContactPlugin
   {
     /// \brief Constructor.
     public: ObjectDisposalPlugin();

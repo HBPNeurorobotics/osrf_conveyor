@@ -31,12 +31,12 @@
 #include <gazebo/sensors/sensors.hh>
 #include <gazebo/util/system.hh>
 #include <osrf_gear/Goal.h>
-#include "TopContactPlugin.hh"
+#include "SideContactPlugin.hh"
 
 namespace gazebo
 {
   /// \brief A plugin for a contact sensor on a kit tray.
-  class GAZEBO_VISIBLE KitTrayPlugin : public TopContactPlugin
+  class GAZEBO_VISIBLE KitTrayPlugin : public SideContactPlugin
   {
     /// \brief Constructor.
     public: KitTrayPlugin();

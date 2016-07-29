@@ -30,7 +30,7 @@ using namespace gazebo;
 GZ_REGISTER_SENSOR_PLUGIN(KitTrayPlugin)
 
 /////////////////////////////////////////////////
-KitTrayPlugin::KitTrayPlugin() : TopContactPlugin()
+KitTrayPlugin::KitTrayPlugin() : SideContactPlugin()
 {
 }
 
@@ -45,7 +45,7 @@ KitTrayPlugin::~KitTrayPlugin()
 void KitTrayPlugin::Load(sensors::SensorPtr _sensor, sdf::ElementPtr _sdf)
 {
 
-  TopContactPlugin::Load(_sensor, _sdf);
+  SideContactPlugin::Load(_sensor, _sdf);
 
   // Make sure the ROS node for Gazebo has already been initialized
   if (!ros::isInitialized())
@@ -66,7 +66,8 @@ void KitTrayPlugin::OnUpdate()
   auto prevNumberContactingModels = this->contactingModels.size();
   this->CalculateContactingModels();
   if (prevNumberContactingModels != this->contactingModels.size()) {
-    gzdbg << this->parentSensor->Name() << ": " << this->contactingLinks.size() << "\n";
+    gzdbg << this->parentSensor->Name() << ": number of contacting models: " \
+      << this->contactingModels.size() << "\n";
   }
   this->ActOnContactingModels();
 }

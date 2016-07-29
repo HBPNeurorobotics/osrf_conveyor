@@ -25,7 +25,7 @@ using namespace gazebo;
 GZ_REGISTER_SENSOR_PLUGIN(ObjectDisposalPlugin)
 
 /////////////////////////////////////////////////
-ObjectDisposalPlugin::ObjectDisposalPlugin() : TopContactPlugin()
+ObjectDisposalPlugin::ObjectDisposalPlugin() : SideContactPlugin()
 {
 }
 
@@ -39,7 +39,7 @@ ObjectDisposalPlugin::~ObjectDisposalPlugin()
 /////////////////////////////////////////////////
 void ObjectDisposalPlugin::Load(sensors::SensorPtr _sensor, sdf::ElementPtr _sdf)
 {
-  TopContactPlugin::Load(_sensor, _sdf);
+  SideContactPlugin::Load(_sensor, _sdf);
 }
 
 /////////////////////////////////////////////////

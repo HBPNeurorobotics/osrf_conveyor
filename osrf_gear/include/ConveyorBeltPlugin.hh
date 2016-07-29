@@ -23,7 +23,7 @@
 
 #include <string>
 
-#include "TopContactPlugin.hh"
+#include "SideContactPlugin.hh"
 #include <gazebo/msgs/msgs.hh>
 #include <gazebo/sensors/sensors.hh>
 #include <gazebo/util/system.hh>
@@ -31,7 +31,7 @@
 namespace gazebo
 {
   /// \brief A plugin for a conveyor belt.
-  class GAZEBO_VISIBLE ConveyorBeltPlugin : public TopContactPlugin
+  class GAZEBO_VISIBLE ConveyorBeltPlugin : public SideContactPlugin
   {
     /// \brief Constructor.
     public: ConveyorBeltPlugin();
