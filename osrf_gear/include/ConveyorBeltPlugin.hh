@@ -56,7 +56,10 @@ namespace gazebo
     /// \brief Callback for responding to control commands
     protected: void OnControlCommand(ConstHeaderPtr& _msg);
 
-    /// \brief Belt velocity (m/s, in the +Y direction of the belt frame)
+    /// \brief Axis for belt velocity in local frame (+Y by default)
+    protected: math::Vector3 velocityAxis;
+
+    /// \brief Belt velocity (m/s)
     protected: double beltVelocity;
 
     /// \brief Mutex to protect the belt velocity

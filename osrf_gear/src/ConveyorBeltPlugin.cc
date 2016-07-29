@@ -75,6 +75,9 @@ void ConveyorBeltPlugin::Load(sensors::SensorPtr _sensor, sdf::ElementPtr _sdf)
   }
   this->controlCommandSub = this->node->Subscribe(controlCommandTopic,
       &ConveyorBeltPlugin::OnControlCommand, this);
+
+  // TODO: get this from SDF
+  this->velocityAxis = math::Vector3(0, 1, 0);
 }
 
 /////////////////////////////////////////////////
@@ -94,7 +97,8 @@ void ConveyorBeltPlugin::OnUpdate()
 /////////////////////////////////////////////////
 void ConveyorBeltPlugin::ActOnContactingLinks(double velocity)
 {
-  ignition::math::Vector3d velocity_beltFrame(0, velocity, 0);
+  ignition::math::Vector3d velocity_beltFrame = velocity * \
+    ignition::math::Vector3d(this->velocityAxis.x, this->velocityAxis.y, this->velocityAxis.z);
   auto beltPose = this->parentLink->GetWorldPose().Ign();
   math::Vector3 velocity_worldFrame = beltPose.Rot().RotateVector(velocity_beltFrame);
   for (auto linkPtr : this->contactingLinks) {
