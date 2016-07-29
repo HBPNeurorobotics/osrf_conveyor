@@ -148,6 +148,9 @@ void PopulationPlugin::Load(physics::WorldPtr _world, sdf::ElementPtr _sdf)
   {
     std::string frameName = _sdf->Get<std::string>("frame");
     this->dataPtr->frame = this->dataPtr->world->GetEntity(frameName);
+    if (!this->dataPtr->frame) {
+      gzthrow(std::string("The frame '") + frameName + "' does not exist");
+    }
     if (!this->dataPtr->frame->HasType(physics::Base::LINK) &&
       !this->dataPtr->frame->HasType(physics::Base::MODEL))
     {
