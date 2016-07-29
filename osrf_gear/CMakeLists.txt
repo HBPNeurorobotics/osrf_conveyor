@@ -96,11 +96,25 @@ install(TARGETS ${ros_vacuum_gripper_plugin_name}
   RUNTIME DESTINATION bin)
 
 
+# Create the libTopContactPlugin.so library.
+set(top_contact_plugin_name TopContactPlugin)
+add_library(${top_contact_plugin_name} src/TopContactPlugin.cc)
+target_link_libraries(${top_contact_plugin_name}
+  ${GAZEBO_LIBRARIES}
+)
+install(TARGETS ${top_contact_plugin_name}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
+
+
 # Create the libConveyorBeltPlugin.so library.
 set(conveyor_belt_plugin_name ConveyorBeltPlugin)
 add_library(${conveyor_belt_plugin_name} src/ConveyorBeltPlugin.cc)
 target_link_libraries(${conveyor_belt_plugin_name}
   ${GAZEBO_LIBRARIES}
+  ${top_contact_plugin_name}
 )
 install(TARGETS ${conveyor_belt_plugin_name}
   ARCHIVE DESTINATION lib
@@ -157,8 +171,9 @@ set(conveyor_controller_name ConveyorController)
 add_library(${conveyor_controller_name} SHARED src/ConveyorController.cc)
 target_link_libraries(${conveyor_controller_name}
   ${conveyor_belt_plugin_name}
+  ${GAZEBO_LIBRARIES}
   ${proximity_ray_plugin_name}
-  ${GAZEBO_LIBRARIES})
+)
 install(TARGETS ${conveyor_controller_name}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
@@ -201,6 +216,10 @@ add_library(${task_plugin_name}
 )
 target_link_libraries(${task_plugin_name}
   ${GAZEBO_LIBRARIES}
+  ${roscpp_LIBRARIES}
+)
+add_dependencies(${ros_logical_camera_plugin_name}
+    ${${PROJECT_NAME}_EXPORTED_TARGETS}
 )
 install(TARGETS ${task_plugin_name}
   ARCHIVE DESTINATION lib
@@ -229,8 +248,26 @@ set(object_disposal_plugin_name ObjectDisposalPlugin)
 add_library(${object_disposal_plugin_name} src/ObjectDisposalPlugin.cc)
 target_link_libraries(${object_disposal_plugin_name}
   ${GAZEBO_LIBRARIES}
+  ${top_contact_plugin_name}
 )
 install(TARGETS ${object_disposal_plugin_name}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
+
+# Create the libKitTrayPlugin.so library.
+set(kit_tray_plugin_name KitTrayPlugin)
+add_library(${kit_tray_plugin_name} src/KitTrayPlugin.cc)
+target_link_libraries(${kit_tray_plugin_name}
+  ${GAZEBO_LIBRARIES}
+  ${roscpp_LIBRARIES}
+  ${top_contact_plugin_name}
+)
+add_dependencies(${kit_tray_plugin_name}
+    ${${PROJECT_NAME}_EXPORTED_TARGETS}
+)
+install(TARGETS ${kit_tray_plugin_name}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin

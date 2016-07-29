@@ -16,23 +16,22 @@
 */
 /*
  * Desc: Conveyor Belt Plugin
- * Author: Nate Koenig mod by John Hsu and Deanna Hood
+ * Author: Deanna Hood
  */
-#ifndef _GAZEBO_CONTACT_PLUGIN_HH_
-#define _GAZEBO_CONTACT_PLUGIN_HH_
+#ifndef _GAZEBO_CONVEYOR_BELT_PLUGIN_HH_
+#define _GAZEBO_CONVEYOR_BELT_PLUGIN_HH_
 
 #include <string>
 
-#include <gazebo/common/Plugin.hh>
+#include "TopContactPlugin.hh"
 #include <gazebo/msgs/msgs.hh>
 #include <gazebo/sensors/sensors.hh>
 #include <gazebo/util/system.hh>
 
 namespace gazebo
 {
-  /// \brief A plugin for a contact sensor. Inherit from this class to make
-  /// your own contact plugin.
-  class GAZEBO_VISIBLE ConveyorBeltPlugin : public SensorPlugin
+  /// \brief A plugin for a conveyor belt.
+  class GAZEBO_VISIBLE ConveyorBeltPlugin : public TopContactPlugin
   {
     /// \brief Constructor.
     public: ConveyorBeltPlugin();
@@ -46,19 +45,7 @@ namespace gazebo
     public: virtual void Load(sensors::SensorPtr _sensor, sdf::ElementPtr _sdf);
 
     /// \brief Callback that recieves the contact sensor's update signal.
-    /// Override this this function to get callbacks when the contact sensor
-    /// is updated with new data.
     protected: void OnUpdate();
-
-    /// \brief Pointer to the contact sensor
-    protected: sensors::ContactSensorPtr parentSensor;
-
-    /// \brief Connection that maintains a link between the contact sensor's
-    /// updated signal and the OnUpdate callback.
-    protected: event::ConnectionPtr updateConnection;
-
-    /// \brief Pointer to the world
-    protected: physics::WorldPtr world;
 
     /// \brief Pointer to this node for publishing/subscribing
     protected: transport::NodePtr node;
@@ -81,18 +68,6 @@ namespace gazebo
     /// \brief Generate a scoped topic name from a local one
     /// \param local local topic name
     protected: std::string Topic(std::string topicName) const;
-
-    /// \brief Name of the collision of the belt
-    protected: std::string beltCollisionName;
-
-    /// \brief Pointer to the belt link
-    protected: physics::LinkPtr beltLink;
-
-    /// \brief Set of pointers to links which have collisions with the belt
-    protected: std::set<physics::LinkPtr> contactingLinks;
-
-    /// \brief Determine which links are ontop of the belt
-    protected: void CalculateContactingLinks();
 
     /// \brief Act on links that are ontop of the belt
     protected: void ActOnContactingLinks(double velocity);

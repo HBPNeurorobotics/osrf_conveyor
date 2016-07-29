@@ -26,7 +26,7 @@ using namespace gazebo;
 GZ_REGISTER_SENSOR_PLUGIN(ConveyorBeltPlugin)
 
 /////////////////////////////////////////////////
-ConveyorBeltPlugin::ConveyorBeltPlugin() : SensorPlugin()
+ConveyorBeltPlugin::ConveyorBeltPlugin() : TopContactPlugin()
 {
 }
 
@@ -50,18 +50,9 @@ std::string ConveyorBeltPlugin::Topic(std::string topicName) const
 /////////////////////////////////////////////////
 void ConveyorBeltPlugin::Load(sensors::SensorPtr _sensor, sdf::ElementPtr _sdf)
 {
-  // Get the parent sensor.
-  this->parentSensor =
-    std::dynamic_pointer_cast<sensors::ContactSensor>(_sensor);
+  TopContactPlugin::Load(_sensor, _sdf);
 
-  // Make sure the parent sensor is valid.
-  if (!this->parentSensor)
-  {
-    gzerr << "ConveyorBeltPlugin requires a ContactSensor.\n";
-    return;
-  }
-
-  std::string worldName = this->parentSensor->WorldName();
+    std::string worldName = this->parentSensor->WorldName();
   this->world = physics::get_world(worldName);
   this->node = transport::NodePtr(new transport::Node());
   this->node->Init(worldName);
@@ -75,20 +66,6 @@ void ConveyorBeltPlugin::Load(sensors::SensorPtr _sensor, sdf::ElementPtr _sdf)
   }
   gzdbg << "Using belt velocity of: " << this->beltVelocity << " m/s\n";
 
-  std::string beltLinkName = this->parentSensor->ParentName();
-  this->beltLink =
-    boost::dynamic_pointer_cast<physics::Link>(this->world->GetEntity(beltLinkName));
-
-  std::string defaultCollisionName = beltLinkName + "::__default__";
-  if (this->parentSensor->GetCollisionCount() != 1 ||
-        this->parentSensor->GetCollisionName(0) == defaultCollisionName)
-  {
-    gzerr << "ConveyorBeltPlugin requires a single collision to observe contacts for\n";
-    return;
-  }
-
-  this->beltCollisionName = this->parentSensor->GetCollisionName(0);
-
   std::string controlCommandTopic;
   if (_sdf->HasElement("control_command_topic"))
   {
@@ -99,72 +76,37 @@ void ConveyorBeltPlugin::Load(sensors::SensorPtr _sensor, sdf::ElementPtr _sdf)
   }
   this->controlCommandSub = this->node->Subscribe(controlCommandTopic,
       &ConveyorBeltPlugin::OnControlCommand, this);
+  gzdbg << "Watching contacts on link: " << this->parentLink->GetScopedName()<<"\n";
+  gzdbg << "Watching contacts on link: " << this->collisionName<<"\n";
 
-  // Connect to the sensor update event.
+    // Connect to the sensor update event.
   this->updateConnection = this->parentSensor->ConnectUpdated(
       std::bind(&ConveyorBeltPlugin::OnUpdate, this));
 
   // Make sure the parent sensor is active.
   this->parentSensor->SetActive(true);
+
 }
 
 /////////////////////////////////////////////////
 void ConveyorBeltPlugin::OnUpdate()
 {
-  this->CalculateContactingLinks();
-  std::lock_guard<std::mutex> lock(this->mutex);
-  double velocity = this->beltVelocity;
-  this->ActOnContactingLinks(velocity);
-
-}
-
-/////////////////////////////////////////////////
-void ConveyorBeltPlugin::CalculateContactingLinks()
-{
-  auto beltPose = this->beltLink->GetWorldPose().Ign();
-  math::Vector3 beltTopNormal = beltPose.Rot().RotateVector(ignition::math::Vector3d::UnitZ);
-
-  // Get all the contacts
-  //FIXME: this does not accurately report the contacts if objects are stationary (when using ODE)
-  // This is because the conveyor model is static for now.. hopefully just temporary.
-  msgs::Contacts contacts;
-  contacts = this->parentSensor->Contacts();
-
   auto prevNumberContactingLinks = this->contactingLinks.size();
-  this->contactingLinks.clear();
-  for (int i = 0; i < contacts.contact_size(); ++i)
-  {
-    // Get the collision that's not the belt
-    std::string collision = contacts.contact(i).collision1();
-    if (this->beltCollisionName == contacts.contact(i).collision1()) {
-      collision = contacts.contact(i).collision2();
-    }
-
-    // Only consider links ontop of belt (collision normal aligned with +z of belt)
-    for (int j = 0; j < contacts.contact(i).position_size(); ++j)
-    {
-      ignition::math::Vector3d contactNormal = msgs::ConvertIgn(contacts.contact(i).normal(j));
-      double alignment = beltTopNormal.Dot(contactNormal);
-      if (alignment > 0.0) {
-        physics::CollisionPtr collisionPtr =
-          boost::dynamic_pointer_cast<physics::Collision>(this->world->GetEntity(collision));
-        if (collisionPtr) { // ensure the collision hasn't been deleted
-          physics::LinkPtr linkPtr = collisionPtr->GetLink();
-          this->contactingLinks.insert(linkPtr);
-        }
-      }
-    }
-  }
+  this->CalculateContactingLinks();
   if (prevNumberContactingLinks != this->contactingLinks.size()) {
     gzdbg << "Number of links ontop of belt: " << this->contactingLinks.size() << "\n";
   }
+
+  std::lock_guard<std::mutex> lock(this->mutex);
+  double velocity = this->beltVelocity;
+  this->ActOnContactingLinks(velocity);
 }
 
 /////////////////////////////////////////////////
 void ConveyorBeltPlugin::ActOnContactingLinks(double velocity)
 {
   ignition::math::Vector3d velocity_beltFrame(0.0, velocity, 0.0);
-  auto beltPose = this->beltLink->GetWorldPose().Ign();
+  auto beltPose = this->parentLink->GetWorldPose().Ign();
   math::Vector3 velocity_worldFrame = beltPose.Rot().RotateVector(velocity_beltFrame);
   for (auto linkPtr : this->contactingLinks) {
     if (linkPtr) {

@@ -15,29 +15,34 @@
  *
 */
 /*
- * Desc: Object disposal plugin
+ * Desc: Kit tray plugin
  * Author: Deanna Hood
  */
-#ifndef _GAZEBO_OBJECT_DISPOSAL_PLUGIN_HH_
-#define _GAZEBO_OBJECT_DISPOSAL_PLUGIN_HH_
+#ifndef _GAZEBO_KIT_TRAY_PLUGIN_HH_
+#define _GAZEBO_KIT_TRAY_PLUGIN_HH_
 
 #include <string>
 
-#include "TopContactPlugin.hh"
+#include <ros/ros.h>
+
+#include <ARIAC.hh>
 #include <gazebo/common/Plugin.hh>
+#include <gazebo/msgs/msgs.hh>
 #include <gazebo/sensors/sensors.hh>
 #include <gazebo/util/system.hh>
+#include <osrf_gear/Goal.h>
+#include "TopContactPlugin.hh"
 
 namespace gazebo
 {
-  /// \brief A plugin for a contact sensor attached to an model disposal unit.
-  class GAZEBO_VISIBLE ObjectDisposalPlugin : public TopContactPlugin
+  /// \brief A plugin for a contact sensor on a kit tray.
+  class GAZEBO_VISIBLE KitTrayPlugin : public TopContactPlugin
   {
     /// \brief Constructor.
-    public: ObjectDisposalPlugin();
+    public: KitTrayPlugin();
 
     /// \brief Destructor.
-    public: virtual ~ObjectDisposalPlugin();
+    public: virtual ~KitTrayPlugin();
 
     /// \brief Load the sensor plugin.
     /// \param[in] _sensor Pointer to the sensor that loaded this plugin.
@@ -47,8 +52,14 @@ namespace gazebo
     /// \brief Callback that recieves the contact sensor's update signal.
     protected: void OnUpdate();
 
-    /// \brief Act on models that are ontop of the sensor's link
+    /// \brief Act on models that are ontop of the belt
     protected: void ActOnContactingModels();
+
+    /// \brief Kit to be built on this tray
+    protected: ariac::Kit kit;
+    protected: ros::NodeHandle *rosNode;
+    protected: ros::Subscriber goalSub;
+    public: void OnGoalReceived(const osrf_gear::Goal::ConstPtr & goalMsg);
   };
 }
 #endif

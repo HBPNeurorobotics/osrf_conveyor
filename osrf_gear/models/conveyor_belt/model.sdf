@@ -6,7 +6,6 @@
         <link name="belt">
             <pose>0 2.5 0 0 0 0</pose>
             <sensor name='conveyor_belt_contact' type='contact'>
-                <update_rate>10</update_rate>
                 <contact>
                     <collision>belt_collision</collision>
                 </contact>

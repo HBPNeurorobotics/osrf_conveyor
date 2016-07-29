@@ -48,6 +48,12 @@
       <pose>0.8 -1.5 1.7 0 1.5708 -1.5708</pose>
     </include>
 
+    <!-- a tray for building kits -->
+    <include>
+      <uri>model://kit_tray</uri>
+      <pose>-0.5 -1.5 1.1 0 0 0</pose>
+    </include>
+
     <!-- Populate the conveyor belt -->
     <plugin filename="libPopulationPlugin.so" name="populate_conveyor">
       <activation_topic>~/conveyor/control</activation_topic>
@@ -79,7 +85,7 @@
       <conveyor_activation_topic>~/conveyor/control</conveyor_activation_topic>
       <goals_topic>/ariac/goals</goals_topic>
       <goal>
-        <time>5.0</time>
+        <time>0.0</time>
         <!-- 1st kit -->
         <kit>
           <object>
