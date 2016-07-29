@@ -22,7 +22,7 @@
 #include <gazebo/transport/Node.hh>
 
 using namespace gazebo;
-GZ_REGISTER_SENSOR_PLUGIN(ObjectDisposalPlugin)
+GZ_REGISTER_MODEL_PLUGIN(ObjectDisposalPlugin)
 
 /////////////////////////////////////////////////
 ObjectDisposalPlugin::ObjectDisposalPlugin() : SideContactPlugin()
@@ -37,9 +37,9 @@ ObjectDisposalPlugin::~ObjectDisposalPlugin()
 }
 
 /////////////////////////////////////////////////
-void ObjectDisposalPlugin::Load(sensors::SensorPtr _sensor, sdf::ElementPtr _sdf)
+void ObjectDisposalPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 {
-  SideContactPlugin::Load(_sensor, _sdf);
+  SideContactPlugin::Load(_model, _sdf);
 }
 
 /////////////////////////////////////////////////
@@ -78,7 +78,7 @@ void ObjectDisposalPlugin::ActOnContactingModels()
       if (disposalBox.Contains(modelCog))
       {
         gzdbg << "Removing model: " << model->GetName() << "\n";
-        this->world->RemoveModel(model);
+        //this->world->RemoveModel(model);
       }
     }
   }

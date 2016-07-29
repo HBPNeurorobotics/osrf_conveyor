@@ -23,12 +23,15 @@
 
 #include <gazebo/common/Plugin.hh>
 #include <gazebo/sensors/sensors.hh>
+#include <gazebo/transport/Node.hh>
+#include <gazebo/transport/Publisher.hh>
 #include <gazebo/util/system.hh>
 
 namespace gazebo
 {
-  /// \brief A plugin for a contact sensor that only monitors collisions on one of its sides.
-  class GAZEBO_VISIBLE SideContactPlugin : public SensorPlugin
+  /// \brief A plugin for a model with a contact sensor that only monitors
+  /// collisions on one of its sides.
+  class GAZEBO_VISIBLE SideContactPlugin : public ModelPlugin
   {
     /// \brief Constructor.
     public: SideContactPlugin();
@@ -39,10 +42,19 @@ namespace gazebo
     /// \brief Load the sensor plugin.
     /// \param[in] _sensor Pointer to the sensor that loaded this plugin.
     /// \param[in] _sdf SDF element that describes the plugin.
-    public: virtual void Load(sensors::SensorPtr _sensor, sdf::ElementPtr _sdf);
+    public: virtual void Load(physics::ModelPtr _model, sdf::ElementPtr _sdf);
 
-    /// \brief Callback that recieves the contact sensor's update signal.
+    /// \brief Callback that recieves the contact sensor's messages.
+    protected: virtual void OnContactsReceived(ConstContactsPtr& _msg);
+
+    /// \brief Called whenever contact sensor's messages are received
     protected: virtual void OnUpdate();
+
+    /// \brief Name of the contact sensor
+    protected: std::string contactSensorName;
+
+    /// \brief Scoped name of the contact sensor
+    protected: std::string scopedContactSensorName;
 
     /// \brief Pointer to the contact sensor
     protected: sensors::ContactSensorPtr parentSensor;
@@ -51,12 +63,23 @@ namespace gazebo
     /// (default (0, 0, 1))
     protected: ignition::math::Vector3d sideNormal;
 
-    /// \brief Connection that maintains a link between the contact sensor's
-    /// updated signal and the OnUpdate callback.
-    protected: event::ConnectionPtr updateConnection;
-
     /// \brief Pointer to the world
     protected: physics::WorldPtr world;
+
+    /// \brief Pointer to the model
+    protected: physics::ModelPtr model;
+
+    /// \brief Pointer to this node for publishing/subscribing
+    protected: transport::NodePtr node;
+
+    /// \brief Subscriber for the contact topic
+    protected: transport::SubscriberPtr contactSub;
+
+    /// \brief Contacts msg received
+    protected: msgs::Contacts newestContactsMsg;
+
+    /// \brief Mutex for protecting contacts msg
+    protected: mutable boost::mutex mutex;
 
     /// \brief Name of the collision of the parent's link
     protected: std::string collisionName;
@@ -69,6 +92,10 @@ namespace gazebo
 
     /// \brief Set of pointers to models that have collisions with the parent link's side
     protected: std::set<physics::ModelPtr> contactingModels;
+
+    /// \brief Iterate through links of model to find sensor with the specified name
+    /// \returns true if the sensor was successfully found and is a contact sensor
+    protected: bool FindContactSensor();
 
     /// \brief Determine which links are in contact with the side of the parent link
     protected: virtual void CalculateContactingLinks();

@@ -880,16 +880,17 @@
     <model name="conveyor_belt">
       <static>true</static>
       <pose>0.39750 -1.21816 0.81443 0 0 0</pose>
+      <plugin name="conveyor_belt_plugin" filename="libROSConveyorBeltPlugin.so">
+        <belt_velocity>0.2</belt_velocity>
+        <velocity_axis>-1 0 0</velocity_axis>
+        <contact_sensor_name>conveyor_belt_contact</contact_sensor_name>
+      </plugin>
       <link name="belt">
         <sensor name='conveyor_belt_contact' type='contact'>
           <update_rate>10</update_rate>
           <contact>
             <collision>belt_collision</collision>
           </contact>
-          <plugin name="conveyor_belt_plugin" filename="libROSConveyorBeltPlugin.so">
-            <belt_velocity>0.2</belt_velocity>
-            <velocity_axis>-1 0 0</velocity_axis>
-          </plugin>
         </sensor>
         <collision name="belt_collision">
           <geometry>

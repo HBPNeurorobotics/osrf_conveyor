@@ -23,7 +23,7 @@
 #include <gazebo/transport/Publisher.hh>
 
 using namespace gazebo;
-GZ_REGISTER_SENSOR_PLUGIN(ConveyorBeltPlugin)
+GZ_REGISTER_MODEL_PLUGIN(ConveyorBeltPlugin)
 
 /////////////////////////////////////////////////
 ConveyorBeltPlugin::ConveyorBeltPlugin() : SideContactPlugin()
@@ -48,12 +48,15 @@ std::string ConveyorBeltPlugin::Topic(std::string topicName) const
 }
 
 /////////////////////////////////////////////////
-void ConveyorBeltPlugin::Load(sensors::SensorPtr _sensor, sdf::ElementPtr _sdf)
+void ConveyorBeltPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 {
-  SideContactPlugin::Load(_sensor, _sdf);
+  SideContactPlugin::Load(_model, _sdf);
 
-  this->node = transport::NodePtr(new transport::Node());
-  this->node->Init(this->world->GetName());
+  if (!this->node)
+  {
+    this->node = transport::NodePtr(new transport::Node());
+    this->node->Init(this->world->GetName());
+  }
 
   if (_sdf->HasElement("belt_velocity"))
   {

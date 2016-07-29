@@ -20,7 +20,7 @@
 
 using namespace gazebo;
 
-GZ_REGISTER_SENSOR_PLUGIN(ROSConveyorBeltPlugin);
+GZ_REGISTER_MODEL_PLUGIN(ROSConveyorBeltPlugin);
 
 /////////////////////////////////////////////////
 ROSConveyorBeltPlugin::ROSConveyorBeltPlugin()
@@ -34,7 +34,7 @@ ROSConveyorBeltPlugin::~ROSConveyorBeltPlugin()
 }
 
 /////////////////////////////////////////////////
-void ROSConveyorBeltPlugin::Load(sensors::SensorPtr _parent, sdf::ElementPtr _sdf)
+void ROSConveyorBeltPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf)
 {
   // load parameters
   this->robotNamespace_ = "";

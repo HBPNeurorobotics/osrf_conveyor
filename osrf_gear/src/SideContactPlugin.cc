@@ -15,16 +15,17 @@
  *
 */
 
+#include <boost/algorithm/string/replace.hpp>
 #include <string>
 
 #include "SideContactPlugin.hh"
 #include <ignition/math/Vector3.hh>
 
 using namespace gazebo;
-GZ_REGISTER_SENSOR_PLUGIN(SideContactPlugin)
+GZ_REGISTER_MODEL_PLUGIN(SideContactPlugin)
 
 /////////////////////////////////////////////////
-SideContactPlugin::SideContactPlugin() : SensorPlugin()
+SideContactPlugin::SideContactPlugin() : ModelPlugin()
 {
 }
 
@@ -36,33 +37,27 @@ SideContactPlugin::~SideContactPlugin()
 }
 
 /////////////////////////////////////////////////
-void SideContactPlugin::Load(sensors::SensorPtr _sensor, sdf::ElementPtr _sdf)
+void SideContactPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 {
-  // Get the parent sensor.
-  this->parentSensor =
-    std::dynamic_pointer_cast<sensors::ContactSensor>(_sensor);
+  GZ_ASSERT(_model, "Model pointer is null");
 
-  // Make sure the parent sensor is valid.
-  if (!this->parentSensor)
+  if (!_sdf->HasElement("contact_sensor_name"))
   {
-    gzerr << "SideContactPlugin requires a ContactSensor.\n";
-    return;
+    gzerr << "'contact_sensor_name' not specified in SDF\n";
+  }
+  this->model = _model;
+  this->world = this->model->GetWorld();
+  this->node = transport::NodePtr(new transport::Node());
+  this->node->Init(this->world->GetName());
+
+  this->contactSensorName = _sdf->Get<std::string>("contact_sensor_name");
+  bool sensorFound = this->FindContactSensor();
+  if (!sensorFound || !this->parentSensor)
+  {
+    gzerr << "Contact sensor not found: " << this->contactSensorName << "\n";
   }
 
-  // Connect to the sensor update event.
-  this->updateConnection = this->parentSensor->ConnectUpdated(
-      std::bind(&SideContactPlugin::OnUpdate, this));
-
-  // Make sure the parent sensor is active.
-  this->parentSensor->SetActive(true);
-
-  std::string worldName = this->parentSensor->WorldName();
-  this->world = physics::get_world(worldName);
-
-  std::string parentLinkName = this->parentSensor->ParentName();
-  this->parentLink =
-    boost::dynamic_pointer_cast<physics::Link>(this->world->GetEntity(parentLinkName));
-
+  std::string parentLinkName = this->parentLink->GetScopedName();
   std::string defaultCollisionName = parentLinkName + "::__default__";
   if (this->parentSensor->GetCollisionCount() != 1)
   {
@@ -91,6 +86,47 @@ void SideContactPlugin::Load(sensors::SensorPtr _sensor, sdf::ElementPtr _sdf)
   {
     this->sideNormal = ignition::math::Vector3d(0, 0, 1);
   }
+
+
+  // FIXME: how to not hard-code this gazebo prefix?
+  std::string contactTopic = "/gazebo/" + this->scopedContactSensorName;
+  boost::replace_all(contactTopic, "::", "/");
+  this->contactSub =
+    this->node->Subscribe(contactTopic, &SideContactPlugin::OnContactsReceived, this);
+
+}
+
+/////////////////////////////////////////////////
+bool SideContactPlugin::FindContactSensor()
+{
+  auto sensorManager = sensors::SensorManager::Instance();
+  auto links = this->model->GetLinks();
+  for (const auto &link : links)
+  {
+    std::string scopedContactSensorName =
+      this->world->GetName() + "::" + link->GetScopedName() + "::" + this->contactSensorName;
+    for (unsigned int i = 0; i < link->GetSensorCount(); ++i)
+    {
+      if (link->GetSensorName(i) == scopedContactSensorName)
+      {
+        this->parentLink = link;
+        this->scopedContactSensorName = scopedContactSensorName;
+        this->parentSensor =
+          std::static_pointer_cast<sensors::ContactSensor>(
+            sensorManager->GetSensor(this->contactSensorName));
+        return this->parentSensor != 0;
+      }
+    }
+  }
+  return false;
+}
+
+/////////////////////////////////////////////////
+void SideContactPlugin::OnContactsReceived(ConstContactsPtr& _msg)
+{
+  boost::mutex::scoped_lock lock(this->mutex);
+  this->newestContactsMsg = *_msg;
+  this->OnUpdate();
 }
 
 /////////////////////////////////////////////////
@@ -106,8 +142,7 @@ void SideContactPlugin::CalculateContactingLinks()
   math::Vector3 parentLinkTopNormal = parentLinkPose.Rot().RotateVector(this->sideNormal);
 
   // Get all the contacts
-  msgs::Contacts contacts;
-  contacts = this->parentSensor->Contacts();
+  msgs::Contacts contacts = this->newestContactsMsg;
   this->contactingLinks.clear();
   double factor = 1.0;
 

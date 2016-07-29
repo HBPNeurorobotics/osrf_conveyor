@@ -40,10 +40,10 @@ namespace gazebo
     /// \brief Destructor.
     public: virtual ~ConveyorBeltPlugin();
 
-    /// \brief Load the sensor plugin.
-    /// \param[in] _sensor Pointer to the sensor that loaded this plugin.
+    /// \brief Load the model plugin.
+    /// \param[in] _model Pointer to the model that loaded this plugin.
     /// \param[in] _sdf SDF element that describes the plugin.
-    public: virtual void Load(sensors::SensorPtr _sensor, sdf::ElementPtr _sdf);
+    public: virtual void Load(physics::ModelPtr _model, sdf::ElementPtr _sdf);
 
     /// \brief Callback that recieves the contact sensor's update signal.
     protected: void OnUpdate();

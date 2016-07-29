@@ -39,9 +39,9 @@ namespace gazebo
     public: virtual ~ROSConveyorBeltPlugin();
 
     /// \brief Load the plugin.
-    /// \param[in] _parent Pointer to the parent sensor
+    /// \param[in] _parent Pointer to the parent model
     /// \param[in] _sdf Pointer to the SDF element of the plugin.
-    public: void Load(sensors::SensorPtr _parent, sdf::ElementPtr _sdf);
+    public: void Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf);
 
     /// \brief Receives requests on the conveyor belt's topic.
     /// \param[in] _req The desired state of the conveyor belt.

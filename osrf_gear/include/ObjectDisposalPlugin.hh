@@ -30,7 +30,7 @@
 
 namespace gazebo
 {
-  /// \brief A plugin for a contact sensor attached to an model disposal unit.
+  /// \brief A plugin for a contact sensor attached to a model disposal unit.
   class GAZEBO_VISIBLE ObjectDisposalPlugin : public SideContactPlugin
   {
     /// \brief Constructor.
@@ -39,10 +39,10 @@ namespace gazebo
     /// \brief Destructor.
     public: virtual ~ObjectDisposalPlugin();
 
-    /// \brief Load the sensor plugin.
-    /// \param[in] _sensor Pointer to the sensor that loaded this plugin.
+    /// \brief Load the model plugin.
+    /// \param[in] _model Pointer to the model that loaded this plugin.
     /// \param[in] _sdf SDF element that describes the plugin.
-    public: virtual void Load(sensors::SensorPtr _sensor, sdf::ElementPtr _sdf);
+    public: virtual void Load(physics::ModelPtr _model, sdf::ElementPtr _sdf);
 
     /// \brief Callback that recieves the contact sensor's update signal.
     protected: void OnUpdate();

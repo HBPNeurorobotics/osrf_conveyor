@@ -1,14 +1,15 @@
 <?xml version="1.0" ?>
 <sdf version="1.6">
     <model name="kit_tray">
+        <plugin name="kit_tray_plugin" filename="libKitTrayPlugin.so">
+            <contact_sensor_name>kit_tray_contact</contact_sensor_name>
+        </plugin>
         <link name="tray">
             <sensor name='kit_tray_contact' type='contact'>
                 <update_rate>10</update_rate>
                 <contact>
                     <collision>tray_collision</collision>
                 </contact>
-                <plugin name="kit_tray_plugin" filename="libKitTrayPlugin.so">
-                </plugin>
             </sensor>
             <collision name="tray_collision">
               <geometry>

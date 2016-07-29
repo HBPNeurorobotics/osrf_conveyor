@@ -75,7 +75,7 @@
 
     <!-- Populate the conveyor belt -->
     <plugin filename="libPopulationPlugin.so" name="populate_conveyor">
-      <activation_topic>~/conveyor/control</activation_topic>
+      <!--<activation_topic>~/conveyor/control</activation_topic>-->
       <loop_forever>true</loop_forever>
       <frame>workcell::conveyor_belt::belt</frame>
       <object_sequence>

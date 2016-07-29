@@ -21,8 +21,6 @@
         <contact>
            <collision>top_collision</collision>
         </contact>
-        <plugin name="object_disposal_plugin" filename="libObjectDisposalPlugin.so">
-        </plugin>
       </sensor>
       <collision name="top_collision">
         <max_contacts>10</max_contacts>
@@ -43,5 +41,11 @@
         <cast_shadows>0</cast_shadows>
       </visual>
     </link>
+
+    <!-- plugin for proecssing contact sensor output -->
+    <plugin name="object_disposal_plugin" filename="libObjectDisposalPlugin.so">
+      <contact_sensor_name>object_disposal_contact</contact_sensor_name>
+    </plugin>
+
   </model>
 </sdf>

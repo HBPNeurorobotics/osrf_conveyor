@@ -3,16 +3,18 @@
     <!-- the origin of this model is at the middle of the 'top' of the belt -->
     <model name="conveyor_belt">
         <static>true</static>
+        <plugin name="conveyor_belt_plugin" filename="libROSConveyorBeltPlugin.so">
+            <belt_velocity>1.</belt_velocity>
+            <velocity_axis>0 1 0</velocity_axis>
+            <contact_sensor_name>conveyor_belt_contact</contact_sensor_name>
+        </plugin>
         <link name="belt">
             <pose>0 2.5 0 0 0 0</pose>
             <sensor name='conveyor_belt_contact' type='contact'>
+                <update_rate>10</update_rate>
                 <contact>
                     <collision>belt_collision</collision>
                 </contact>
-                <plugin name="conveyor_belt_plugin" filename="libROSConveyorBeltPlugin.so">
-                    <belt_velocity>0.2</belt_velocity>
-                    <velocity_axis>0 1 0</velocity_axis>
-                </plugin>
             </sensor>
             <inertial>
                 <mass>10</mass>

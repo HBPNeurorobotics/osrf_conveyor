@@ -27,7 +27,7 @@
 #include <geometry_msgs/Quaternion.h>
 
 using namespace gazebo;
-GZ_REGISTER_SENSOR_PLUGIN(KitTrayPlugin)
+GZ_REGISTER_MODEL_PLUGIN(KitTrayPlugin)
 
 /////////////////////////////////////////////////
 KitTrayPlugin::KitTrayPlugin() : SideContactPlugin()
@@ -42,10 +42,10 @@ KitTrayPlugin::~KitTrayPlugin()
 }
 
 /////////////////////////////////////////////////
-void KitTrayPlugin::Load(sensors::SensorPtr _sensor, sdf::ElementPtr _sdf)
+void KitTrayPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 {
 
-  SideContactPlugin::Load(_sensor, _sdf);
+  SideContactPlugin::Load(_model, _sdf);
 
   // Make sure the ROS node for Gazebo has already been initialized
   if (!ros::isInitialized())
