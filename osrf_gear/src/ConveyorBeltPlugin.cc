@@ -21,7 +21,6 @@
 #include "ConveyorBeltPlugin.hh"
 #include <gazebo/transport/Node.hh>
 #include <gazebo/transport/Publisher.hh>
-#include <ignition/math/Vector3.hh>
 
 using namespace gazebo;
 GZ_REGISTER_SENSOR_PLUGIN(ConveyorBeltPlugin)
@@ -76,8 +75,14 @@ void ConveyorBeltPlugin::Load(sensors::SensorPtr _sensor, sdf::ElementPtr _sdf)
   this->controlCommandSub = this->node->Subscribe(controlCommandTopic,
       &ConveyorBeltPlugin::OnControlCommand, this);
 
-  // TODO: get this from SDF
-  this->velocityAxis = math::Vector3(0, 1, 0);
+  if (_sdf->HasElement("velocity_axis"))
+  {
+    this->velocityAxis = _sdf->Get<ignition::math::Vector3d>("velocity_axis");
+  }
+  else
+  {
+    gzerr << "'velocity_axis' tag not found\n";
+  }
 }
 
 /////////////////////////////////////////////////
@@ -97,8 +102,7 @@ void ConveyorBeltPlugin::OnUpdate()
 /////////////////////////////////////////////////
 void ConveyorBeltPlugin::ActOnContactingLinks(double velocity)
 {
-  ignition::math::Vector3d velocity_beltFrame = velocity * \
-    ignition::math::Vector3d(this->velocityAxis.x, this->velocityAxis.y, this->velocityAxis.z);
+  ignition::math::Vector3d velocity_beltFrame = velocity * this->velocityAxis;
   auto beltPose = this->parentLink->GetWorldPose().Ign();
   math::Vector3 velocity_worldFrame = beltPose.Rot().RotateVector(velocity_beltFrame);
   for (auto linkPtr : this->contactingLinks) {

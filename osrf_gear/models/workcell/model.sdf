@@ -888,6 +888,7 @@
           </contact>
           <plugin name="conveyor_belt_plugin" filename="libROSConveyorBeltPlugin.so">
             <belt_velocity>0.2</belt_velocity>
+            <velocity_axis>-1 0 0</velocity_axis>
           </plugin>
         </sensor>
         <collision name="belt_collision">

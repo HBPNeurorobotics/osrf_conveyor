@@ -22,7 +22,6 @@
            <collision>top_collision</collision>
         </contact>
         <plugin name="object_disposal_plugin" filename="libObjectDisposalPlugin.so">
-          <belt_velocity>0.2</belt_velocity>
         </plugin>
       </sensor>
       <collision name="top_collision">

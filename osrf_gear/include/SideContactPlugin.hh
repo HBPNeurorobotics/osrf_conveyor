@@ -49,7 +49,7 @@ namespace gazebo
 
     /// \brief The normal, in local frame, to the side that is to have contacts monitored
     /// (default (0, 0, 1))
-    protected: math::Vector3 sideNormal;
+    protected: ignition::math::Vector3d sideNormal;
 
     /// \brief Connection that maintains a link between the contact sensor's
     /// updated signal and the OnUpdate callback.

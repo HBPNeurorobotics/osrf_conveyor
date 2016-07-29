@@ -36,7 +36,7 @@ SideContactPlugin::~SideContactPlugin()
 }
 
 /////////////////////////////////////////////////
-void SideContactPlugin::Load(sensors::SensorPtr _sensor, sdf::ElementPtr /*_sdf*/)
+void SideContactPlugin::Load(sensors::SensorPtr _sensor, sdf::ElementPtr _sdf)
 {
   // Get the parent sensor.
   this->parentSensor =
@@ -83,8 +83,14 @@ void SideContactPlugin::Load(sensors::SensorPtr _sensor, sdf::ElementPtr /*_sdf*
     this->collisionName = this->parentLink->GetCollision(index)->GetScopedName();
   }
 
-  // TODO: get this from SDF
-  this->sideNormal = math::Vector3(0, 0, 1);
+  if (_sdf->HasElement("contact_side_normal"))
+  {
+    this->sideNormal = _sdf->Get<ignition::math::Vector3d>("contact_side_normal");
+  }
+  else
+  {
+    this->sideNormal = ignition::math::Vector3d(0, 0, 1);
+  }
 }
 
 /////////////////////////////////////////////////
@@ -97,8 +103,7 @@ void SideContactPlugin::OnUpdate()
 void SideContactPlugin::CalculateContactingLinks()
 {
   auto parentLinkPose = this->parentLink->GetWorldPose().Ign();
-  ignition::math::Vector3d sideNormal(this->sideNormal.x, this->sideNormal.y, this->sideNormal.z);
-  math::Vector3 parentLinkTopNormal = parentLinkPose.Rot().RotateVector(sideNormal);
+  math::Vector3 parentLinkTopNormal = parentLinkPose.Rot().RotateVector(this->sideNormal);
 
   // Get all the contacts
   msgs::Contacts contacts;

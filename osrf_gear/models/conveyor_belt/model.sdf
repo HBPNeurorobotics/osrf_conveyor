@@ -11,6 +11,7 @@
                 </contact>
                 <plugin name="conveyor_belt_plugin" filename="libROSConveyorBeltPlugin.so">
                     <belt_velocity>0.2</belt_velocity>
+                    <velocity_axis>0 1 0</velocity_axis>
                 </plugin>
             </sensor>
             <inertial>

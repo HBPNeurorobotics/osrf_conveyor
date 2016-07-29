@@ -27,6 +27,7 @@
 #include <gazebo/msgs/msgs.hh>
 #include <gazebo/sensors/sensors.hh>
 #include <gazebo/util/system.hh>
+#include <ignition/math/Vector3.hh>
 
 namespace gazebo
 {
@@ -57,7 +58,7 @@ namespace gazebo
     protected: void OnControlCommand(ConstHeaderPtr& _msg);
 
     /// \brief Axis for belt velocity in local frame (+Y by default)
-    protected: math::Vector3 velocityAxis;
+    protected: ignition::math::Vector3d velocityAxis;
 
     /// \brief Belt velocity (m/s)
     protected: double beltVelocity;
