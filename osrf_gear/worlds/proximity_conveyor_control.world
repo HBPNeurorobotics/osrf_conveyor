@@ -5,6 +5,7 @@
 
     <include>
       <uri>model://conveyor_belt</uri>
+      <pose>0 -2.5 0 0 0 0</pose>
     </include>
 
     <!-- if an object trips the beam, the belt will stop -->
