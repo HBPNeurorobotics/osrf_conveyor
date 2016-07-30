@@ -78,6 +78,7 @@ void SideContactPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
     unsigned int index = 0;
     this->collisionName = this->parentLink->GetCollision(index)->GetScopedName();
   }
+  gzdbg << "[" << this->model->GetName() << "] Watching collisions on: " << this->collisionName << "\n";
 
   if (_sdf->HasElement("contact_side_normal"))
   {

@@ -45,6 +45,7 @@
     <!-- plugin for proecssing contact sensor output -->
     <plugin name="object_disposal_plugin" filename="libObjectDisposalPlugin.so">
       <contact_sensor_name>object_disposal_contact</contact_sensor_name>
+      <center_of_gravity_check>true</center_of_gravity_check>
     </plugin>
 
   </model>

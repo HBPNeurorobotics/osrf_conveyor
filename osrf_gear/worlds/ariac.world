@@ -73,6 +73,12 @@
       <pose>-0.5 -1.5 1.1 0 0 0</pose>
     </include>
 
+    <!-- a wall to delete objects at the end of the belt -->
+    <include>
+      <uri>model://deletion_wall</uri>
+      <pose>1.2 -4.1 1.4 0 0 1.5708</pose>
+    </include>
+
     <!-- Populate the conveyor belt -->
     <plugin filename="libPopulationPlugin.so" name="populate_conveyor">
       <!--<activation_topic>~/conveyor/control</activation_topic>-->

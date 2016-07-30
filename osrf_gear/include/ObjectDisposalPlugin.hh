@@ -49,6 +49,9 @@ namespace gazebo
 
     /// \brief Act on models that are ontop of the sensor's link
     protected: void ActOnContactingModels();
+
+    /// \brief If true, only delete models if their CoG is within the bounding box of the link 
+    protected: bool centerOfGravityCheck;
   };
 }
 #endif

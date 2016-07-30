@@ -41,6 +41,11 @@ ObjectDisposalPlugin::~ObjectDisposalPlugin()
 void ObjectDisposalPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 {
   SideContactPlugin::Load(_model, _sdf);
+  this->centerOfGravityCheck = false;
+  if (_sdf->HasElement("center_of_gravity_check"))
+  {
+    this->centerOfGravityCheck = _sdf->Get<bool>("center_of_gravity_check");
+  }
 }
 
 /////////////////////////////////////////////////
@@ -54,6 +59,7 @@ void ObjectDisposalPlugin::OnUpdate(const common::UpdateInfo &/*_info*/)
 void ObjectDisposalPlugin::ActOnContactingModels()
 {
   // Only remove models if their center of gravity is "above" the link
+  // TODO: make more general than just z axis
   auto linkBox = this->parentLink->GetBoundingBox();
   auto linkBoxMax = linkBox.max;
   auto linkBoxMin = linkBox.min;
@@ -63,24 +69,28 @@ void ObjectDisposalPlugin::ActOnContactingModels()
 
   for (auto model : this->contactingModels) {
     if (model) {
-      // Calculate the center of gravity of the model
-      math::Vector3 modelCog = math::Vector3::Zero;
-      double modelMass = 0.0;
-      for (auto modelLink : model->GetLinks())
+      bool removeModel = true;
+      if (this->centerOfGravityCheck)
       {
-        double linkMass = modelLink->GetInertial()->GetMass();
-        modelCog += modelLink->GetWorldCoGPose().pos * linkMass;
-        modelMass += linkMass;
+        // Calculate the center of gravity of the model
+        math::Vector3 modelCog = math::Vector3::Zero;
+        double modelMass = 0.0;
+        for (auto modelLink : model->GetLinks())
+        {
+          double linkMass = modelLink->GetInertial()->GetMass();
+          modelCog += modelLink->GetWorldCoGPose().pos * linkMass;
+          modelMass += linkMass;
+        }
+        if (modelMass > 0.0)
+        {
+          modelCog /= modelMass;
+        }
+        removeModel = disposalBox.Contains(modelCog);
       }
-      if (modelMass > 0.0)
+      if (removeModel)
       {
-        modelCog /= modelMass;
-      }
-      if (disposalBox.Contains(modelCog))
-      {
-        //FIXME makes crash
-        //gzdbg << "Removing model: " << model->GetName() << "\n";
-        //this->world->RemoveModel(model);
+        gzdbg << "[" << this->model->GetName() << "] Removing model: " << model->GetName() << "\n";
+        this->world->RemoveModel(model);
       }
     }
   }
