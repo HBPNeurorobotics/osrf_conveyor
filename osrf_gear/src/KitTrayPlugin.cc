@@ -37,6 +37,7 @@ KitTrayPlugin::KitTrayPlugin() : SideContactPlugin()
 /////////////////////////////////////////////////
 KitTrayPlugin::~KitTrayPlugin()
 {
+  event::Events::DisconnectWorldUpdateBegin(this->updateConnection);
   this->parentSensor.reset();
   this->world.reset();
 }
@@ -61,7 +62,7 @@ void KitTrayPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 }
 
 /////////////////////////////////////////////////
-void KitTrayPlugin::OnUpdate()
+void KitTrayPlugin::OnUpdate(const common::UpdateInfo &/*_info*/)
 {
   auto prevNumberContactingModels = this->contactingModels.size();
   this->CalculateContactingModels();

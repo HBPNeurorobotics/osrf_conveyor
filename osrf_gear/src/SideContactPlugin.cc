@@ -32,6 +32,7 @@ SideContactPlugin::SideContactPlugin() : ModelPlugin()
 /////////////////////////////////////////////////
 SideContactPlugin::~SideContactPlugin()
 {
+  event::Events::DisconnectWorldUpdateBegin(this->updateConnection);
   this->parentSensor.reset();
   this->world.reset();
 }
@@ -94,6 +95,10 @@ void SideContactPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   this->contactSub =
     this->node->Subscribe(contactTopic, &SideContactPlugin::OnContactsReceived, this);
 
+  // Listen to the update event. This event is broadcast every
+  // simulation iteration.
+  this->updateConnection = event::Events::ConnectWorldUpdateBegin(
+    boost::bind(&SideContactPlugin::OnUpdate, this, _1));
 }
 
 /////////////////////////////////////////////////
@@ -126,11 +131,11 @@ void SideContactPlugin::OnContactsReceived(ConstContactsPtr& _msg)
 {
   boost::mutex::scoped_lock lock(this->mutex);
   this->newestContactsMsg = *_msg;
-  this->OnUpdate();
+  this->newMsg = true;
 }
 
 /////////////////////////////////////////////////
-void SideContactPlugin::OnUpdate()
+void SideContactPlugin::OnUpdate(const common::UpdateInfo &/*_info*/)
 {
   this->CalculateContactingModels();
 }
@@ -138,10 +143,16 @@ void SideContactPlugin::OnUpdate()
 /////////////////////////////////////////////////
 void SideContactPlugin::CalculateContactingLinks()
 {
+  if (!this->newMsg)
+  {
+    return;
+  }
+
   auto parentLinkPose = this->parentLink->GetWorldPose().Ign();
   math::Vector3 parentLinkTopNormal = parentLinkPose.Rot().RotateVector(this->sideNormal);
 
   // Get all the contacts
+  boost::mutex::scoped_lock lock(this->mutex);
   msgs::Contacts contacts = this->newestContactsMsg;
   this->contactingLinks.clear();
   double factor = 1.0;
@@ -170,6 +181,7 @@ void SideContactPlugin::CalculateContactingLinks()
       }
     }
   }
+  this->newMsg = false;
 }
 
 /////////////////////////////////////////////////

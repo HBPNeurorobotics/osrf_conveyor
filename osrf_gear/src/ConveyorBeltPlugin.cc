@@ -33,6 +33,7 @@ ConveyorBeltPlugin::ConveyorBeltPlugin() : SideContactPlugin()
 /////////////////////////////////////////////////
 ConveyorBeltPlugin::~ConveyorBeltPlugin()
 {
+  event::Events::DisconnectWorldUpdateBegin(this->updateConnection);
   this->parentSensor.reset();
   this->world.reset();
 }
@@ -89,7 +90,7 @@ void ConveyorBeltPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 }
 
 /////////////////////////////////////////////////
-void ConveyorBeltPlugin::OnUpdate()
+void ConveyorBeltPlugin::OnUpdate(const common::UpdateInfo &/*_info*/)
 {
   auto prevNumberContactingLinks = this->contactingLinks.size();
   this->CalculateContactingLinks();

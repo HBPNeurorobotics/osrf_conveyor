@@ -32,6 +32,7 @@ ObjectDisposalPlugin::ObjectDisposalPlugin() : SideContactPlugin()
 /////////////////////////////////////////////////
 ObjectDisposalPlugin::~ObjectDisposalPlugin()
 {
+  event::Events::DisconnectWorldUpdateBegin(this->updateConnection);
   this->parentSensor.reset();
   this->world.reset();
 }
@@ -43,7 +44,7 @@ void ObjectDisposalPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 }
 
 /////////////////////////////////////////////////
-void ObjectDisposalPlugin::OnUpdate()
+void ObjectDisposalPlugin::OnUpdate(const common::UpdateInfo &/*_info*/)
 {
   this->CalculateContactingModels();
   this->ActOnContactingModels();
@@ -77,7 +78,8 @@ void ObjectDisposalPlugin::ActOnContactingModels()
       }
       if (disposalBox.Contains(modelCog))
       {
-        gzdbg << "Removing model: " << model->GetName() << "\n";
+        //FIXME makes crash
+        //gzdbg << "Removing model: " << model->GetName() << "\n";
         //this->world->RemoveModel(model);
       }
     }

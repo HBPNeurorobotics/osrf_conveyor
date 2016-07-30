@@ -22,6 +22,7 @@
 #define _GAZEBO_SIDE_CONTACT_PLUGIN_HH_
 
 #include <gazebo/common/Plugin.hh>
+#include <gazebo/common/UpdateInfo.hh>
 #include <gazebo/sensors/sensors.hh>
 #include <gazebo/transport/Node.hh>
 #include <gazebo/transport/Publisher.hh>
@@ -47,8 +48,12 @@ namespace gazebo
     /// \brief Callback that recieves the contact sensor's messages.
     protected: virtual void OnContactsReceived(ConstContactsPtr& _msg);
 
-    /// \brief Called whenever contact sensor's messages are received
-    protected: virtual void OnUpdate();
+    /// \brief Called when world update events are received
+    /// \param[in] _info Update information provided by the server.
+    protected: virtual void OnUpdate(const common::UpdateInfo &_info);
+
+    /// \brief Pointer to the update event connection.
+    protected: event::ConnectionPtr updateConnection;
 
     /// \brief Name of the contact sensor
     protected: std::string contactSensorName;
@@ -80,6 +85,9 @@ namespace gazebo
 
     /// \brief Mutex for protecting contacts msg
     protected: mutable boost::mutex mutex;
+
+    /// \brief Flag for new contacts message
+    protected: bool newMsg;
 
     /// \brief Name of the collision of the parent's link
     protected: std::string collisionName;

@@ -49,10 +49,10 @@ namespace gazebo
     /// \param[in] _sdf SDF element that describes the plugin.
     public: virtual void Load(physics::ModelPtr _model, sdf::ElementPtr _sdf);
 
-    /// \brief Callback that recieves the contact sensor's update signal.
-    protected: void OnUpdate();
+    /// \brief Callback that receives the world update event
+    protected: void OnUpdate(const common::UpdateInfo &_info);
 
-    /// \brief Act on models that are ontop of the belt
+    /// \brief Act on models that are ontop of the link
     protected: void ActOnContactingModels();
 
     /// \brief Kit to be built on this tray
