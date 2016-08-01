@@ -57,7 +57,14 @@ namespace gazebo
 
     /// \brief Kit which is currently on the tray
     protected: ariac::Kit currentKit;
+
+    /// \brief ID of tray
+    protected: std::string trayID;
+
+    /// \brief ROS node handle
     protected: ros::NodeHandle *rosNode;
+
+    /// \brief Publisher for the kit state
     protected: ros::Publisher currentKitPub;
   };
 }

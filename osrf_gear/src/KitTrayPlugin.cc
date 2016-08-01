@@ -40,6 +40,7 @@ void KitTrayPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 {
 
   SideContactPlugin::Load(_model, _sdf);
+  this->trayID = this->model->GetName();
 
   // Make sure the ROS node for Gazebo has already been initialized
   if (!ros::isInitialized())
@@ -51,7 +52,7 @@ void KitTrayPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 
   this->rosNode = new ros::NodeHandle("");
   this->currentKitPub = this->rosNode->advertise<osrf_gear::Kit>(
-    "/ariac/" + _model->GetName(), 1000);
+    "/ariac/trays", 1000);
 }
 
 /////////////////////////////////////////////////
@@ -67,6 +68,7 @@ void KitTrayPlugin::OnUpdate(const common::UpdateInfo &/*_info*/)
 
   // Publish current kit 
   osrf_gear::Kit msgKit;
+  msgKit.tray.data = this->trayID;
   for (const auto &obj : this->currentKit.objects)
   {
     osrf_gear::KitObject msgObj;
@@ -93,9 +95,19 @@ void KitTrayPlugin::ProcessContactingModels()
   for (auto model : this->contactingModels) {
     if (model) {
       ariac::KitObject object;
+
+      // Determine the object type
       std::string modelName = model->GetName();
-      // TODO: determine object type from name
-      object.type = modelName;
+      size_t lastCharPosn = modelName.find_last_not_of("0123456789");
+      if (modelName[lastCharPosn] == '_' && lastCharPosn > 1)
+      {
+        // Trim the underscore and number
+        object.type = modelName.substr(0, lastCharPosn);
+      }
+      else
+      {
+        object.type = modelName;
+      }
 
       // Determine the pose of the object in the frame of the tray
       math::Pose objectPose = model->GetWorldPose();
