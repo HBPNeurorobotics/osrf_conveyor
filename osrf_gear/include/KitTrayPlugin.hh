@@ -52,14 +52,13 @@ namespace gazebo
     /// \brief Callback that receives the world update event
     protected: void OnUpdate(const common::UpdateInfo &_info);
 
-    /// \brief Act on models that are ontop of the link
-    protected: void ActOnContactingModels();
+    /// \brief Update the kit based on which models are in contact
+    protected: void ProcessContactingModels();
 
-    /// \brief Kit to be built on this tray
-    protected: ariac::Kit kit;
+    /// \brief Kit which is currently on the tray
+    protected: ariac::Kit currentKit;
     protected: ros::NodeHandle *rosNode;
-    protected: ros::Subscriber goalSub;
-    public: void OnGoalReceived(const osrf_gear::Goal::ConstPtr & goalMsg);
+    protected: ros::Publisher currentKitPub;
   };
 }
 #endif
