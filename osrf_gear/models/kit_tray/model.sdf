@@ -1,7 +1,8 @@
 <?xml version="1.0" ?>
 <sdf version="1.6">
     <model name="kit_tray">
-        <plugin name="kit_tray_plugin" filename="libKitTrayPlugin.so">
+        <static>true</static>
+        <plugin name="kit_tray_plugin" filename="libROSAriacKitTrayPlugin.so">
             <contact_sensor_name>kit_tray_contact</contact_sensor_name>
         </plugin>
         <link name="tray">

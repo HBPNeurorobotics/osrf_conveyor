@@ -181,5 +181,8 @@
       </goal>
     </plugin>
 
+    <!-- The NIST-ARIAC scoring plugin -->
+    <plugin filename="libROSAriacScoringPlugin.so" name="scorer">
+    </plugin>
   </world>
 </sdf>

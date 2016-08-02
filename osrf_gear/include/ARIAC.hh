@@ -41,11 +41,12 @@ namespace ariac
       return _out;
     }
 
-      /// \brief Object type.
-      public: std::string type;
+    /// \brief Object type.
+    public: std::string type;
 
-      /// \brief Pose in which the object should be placed.
-      public: math::Pose pose;
+    /// \brief Pose in which the object should be placed.
+    public: math::Pose pose;
+
   };
 
   /// \brief Class to store information about a kit.
@@ -58,10 +59,10 @@ namespace ariac
     public: friend std::ostream &operator<<(std::ostream &_out,
                                             const Kit &_kit)
     {
-      _out << "<kit>" << std::endl;
+      _out << "<kit>";
       for (auto obj : _kit.objects)
-        _out << obj << std::endl;
-      _out << "/<kit>" << std::endl;
+        _out << std::endl << obj;
+      _out << std::endl << "</kit>" << std::endl;
 
       return _out;
     }

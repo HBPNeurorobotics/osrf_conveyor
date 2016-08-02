@@ -98,6 +98,7 @@ static void fillGoalMsg(const ariac::Goal &_goal,
   for (const auto &kit : _goal.kits)
   {
     osrf_gear::Kit msgKit;
+    msgKit.tray.data = "kit_tray";
     for (const auto &obj : kit.objects)
     {
       osrf_gear::KitObject msgObj;

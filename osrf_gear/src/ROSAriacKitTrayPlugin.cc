@@ -17,7 +17,7 @@
 
 #include <string>
 
-#include "KitTrayPlugin.hh"
+#include "ROSAriacKitTrayPlugin.hh"
 
 using namespace gazebo;
 GZ_REGISTER_MODEL_PLUGIN(KitTrayPlugin)
