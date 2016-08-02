@@ -38,13 +38,13 @@ class ConveyorController : public WorldPlugin
     // Initialize the node with the world name
     node->Init(_parent->GetName());
 
-    // Create a subscriber for the proximity sensor output 
+    // Create a subscriber for the proximity sensor output
     std::string sensorStateChangeTopic =
       "~/laser/proximity_ray_plugin/state_change";
     sensorSub =
       node->Subscribe(sensorStateChangeTopic, &ConveyorController::OnSensorStateChange, this);
 
-    // Create a publisher for the conveyor control commands 
+    // Create a publisher for the conveyor control commands
     std::string conveyorControlTopic =
       "~/conveyor_belt_contact/conveyor_belt_plugin/control_command";
     this->controlPub =
