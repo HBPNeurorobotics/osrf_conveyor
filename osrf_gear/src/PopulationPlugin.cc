@@ -270,6 +270,7 @@ void PopulationPlugin::OnUpdate()
       "<sdf version='" << SDF_VERSION << "'>\n"
       "  <include>\n"
       "    <pose>" << obj.pose << "</pose>\n"
+      "    <name>" << obj.type << "</name>\n"
       "    <uri>model://" << obj.type << "</uri>\n"
       "  </include>\n"
       "</sdf>\n";

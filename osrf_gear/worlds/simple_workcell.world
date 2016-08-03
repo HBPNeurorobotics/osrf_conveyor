@@ -93,7 +93,7 @@
             <pose>-1 2.5 0.2 0 0 0</pose>
           </object>
           <object>
-            <type>cordless_drill/</type>
+            <type>cordless_drill</type>
             <pose>-1 2.5 0.2 0 0 0</pose>
           </object>
           <object>
@@ -108,7 +108,7 @@
             <pose>-1 2.5 0.2 0 0 0</pose>
           </object>
           <object>
-            <type>cordless_drill/</type>
+            <type>cordless_drill</type>
             <pose>-1 2.5 0.2 0 0 0</pose>
           </object>
           <object>
