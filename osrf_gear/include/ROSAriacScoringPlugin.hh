@@ -58,10 +58,15 @@ namespace gazebo
 
     /// \brief Calculate the score of a single tray given the objects
     protected: void ScoreTray(const ariac::Kit & goalKit, const ariac::Kit & currentKit);
-    protected: physics::WorldPtr world;
+
+    /// \brief Add models of the kit part outlines to the world
+    protected: void AddTrayGoalOutlines();
 
     /// \brief Helper function for filling a Kit from a kit ROS message
     public: static void FillKitFromMsg(const osrf_gear::Kit &kitMsg, ariac::Kit &kit);
+
+    /// \brief Pointer to the gazebo world
+    protected: physics::WorldPtr world;
 
     /// \brief Pointer to this node for publishing/subscribing
     protected: transport::NodePtr node;

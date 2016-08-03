@@ -23,6 +23,7 @@
 #include <osrf_gear/Goal.h>
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/Quaternion.h>
+#include <ignition/math/Matrix4.hh>
 
 using namespace gazebo;
 GZ_REGISTER_WORLD_PLUGIN(ROSAriacScoringPlugin)
@@ -73,6 +74,11 @@ void ROSAriacScoringPlugin::OnUpdate(const common::UpdateInfo &_info)
   boost::mutex::scoped_lock assignedKitsLock(this->assignedKitsMutex);
   boost::mutex::scoped_lock currentKitsLock(this->currentKitsMutex);
 
+  if (this->newGoal)
+  {
+    // TODO: remove these when goals change
+    this->AddTrayGoalOutlines();
+  }
   if (this->newGoal || this->newTrayInfo)
   {
     this->ScoreTrays();
@@ -210,5 +216,48 @@ void ROSAriacScoringPlugin::FillKitFromMsg(const osrf_gear::Kit &kitMsg, ariac::
     geometry_msgs::Quaternion o = objMsg.pose.orientation;
     obj.pose = math::Pose(math::Vector3(p.x, p.y, p.z), math::Quaternion(o.x, o.y, o.z, o.w));
     kit.objects.push_back(obj);
+  }
+}
+
+/////////////////////////////////////////////////
+void ROSAriacScoringPlugin::AddTrayGoalOutlines()
+{
+  for (auto item : this->assignedKits)
+  {
+    auto trayID = item.first;
+    auto kit = item.second;
+    // TODO: move this to member variable
+    auto trayFrame = this->world->GetEntity(trayID);
+    ignition::math::Pose3d trayPose;
+    if (trayFrame->HasType(physics::Base::LINK) || trayFrame->HasType(physics::Base::MODEL))
+    {
+      trayPose = trayFrame->GetWorldPose().Ign();
+    }
+    unsigned int objectID = 0;
+    for (auto obj : kit.objects)
+    {
+      std::ostringstream newModelStr;
+      std::string modelType = obj.type + "_outline";
+      // Give each object a unique name so that their names don't clash when their models are
+      // added during the same sim step. Use the tray ID in the name so they don't clash with
+      // existing models on other trays.
+      std::string modelName = trayID + "_part_ " + std::to_string(objectID++) + "_" + modelType;
+
+      ignition::math::Matrix4d transMat(trayPose);
+      ignition::math::Matrix4d pose_local(obj.pose.Ign());
+      obj.pose = (transMat * pose_local).Pose();
+
+      newModelStr <<
+        "<sdf version='" << SDF_VERSION << "'>\n"
+        "  <include>\n"
+        "    <pose>" << obj.pose << "</pose>\n"
+        "    <name>" << modelName << "</name>\n"
+        "    <uri>model://" << modelType << "</uri>\n"
+        "  </include>\n"
+        "</sdf>\n";
+      this->world->InsertModelString(newModelStr.str());
+
+      // TODO: add a joint to the tray instead of using static models
+    }
   }
 }
