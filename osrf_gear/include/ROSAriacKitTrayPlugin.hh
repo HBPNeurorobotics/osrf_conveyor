@@ -55,6 +55,9 @@ namespace gazebo
     /// \brief Update the kit based on which models are in contact
     protected: void ProcessContactingModels();
 
+    /// \brief Publish the Kit ROS message
+    protected: void PublishKitMsg();
+
     /// \brief Kit which is currently on the tray
     protected: ariac::Kit currentKit;
 

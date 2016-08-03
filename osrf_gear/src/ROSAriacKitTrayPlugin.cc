@@ -58,6 +58,11 @@ void KitTrayPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 /////////////////////////////////////////////////
 void KitTrayPlugin::OnUpdate(const common::UpdateInfo &/*_info*/)
 {
+  if (!this->newMsg)
+  {
+    return;
+  }
+
   auto prevNumberContactingModels = this->contactingModels.size();
   this->CalculateContactingModels();
   if (prevNumberContactingModels != this->contactingModels.size()) {
@@ -65,26 +70,7 @@ void KitTrayPlugin::OnUpdate(const common::UpdateInfo &/*_info*/)
       << this->contactingModels.size() << "\n";
   }
   this->ProcessContactingModels();
-
-  // Publish current kit 
-  osrf_gear::Kit msgKit;
-  msgKit.tray.data = this->trayID;
-  for (const auto &obj : this->currentKit.objects)
-  {
-    osrf_gear::KitObject msgObj;
-    msgObj.type = obj.type;
-    msgObj.pose.position.x = obj.pose.pos.x;
-    msgObj.pose.position.y = obj.pose.pos.y;
-    msgObj.pose.position.z = obj.pose.pos.z;
-    msgObj.pose.orientation.x = obj.pose.rot.x;
-    msgObj.pose.orientation.y = obj.pose.rot.y;
-    msgObj.pose.orientation.z = obj.pose.rot.z;
-    msgObj.pose.orientation.w = obj.pose.rot.w;
-
-    // Add the object to the kit.
-    msgKit.objects.push_back(msgObj);
-  }
-  this->currentKitPub.publish(msgKit);
+  this->PublishKitMsg();
 }
 
 /////////////////////////////////////////////////
@@ -118,4 +104,28 @@ void KitTrayPlugin::ProcessContactingModels()
       this->currentKit.objects.push_back(object);
     }
   }
+}
+
+/////////////////////////////////////////////////
+void KitTrayPlugin::PublishKitMsg()
+{
+  // Publish current kit
+  osrf_gear::Kit msgKit;
+  msgKit.tray.data = this->trayID;
+  for (const auto &obj : this->currentKit.objects)
+  {
+    osrf_gear::KitObject msgObj;
+    msgObj.type = obj.type;
+    msgObj.pose.position.x = obj.pose.pos.x;
+    msgObj.pose.position.y = obj.pose.pos.y;
+    msgObj.pose.position.z = obj.pose.pos.z;
+    msgObj.pose.orientation.x = obj.pose.rot.x;
+    msgObj.pose.orientation.y = obj.pose.rot.y;
+    msgObj.pose.orientation.z = obj.pose.rot.z;
+    msgObj.pose.orientation.w = obj.pose.rot.w;
+
+    // Add the object to the kit.
+    msgKit.objects.push_back(msgObj);
+  }
+  this->currentKitPub.publish(msgKit);
 }
