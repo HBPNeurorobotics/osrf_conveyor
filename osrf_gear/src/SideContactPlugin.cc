@@ -119,7 +119,7 @@ bool SideContactPlugin::FindContactSensor()
         this->scopedContactSensorName = scopedContactSensorName;
         this->parentSensor =
           std::static_pointer_cast<sensors::ContactSensor>(
-            sensorManager->GetSensor(this->contactSensorName));
+            sensorManager->GetSensor(scopedContactSensorName));
         return this->parentSensor != 0;
       }
     }
