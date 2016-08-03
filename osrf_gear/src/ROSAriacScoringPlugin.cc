@@ -222,12 +222,21 @@ void ROSAriacScoringPlugin::FillKitFromMsg(const osrf_gear::Kit &kitMsg, ariac::
 /////////////////////////////////////////////////
 void ROSAriacScoringPlugin::AddTrayGoalOutlines()
 {
+  gzdbg << "Adding tray goal outlines\n";
   for (auto item : this->assignedKits)
   {
     auto trayID = item.first;
     auto kit = item.second;
+
     // TODO: move this to member variable
+    gzdbg << "Getting tray frame: " << trayID << "\n";
     auto trayFrame = this->world->GetEntity(trayID);
+    if (!trayFrame)
+    {
+      gzdbg << "Cannot find frame for tray: " << trayID << ". Not adding tray goal outlines.\n";
+      continue;
+    }
+
     ignition::math::Pose3d trayPose;
     if (trayFrame->HasType(physics::Base::LINK) || trayFrame->HasType(physics::Base::MODEL))
     {
@@ -255,6 +264,7 @@ void ROSAriacScoringPlugin::AddTrayGoalOutlines()
         "    <uri>model://" << modelType << "</uri>\n"
         "  </include>\n"
         "</sdf>\n";
+      gzdbg << "Inserting model: " << modelName << "\n";
       this->world->InsertModelString(newModelStr.str());
 
       // TODO: add a joint to the tray instead of using static models

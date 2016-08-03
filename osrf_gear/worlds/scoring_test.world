@@ -14,30 +14,65 @@
 
     <!-- a tray for building kits -->
     <include>
+      <name>kit_tray_1</name>
       <uri>model://kit_tray</uri>
       <pose>0.6 -1.5 1.27 0 0 0</pose>
     </include>
 
-    <!-- Populate the conveyor belt -->
-    <plugin filename="libPopulationPlugin.so" name="populate_conveyor">
-      <!--<activation_topic>~/conveyor/control</activation_topic>-->
+    <!-- tray 2 for building kits -->
+    <include>
+      <name>kit_tray_2</name>
+      <uri>model://kit_tray</uri>
+      <pose>0.6 0.5 1.27 0 0 0</pose>
+    </include>
+
+    <!-- Populate kit tray 1 -->
+    <plugin filename="libPopulationPlugin.so" name="populate_kit_tray_1">
       <loop_forever>false</loop_forever>
-      <frame>kit_tray</frame>
+      <frame>kit_tray_1</frame>
+      <object_sequence>
+        <object>
+          <time>1.0</time>
+          <type>part1</type>
+          <pose>-0.2 -0.15 0 0 0 0</pose>
+        </object>
+        <object>
+          <time>3.0</time>
+          <type>part2</type>
+          <pose>0. 0.15 0 0 0 0</pose>
+        </object>
+        <object>
+          <time>5.0</time>
+          <type>part1</type>
+          <pose>-0.2 0.15 0 0 0 0</pose>
+        </object>
+        <object>
+          <time>7.0</time>
+          <type>part2</type>
+          <pose>-0.2 0.0 0 0 0 0</pose>
+        </object>
+      </object_sequence>
+    </plugin>
+
+    <!-- Populate kit tray 2 -->
+    <plugin filename="libPopulationPlugin.so" name="populate_kit_tray_2">
+      <loop_forever>false</loop_forever>
+      <frame>kit_tray_2</frame>
       <object_sequence>
         <object>
           <time>2.0</time>
           <type>part1</type>
-          <pose>-0.2 -0.2 0 0 0 0</pose>
+          <pose>-0.2 -0.15 0 0 0 0</pose>
         </object>
         <object>
           <time>4.0</time>
           <type>part2</type>
-          <pose>0. 0.2 0 0 0 0</pose>
+          <pose>0. 0.15 0 0 0 0</pose>
         </object>
         <object>
           <time>6.0</time>
           <type>part1</type>
-          <pose>-0.2 0.2 0 0 0 0</pose>
+          <pose>-0.2 0.15 0 0 0 0</pose>
         </object>
         <object>
           <time>8.0</time>
@@ -56,10 +91,10 @@
       <goal>
         <time>0.0</time>
         <kit>
-          <tray>kit_tray</tray>
+          <tray>kit_tray_1</tray>
           <object>
             <type>part1</type>
-            <pose>-0.2 -0.2 0 0 0 0</pose>
+            <pose>-0.2 -0.15 0 0 0 0</pose>
           </object>
           <object>
             <type>part2</type>
@@ -67,7 +102,22 @@
           </object>
           <object>
             <type>part2</type>
-            <pose>-0.2 0.2 0 0 0 0</pose>
+            <pose>-0.2 0.15 0 0 0 0</pose>
+          </object>
+        </kit>
+        <kit>
+          <tray>kit_tray_2</tray>
+          <object>
+            <type>part2</type>
+            <pose>-0.2 -0.15 0 0 0 0</pose>
+          </object>
+          <object>
+            <type>part1</type>
+            <pose>-0.2 0 0 0 0 0</pose>
+          </object>
+          <object>
+            <type>part2</type>
+            <pose>-0.2 0.15 0 0 0 0</pose>
           </object>
         </kit>
       </goal>
