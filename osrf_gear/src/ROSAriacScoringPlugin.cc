@@ -106,35 +106,41 @@ void ROSAriacScoringPlugin::ScoreTray(const ariac::Kit & goalKit, const ariac::K
     if (goalObjectTypeCount.find(goalObject.type) == goalObjectTypeCount.end())
     {
       goalObjectTypeCount[goalObject.type] = 0;
-      currentObjectTypeCount[goalObject.type] = 0;
     }
     goalObjectTypeCount[goalObject.type] += 1;
   }
 
+  gzdbg << "Checking object counts\n";
+  bool goalObjectsMissing = false;
+  for (auto & value : goalObjectTypeCount)
+  {
+    auto goalObjectType = value.first;
+    auto goalObjectCount = value.second;
+    auto currentObjectCount = std::count_if(currentKit.objects.begin(), currentKit.objects.end(),
+      [goalObjectType](ariac::KitObject k) {return k.type == goalObjectType;});
+    gzdbg << "Found " << currentObjectCount << " objects of type '" << goalObjectType << "'\n";
+    score += std::min(long(goalObjectCount), currentObjectCount) * this->scoringParameters.objectPresence;
+    if (currentObjectCount < goalObjectCount)
+    {
+      goalObjectsMissing = true;
+    }
+  }
+  if (!goalObjectsMissing)
+  {
+    gzdbg << "All objects on tray\n";
+    score += this->scoringParameters.allObjectsBonusFactor * numGoalObjects;
+  }
+
+  gzdbg << "Checking object poses\n";
   for (const auto & currentObject : currentKit.objects)
   {
-    gzdbg << "Checking object: \n" << currentObject << "\n";
+    //gzdbg << "Checking object: \n" << currentObject << "\n";
     for (auto it = remainingGoalObjects.begin(); it != remainingGoalObjects.end(); ++it)
     {
-      bool objectTypeMatched = false;  // to ensure each object can only match by type once
       auto goalObject = *it;
-      gzdbg << "Goal object: " << goalObject << "\n";
+      //gzdbg << "Goal object: " << goalObject << "\n";
       if (goalObject.type != currentObject.type)
         continue;
-
-      // Don't award more matches for occurance than goal objects of that type
-      currentObjectTypeCount[currentObject.type] += 1;
-      if (!objectTypeMatched &&
-        currentObjectTypeCount[currentObject.type] <= goalObjectTypeCount[goalObject.type])
-      {
-        gzdbg << "Object match: " << goalObject.type << "\n";
-        objectTypeMatched = true;
-        score += this->scoringParameters.objectPresence;
-      }
-      else
-      {
-        gzdbg << "All objects of type '" << goalObject.type << "' have already been matched\n";
-      }
 
       math::Vector3 posnDiff = goalObject.pose.CoordPositionSub(currentObject.pose);
       posnDiff.z = 0;
@@ -142,31 +148,13 @@ void ROSAriacScoringPlugin::ScoreTray(const ariac::Kit & goalKit, const ariac::K
         continue;
       score += this->scoringParameters.objectPosition;
 
-      /*
-      double orientationDiff = std::abs(goalObject.pose.rot.dot(currentObject.pose.rot));
-      if (rotnDiff.Something() > this->scoringParameters.orientationThres)
-        break;
-        */
+      // TODO: check orientation
       score += this->scoringParameters.objectOrientation;
 
       // Once a match is found, don't permit it to be matched again
       remainingGoalObjects.erase(it);
       break;
     }
-  }
-  // Check if all goal objects are somewhere on the tray
-  bool goalObjectsMissing = false;
-  for (auto &it : goalObjectTypeCount)
-  {
-    if (it.second != currentObjectTypeCount[it.first])
-    {
-      goalObjectsMissing = true;
-      break;
-    }
-  }
-  if (!goalObjectsMissing)
-  {
-    score += this->scoringParameters.allObjectsBonusFactor * numGoalObjects;
   }
 
   std::cout << score << std::endl;

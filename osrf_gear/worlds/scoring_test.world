@@ -12,42 +12,6 @@
       <uri>model://ground_plane</uri>
     </include>
 
-    <!-- Conveyor belt -->
-    <include>
-      <uri>model://conveyor_belt</uri>
-      <pose>0.8 -2.5 1.2 0 0 0</pose>
-    </include>
-
-    <!-- Dumpster for deleting objects that fall off the conveyor-->
-    <include>
-      <uri>model://object_disposal</uri>
-      <pose>0.8 3 0 0 0 0</pose>
-    </include>
-
-    <!-- a break beam sensor -->
-    <include>
-      <uri>model://break_beam</uri>
-      <pose>1.4 1 1.3 0 0 3.14159</pose>
-    </include>
-
-    <!-- a proximity sensor -->
-    <include>
-      <uri>model://proximity_sensor</uri>
-      <pose>0.8 2.53 1.172 0 -1.5708 0</pose>
-    </include>
-
-    <!-- a logical camera -->
-    <include>
-      <uri>model://logical_camera</uri>
-      <pose>0.8 -2 2.2 0 1.5708 -1.5708</pose>
-    </include>
-
-    <!-- a laser profiler -->
-    <include>
-      <uri>model://laser_profiler</uri>
-      <pose>0.8 -1.5 1.7 0 1.5708 -1.5708</pose>
-    </include>
-
     <!-- a tray for building kits -->
     <include>
       <uri>model://kit_tray</uri>
@@ -58,22 +22,22 @@
     <plugin filename="libPopulationPlugin.so" name="populate_conveyor">
       <!--<activation_topic>~/conveyor/control</activation_topic>-->
       <loop_forever>true</loop_forever>
-      <frame>conveyor_belt</frame>
+      <frame>kit_tray</frame>
       <object_sequence>
         <object>
-          <time>4.0</time>
+          <time>2.0</time>
           <type>coke_can</type>
-          <pose>0. 0.1 0 0 0 0</pose>
+          <pose>0. 0.0 0 0 0 0</pose>
         </object>
         <object>
-          <time>8.0</time>
+          <time>4.0</time>
           <type>cordless_drill</type>
           <pose>0. 0.2 0 0 0 0</pose>
         </object>
         <object>
-          <time>12.0</time>
+          <time>6.0</time>
           <type>beer</type>
-          <pose>0. 0.1 0 0 0 0</pose>
+          <pose>0.2 0.1 0 0 0 0</pose>
         </object>
       </object_sequence>
     </plugin>
@@ -105,15 +69,15 @@
         <kit>
           <object>
             <type>coke_can</type>
-            <pose>-1 2.5 0 0 0 0</pose>
+            <pose>0 0 0 0 0 0</pose>
           </object>
           <object>
-            <type>cordless_drill</type>
-            <pose>-1 2.5 0 0 0 0</pose>
+            <type>coke_can</type>
+            <pose>0 0 0 0 0 0</pose>
           </object>
           <object>
             <type>beer</type>
-            <pose>-1 2.5 0 0 0 0</pose>
+            <pose>0 0 0 0 0 0</pose>
           </object>
         </kit>
       </goal>
