@@ -93,28 +93,82 @@ void ROSAriacScoringPlugin::ScoreTrays()
 void ROSAriacScoringPlugin::ScoreTray(const ariac::Kit & goalKit, const ariac::Kit & currentKit)
 {
   double score = 0;
-  gzdbg << "Comparing the " << goalKit.objects.size() << " goal objects with the current " << \
+  auto numGoalObjects = goalKit.objects.size();
+  gzdbg << "Comparing the " << numGoalObjects << " goal objects with the current " << \
     currentKit.objects.size() << " objects\n";
 
   std::vector<ariac::KitObject> remainingGoalObjects;
-  remainingGoalObjects.reserve(goalKit.objects.size());
+  remainingGoalObjects.reserve(numGoalObjects);
+  std::map<std::string, unsigned int> goalObjectTypeCount, currentObjectTypeCount;
   for (auto goalObject : goalKit.objects)
   {
     remainingGoalObjects.push_back(goalObject);
+    if (goalObjectTypeCount.find(goalObject.type) == goalObjectTypeCount.end())
+    {
+      goalObjectTypeCount[goalObject.type] = 0;
+      currentObjectTypeCount[goalObject.type] = 0;
+    }
+    goalObjectTypeCount[goalObject.type] += 1;
   }
 
   for (const auto & currentObject : currentKit.objects)
   {
     gzdbg << "Checking object: \n" << currentObject << "\n";
-    for (const auto & goalObject : remainingGoalObjects)
+    for (auto it = remainingGoalObjects.begin(); it != remainingGoalObjects.end(); ++it)
     {
+      bool objectTypeMatched = false;  // to ensure each object can only match by type once
+      auto goalObject = *it;
       gzdbg << "Goal object: " << goalObject << "\n";
       if (goalObject.type != currentObject.type)
         continue;
-      score += this->scoringWeights.objectPresence;
-      gzdbg << "Object match: " << goalObject.type << "\n";
+
+      // Don't award more matches for occurance than goal objects of that type
+      currentObjectTypeCount[currentObject.type] += 1;
+      if (!objectTypeMatched &&
+        currentObjectTypeCount[currentObject.type] <= goalObjectTypeCount[goalObject.type])
+      {
+        gzdbg << "Object match: " << goalObject.type << "\n";
+        objectTypeMatched = true;
+        score += this->scoringParameters.objectPresence;
+      }
+      else
+      {
+        gzdbg << "All objects of type '" << goalObject.type << "' have already been matched\n";
+      }
+
+      math::Vector3 posnDiff = goalObject.pose.CoordPositionSub(currentObject.pose);
+      posnDiff.z = 0;
+      if (posnDiff.GetLength() > this->scoringParameters.distanceThresh)
+        continue;
+      score += this->scoringParameters.objectPosition;
+
+      /*
+      double orientationDiff = std::abs(goalObject.pose.rot.dot(currentObject.pose.rot));
+      if (rotnDiff.Something() > this->scoringParameters.orientationThres)
+        break;
+        */
+      score += this->scoringParameters.objectOrientation;
+
+      // Once a match is found, don't permit it to be matched again
+      remainingGoalObjects.erase(it);
+      break;
     }
   }
+  // Check if all goal objects are somewhere on the tray
+  bool goalObjectsMissing = false;
+  for (auto &it : goalObjectTypeCount)
+  {
+    if (it.second != currentObjectTypeCount[it.first])
+    {
+      goalObjectsMissing = true;
+      break;
+    }
+  }
+  if (!goalObjectsMissing)
+  {
+    score += this->scoringParameters.allObjectsBonusFactor * numGoalObjects;
+  }
+
   std::cout << score << std::endl;
 }
 

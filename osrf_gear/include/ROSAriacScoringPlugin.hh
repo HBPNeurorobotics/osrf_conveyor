@@ -95,11 +95,18 @@ namespace gazebo
     /// \brief Mutex for protecting the current kits
     protected: mutable boost::mutex currentKitsMutex;
 
-    public: typedef struct ScoringWeights
+    public: typedef struct ScoringParameters
                {
                  double objectPresence = 1.0;
-               } ScoringWeights;
-    protected: ScoringWeights scoringWeights;
+                 double objectPosition = 0.0;
+                 double objectOrientation = 1.0;
+
+                 // Bonus when all objects in the tray: fator * (number of objects)
+                 double allObjectsBonusFactor = 1.0;
+                 // Acceptable distance in meters to object's target position
+                 double distanceThresh = 0.03;
+               } ScoringParameters;
+    protected: ScoringParameters scoringParameters;
   };
 }
 #endif
