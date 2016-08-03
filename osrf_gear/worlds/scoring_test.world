@@ -21,13 +21,13 @@
     <!-- Populate the conveyor belt -->
     <plugin filename="libPopulationPlugin.so" name="populate_conveyor">
       <!--<activation_topic>~/conveyor/control</activation_topic>-->
-      <loop_forever>true</loop_forever>
+      <loop_forever>false</loop_forever>
       <frame>kit_tray</frame>
       <object_sequence>
         <object>
           <time>2.0</time>
           <type>coke_can</type>
-          <pose>0. 0.0 0 0 0 0</pose>
+          <pose>-0.2 -0.2 0 0 0 0</pose>
         </object>
         <object>
           <time>4.0</time>
@@ -37,7 +37,12 @@
         <object>
           <time>6.0</time>
           <type>beer</type>
-          <pose>0.2 0.1 0 0 0 0</pose>
+          <pose>-0.2 0.2 0 0 0 0</pose>
+        </object>
+        <object>
+          <time>8.0</time>
+          <type>coke_can</type>
+          <pose>-0.2 0.0 0 0 0 0</pose>
         </object>
       </object_sequence>
     </plugin>
@@ -67,17 +72,18 @@
         </kit>
         <!-- 2nd kit -->
         <kit>
+          <tray>kit_tray</tray>
           <object>
             <type>coke_can</type>
-            <pose>0 0 0 0 0 0</pose>
+            <pose>-0.2 -0.2 0 0 0 0</pose>
           </object>
           <object>
             <type>coke_can</type>
-            <pose>0 0 0 0 0 0</pose>
+            <pose>-0.2 0 0 0 0 0</pose>
           </object>
           <object>
             <type>beer</type>
-            <pose>0 0 0 0 0 0</pose>
+            <pose>-0.2 0.2 0 0 0 0</pose>
           </object>
         </kit>
       </goal>

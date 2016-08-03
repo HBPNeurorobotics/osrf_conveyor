@@ -92,8 +92,11 @@ namespace ariac
       _out << "<Goal>" << std::endl;
       _out << "Time: [" << _goal.time << "]" << std::endl;
       _out << "Kits:" << std::endl;
-      for (auto kit : _goal.kits)
-        _out << kit << std::endl;
+      for (auto item : _goal.kits)
+      {
+        _out << "<tray>" << item.first << "</tray>" << std::endl;
+        _out << item.second << std::endl;
+      }
       _out << "</goal>" << std::endl;
 
       return _out;
@@ -102,7 +105,7 @@ namespace ariac
     /// \brief Simulation time in which the goal should be triggered.
     public: double time;
 
-    /// \brief A goal is composed by multiple kits.
-    public: std::vector<Kit> kits;
+    /// \brief A goal is composed of multiple kits assigned to specific trays.
+    public: std::map<std::string, Kit> kits;
   };
 }
