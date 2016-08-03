@@ -39,8 +39,10 @@ ROSAriacScoringPlugin::~ROSAriacScoringPlugin()
 }
 
 /////////////////////////////////////////////////
-void ROSAriacScoringPlugin::Load(physics::WorldPtr /*_world*/, sdf::ElementPtr /*_sdf*/)
+void ROSAriacScoringPlugin::Load(physics::WorldPtr _world, sdf::ElementPtr /*_sdf*/)
 {
+  this->world = _world;
+
   // Make sure the ROS node for Gazebo has already been initialized
   if (!ros::isInitialized())
   {
@@ -66,17 +68,22 @@ void ROSAriacScoringPlugin::Load(physics::WorldPtr /*_world*/, sdf::ElementPtr /
 }
 
 /////////////////////////////////////////////////
-void ROSAriacScoringPlugin::OnUpdate(const common::UpdateInfo &/*_info*/)
+void ROSAriacScoringPlugin::OnUpdate(const common::UpdateInfo &_info)
 {
-  this->ScoreTrays();
+  boost::mutex::scoped_lock assignedKitsLock(this->assignedKitsMutex);
+  boost::mutex::scoped_lock currentKitsLock(this->currentKitsMutex);
+
+  if (this->newGoal || this->newTrayInfo)
+  {
+    this->ScoreTrays();
+  }
+  this->newGoal = false;
+  this->newTrayInfo = false;
 }
 
 /////////////////////////////////////////////////
 void ROSAriacScoringPlugin::ScoreTrays()
 {
-  boost::mutex::scoped_lock assignedKitsLock(this->assignedKitsMutex);
-  boost::mutex::scoped_lock currentKitsLock(this->currentKitsMutex);
-
   for (const auto & goalTray : this->assignedKits)
   {
     auto currentTray = this->currentKits.find(goalTray.first);
@@ -84,7 +91,6 @@ void ROSAriacScoringPlugin::ScoreTrays()
     {
       continue;
     }
-    gzdbg << goalTray.second << "\n" << currentTray->second << "\n";
     this->ScoreTray(goalTray.second, currentTray->second);
   }
 }
@@ -134,11 +140,11 @@ void ROSAriacScoringPlugin::ScoreTray(const ariac::Kit & goalKit, const ariac::K
   gzdbg << "Checking object poses\n";
   for (const auto & currentObject : currentKit.objects)
   {
-    //gzdbg << "Checking object: \n" << currentObject << "\n";
+    gzdbg << "Checking object: \n" << currentObject << "\n";
     for (auto it = remainingGoalObjects.begin(); it != remainingGoalObjects.end(); ++it)
     {
       auto goalObject = *it;
-      //gzdbg << "Goal object: " << goalObject << "\n";
+      gzdbg << "Goal object: " << goalObject << "\n";
       if (goalObject.type != currentObject.type)
         continue;
 
@@ -166,6 +172,7 @@ void ROSAriacScoringPlugin::OnTrayInfo(const osrf_gear::Kit::ConstPtr & kitMsg)
   // Update the state of the tray
   //TODO: Only pay attention if kit is assigned
   boost::mutex::scoped_lock currentKitsLock(this->currentKitsMutex);
+  this->newTrayInfo = true;
 
   std::string trayID = kitMsg->tray.data;
   ariac::Kit kitState;
@@ -179,6 +186,7 @@ void ROSAriacScoringPlugin::OnGoalReceived(const osrf_gear::Goal::ConstPtr & goa
   // TODO: store previous goal
   gzdbg << "Received a goal\n";
   boost::mutex::scoped_lock assignedKitsLock(this->assignedKitsMutex);
+  this->newGoal = true;
 
   this->assignedKits.clear();
   for (const auto & kitMsg : goalMsg->kits)

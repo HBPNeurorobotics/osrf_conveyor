@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <sdf version="1.6">
     <model name="kit_tray">
-        <static>true</static>
+        <static>false</static>
         <plugin name="kit_tray_plugin" filename="libROSAriacKitTrayPlugin.so">
             <contact_sensor_name>kit_tray_contact</contact_sensor_name>
         </plugin>
@@ -12,6 +12,7 @@
                     <collision>tray_collision</collision>
                 </contact>
             </sensor>
+            <gravity>false</gravity>
             <collision name="tray_collision">
               <geometry>
                 <box>
