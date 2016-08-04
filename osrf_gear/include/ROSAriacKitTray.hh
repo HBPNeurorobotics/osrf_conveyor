@@ -31,9 +31,16 @@ namespace ariac
   /// \brief Class to store information about a kit tray.
   class KitTray
   {
+    /// \brief Constructor.
     public: KitTray();
-    public: ~KitTray();
+
+    /// \brief Constructor.
+    /// \param[in] _trayID ID of the tray.
+    /// \param[in] _assignedKit Kit assigned to the tray.
     public: KitTray(std::string _trayID, const Kit & _assignedKit);
+
+    /// \brief Destructor.
+    public: ~KitTray();
 
     /// \brief Assign a kit to the tray.
     public: void AssignKit(const Kit & kit);
@@ -60,6 +67,16 @@ namespace ariac
     /// \brief The current state of the kit on the tray.
     public: Kit currentKit;
 
+    /// \brief Flag for signalling the state of the tray has changed.
+    protected: bool kitStateChanged;
+
+    /// \brief Flag for signalling new assigned kit to process.
+    protected: bool assignedKitChanged;
+
+    /// \brief Score of the tray given the current state.
+    protected: double currentScore;
+
+    /// \brief The number of each type of object in the assigned kit.
     protected: std::map<std::string, unsigned int> assignedObjectTypeCount;
   };
 }

@@ -55,7 +55,8 @@ namespace gazebo
     protected: void OnUpdate(const common::UpdateInfo &_info);
 
     /// \brief Calculate the score for the trays given the objects in them
-    protected: void ScoreTrays();
+    /// \return Total score for all trays.
+    protected: double ScoreTrays();
 
     /// \brief Helper function for filling a Kit from a kit ROS message
     public: static void FillKitFromMsg(const osrf_gear::Kit &kitMsg, ariac::Kit &kit);
@@ -90,10 +91,10 @@ namespace gazebo
     /// \brief Mutex for protecting the kit trays being monitored
     protected: mutable boost::mutex kitTraysMutex;
 
-    /// \brief Flag for signalling new tray info to process
+    /// \brief Flag for signalling new tray info to process.
     protected: bool newTrayInfo;
 
-    /// \brief Flag for signalling new goal to process
+    /// \brief Flag for signalling new goal to process.
     protected: bool newGoal;
 
     protected: ariac::ScoringParameters scoringParameters;

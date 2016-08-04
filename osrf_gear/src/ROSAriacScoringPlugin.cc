@@ -92,23 +92,24 @@ void ROSAriacScoringPlugin::OnUpdate(const common::UpdateInfo &_info)
 }
 
 /////////////////////////////////////////////////
-void ROSAriacScoringPlugin::ScoreTrays()
+double ROSAriacScoringPlugin::ScoreTrays()
 {
   double score;
   for (const auto & item : this->kitTrays)
   {
-    // TODO: only calculate scores when tray states change
     auto tray = item.second;
-    score += tray.ScoreTray(this->scoringParameters);
+    auto trayScore = tray.ScoreTray(this->scoringParameters);
+    gzdbg << "Score from tray '" << item.first << "': " << trayScore << "\n";
+    score += trayScore;
   }
-  std::cout << "Total score: " << score << std::endl;
+  std::cout << "Total score from trays: " << score << std::endl;
+  return score;
 }
 
 /////////////////////////////////////////////////
 void ROSAriacScoringPlugin::OnTrayInfo(const osrf_gear::Kit::ConstPtr & kitMsg)
 {
   boost::mutex::scoped_lock kitTraysLock(this->kitTraysMutex);
-  this->newTrayInfo = true;
 
   // Get the ID of the tray that the message is from
   std::string trayID = kitMsg->tray.data;
@@ -120,6 +121,7 @@ void ROSAriacScoringPlugin::OnTrayInfo(const osrf_gear::Kit::ConstPtr & kitMsg)
   }
 
   // Update the state of the tray
+  this->newTrayInfo = true;
   ariac::Kit kitState;
   FillKitFromMsg(*kitMsg, kitState);
   this->kitTrays[trayID].UpdateKitState(kitState);
@@ -133,6 +135,7 @@ void ROSAriacScoringPlugin::OnGoalReceived(const osrf_gear::Goal::ConstPtr & goa
   boost::mutex::scoped_lock kitTraysLock(this->kitTraysMutex);
   this->newGoal = true;
 
+  // TODO: don't wipe state of trays that are in this goal
   this->kitTrays.clear();
   for (const auto & kitMsg : goalMsg->kits)
   {

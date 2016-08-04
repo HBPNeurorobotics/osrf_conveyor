@@ -7,7 +7,7 @@
         </plugin>
         <link name="tray">
             <sensor name='kit_tray_contact' type='contact'>
-                <update_rate>10</update_rate>
+                <update_rate>1</update_rate>
                 <contact>
                     <collision>tray_collision</collision>
                 </contact>

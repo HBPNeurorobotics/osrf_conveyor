@@ -49,6 +49,7 @@ void KitTray::AssignKit(const Kit & kit)
 {
   gzdbg << "Assigned new kit.\n";
   this->assignedKit = kit;
+  this->assignedKitChanged = true;
 
   // Count the number of each type of object
   this->assignedObjectTypeCount.clear();
@@ -68,6 +69,7 @@ void KitTray::UpdateKitState(const Kit & kit)
 {
   gzdbg << "Updating kit.\n";
   this->currentKit = kit;
+  this->kitStateChanged = true;
 }
 
 /////////////////////////////////////////////////
@@ -122,64 +124,71 @@ bool KitTray::AddTrayGoalOutlines(physics::WorldPtr world)
 /////////////////////////////////////////////////
 double KitTray::ScoreTray(const ScoringParameters & scoringParameters)
 {
-  auto goalKit = this->assignedKit;
-  auto currentKit = this->currentKit;
+  // If nothing has changed, return the previously calculated score
+  // TODO: what if the scoring parameters have changed?
+  if (!(this->kitStateChanged || this->assignedKitChanged))
+  {
+    return this->currentScore;
+  }
 
   double score = 0;
-  auto numGoalObjects = goalKit.objects.size();
-  gzdbg << "Comparing the " << numGoalObjects << " goal objects with the current " << \
-    currentKit.objects.size() << " objects\n";
+  auto numAssignedObjects = this->assignedKit.objects.size();
+  gzdbg << "Comparing the " << numAssignedObjects << " assigned objects with the current " << \
+    this->currentKit.objects.size() << " objects\n";
 
-  std::vector<ariac::KitObject> remainingGoalObjects(assignedKit.objects);
+  std::vector<ariac::KitObject> remainingAssignedObjects(assignedKit.objects);
   std::map<std::string, unsigned int> currentObjectTypeCount;
 
   gzdbg << "Checking object counts\n";
-  bool goalObjectsMissing = false;
+  bool assignedObjectsMissing = false;
   for (auto & value : this->assignedObjectTypeCount)
   {
     auto assignedObjectType = value.first;
     auto assignedObjectCount = value.second;
-    auto currentObjectCount = std::count_if(currentKit.objects.begin(), currentKit.objects.end(),
-      [assignedObjectType](ariac::KitObject k) {return k.type == assignedObjectType;});
+    auto currentObjectCount =
+      std::count_if(this->currentKit.objects.begin(), currentKit.objects.end(),
+        [assignedObjectType](ariac::KitObject k) {return k.type == assignedObjectType;});
     gzdbg << "Found " << currentObjectCount << " objects of type '" << assignedObjectType << "'\n";
     score += std::min(long(assignedObjectCount), currentObjectCount) * scoringParameters.objectPresence;
     if (currentObjectCount < assignedObjectCount)
     {
-      goalObjectsMissing = true;
+      assignedObjectsMissing = true;
     }
   }
-  if (!goalObjectsMissing)
+  if (!assignedObjectsMissing)
   {
     gzdbg << "All objects on tray\n";
-    score += scoringParameters.allObjectsBonusFactor * numGoalObjects;
+    score += scoringParameters.allObjectsBonusFactor * numAssignedObjects;
   }
 
   gzdbg << "Checking object poses\n";
-  for (const auto & currentObject : currentKit.objects)
+  for (const auto & currentObject : this->currentKit.objects)
   {
-    gzdbg << "Checking object: \n" << currentObject << "\n";
-    for (auto it = remainingGoalObjects.begin(); it != remainingGoalObjects.end(); ++it)
+    for (auto it = remainingAssignedObjects.begin(); it != remainingAssignedObjects.end(); ++it)
     {
-      auto goalObject = *it;
-      gzdbg << "Goal object: " << goalObject << "\n";
-      if (goalObject.type != currentObject.type)
+      auto assignedObject = *it;
+      if (assignedObject.type != currentObject.type)
         continue;
 
-      math::Vector3 posnDiff = goalObject.pose.CoordPositionSub(currentObject.pose);
+      math::Vector3 posnDiff = assignedObject.pose.CoordPositionSub(currentObject.pose);
       posnDiff.z = 0;
       if (posnDiff.GetLength() > scoringParameters.distanceThresh)
         continue;
+      gzdbg << "Object of type '" << currentObject.type << "' in the correct position\n";
       score += scoringParameters.objectPosition;
 
       // TODO: check orientation
       score += scoringParameters.objectOrientation;
+      //gzdbg << "Object '" << currentObject.type << "' in the correct position\n";
 
       // Once a match is found, don't permit it to be matched again
-      remainingGoalObjects.erase(it);
+      remainingAssignedObjects.erase(it);
       break;
     }
   }
 
-  std::cout << score << std::endl;
+  this->currentScore = score;
+  this->kitStateChanged = false;
+  this->assignedKitChanged = false;
   return score;
 }
