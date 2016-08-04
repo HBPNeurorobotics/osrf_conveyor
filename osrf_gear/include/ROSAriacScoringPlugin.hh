@@ -15,11 +15,11 @@
  *
 */
 /*
- * Desc: ARIAC scoring plugin
+ * Desc: ARIAC scorer.
  * Author: Deanna Hood
  */
-#ifndef _ROS_ARIAC_SCORING_PLUGIN_HH_
-#define _ROS_ARIAC_SCORING_PLUGIN_HH_
+#ifndef _ROS_ARIAC_SCORER_HH_
+#define _ROS_ARIAC_SCORER_HH_
 
 #include <string>
 
@@ -27,9 +27,6 @@
 
 #include <gazebo/common/Plugin.hh>
 #include <gazebo/common/UpdateInfo.hh>
-#include <gazebo/msgs/msgs.hh>
-#include <gazebo/sensors/sensors.hh>
-#include <gazebo/transport/Node.hh>
 #include <gazebo/util/system.hh>
 #include <osrf_gear/ARIAC.hh>
 #include <osrf_gear/Goal.h>

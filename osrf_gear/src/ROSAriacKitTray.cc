@@ -124,9 +124,10 @@ bool KitTray::AddTrayGoalOutlines(physics::WorldPtr world)
 /////////////////////////////////////////////////
 double KitTray::ScoreTray(const ScoringParameters & scoringParameters)
 {
+  bool scoringParametersChanged = this->currentScoringParameters != scoringParameters;
+
   // If nothing has changed, return the previously calculated score
-  // TODO: what if the scoring parameters have changed?
-  if (!(this->kitStateChanged || this->assignedKitChanged))
+  if (!(this->kitStateChanged || this->assignedKitChanged || scoringParametersChanged))
   {
     return this->currentScore;
   }
@@ -188,6 +189,7 @@ double KitTray::ScoreTray(const ScoringParameters & scoringParameters)
   }
 
   this->currentScore = score;
+  this->currentScoringParameters = scoringParameters;
   this->kitStateChanged = false;
   this->assignedKitChanged = false;
   return score;

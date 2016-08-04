@@ -76,6 +76,9 @@ namespace ariac
     /// \brief Score of the tray given the current state.
     protected: double currentScore;
 
+    /// \brief Scoring parameters used to calculate the current score.
+    protected: ariac::ScoringParameters currentScoringParameters;
+
     /// \brief The number of each type of object in the assigned kit.
     protected: std::map<std::string, unsigned int> assignedObjectTypeCount;
   };
