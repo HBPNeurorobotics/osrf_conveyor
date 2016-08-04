@@ -63,22 +63,26 @@ void ROSAriacScoringPlugin::Load(physics::WorldPtr _world, sdf::ElementPtr /*_sd
   this->updateConnection = event::Events::ConnectWorldUpdateBegin(
     boost::bind(&ROSAriacScoringPlugin::OnUpdate, this, _1));
 
-  this->currentKits.clear();
-  this->assignedKits.clear();
+  this->kitTrays.clear();
   gzdbg << "Scoring plugin loaded\n";
 }
 
 /////////////////////////////////////////////////
 void ROSAriacScoringPlugin::OnUpdate(const common::UpdateInfo &_info)
 {
-  boost::mutex::scoped_lock assignedKitsLock(this->assignedKitsMutex);
-  boost::mutex::scoped_lock currentKitsLock(this->currentKitsMutex);
+  boost::mutex::scoped_lock kitTraysLock(this->kitTraysMutex);
 
   if (this->newGoal)
   {
+    // Add the outlines of the goal kits
     // TODO: remove these when goals change
-    this->AddTrayGoalOutlines();
+    for (const auto & item : this->kitTrays)
+    {
+      auto tray = item.second;
+      tray.AddTrayGoalOutlines(this->world);
+    }
   }
+
   if (this->newGoal || this->newTrayInfo)
   {
     this->ScoreTrays();
@@ -90,100 +94,35 @@ void ROSAriacScoringPlugin::OnUpdate(const common::UpdateInfo &_info)
 /////////////////////////////////////////////////
 void ROSAriacScoringPlugin::ScoreTrays()
 {
-  for (const auto & goalTray : this->assignedKits)
+  double score;
+  for (const auto & item : this->kitTrays)
   {
-    auto currentTray = this->currentKits.find(goalTray.first);
-    if (currentTray == this->currentKits.end())
-    {
-      continue;
-    }
-    this->ScoreTray(goalTray.second, currentTray->second);
+    // TODO: only calculate scores when tray states change
+    auto tray = item.second;
+    score += tray.ScoreTray(this->scoringParameters);
   }
-}
-
-/////////////////////////////////////////////////
-void ROSAriacScoringPlugin::ScoreTray(const ariac::Kit & goalKit, const ariac::Kit & currentKit)
-{
-  double score = 0;
-  auto numGoalObjects = goalKit.objects.size();
-  gzdbg << "Comparing the " << numGoalObjects << " goal objects with the current " << \
-    currentKit.objects.size() << " objects\n";
-
-  std::vector<ariac::KitObject> remainingGoalObjects;
-  remainingGoalObjects.reserve(numGoalObjects);
-  std::map<std::string, unsigned int> goalObjectTypeCount, currentObjectTypeCount;
-  for (auto goalObject : goalKit.objects)
-  {
-    remainingGoalObjects.push_back(goalObject);
-    if (goalObjectTypeCount.find(goalObject.type) == goalObjectTypeCount.end())
-    {
-      goalObjectTypeCount[goalObject.type] = 0;
-    }
-    goalObjectTypeCount[goalObject.type] += 1;
-  }
-
-  gzdbg << "Checking object counts\n";
-  bool goalObjectsMissing = false;
-  for (auto & value : goalObjectTypeCount)
-  {
-    auto goalObjectType = value.first;
-    auto goalObjectCount = value.second;
-    auto currentObjectCount = std::count_if(currentKit.objects.begin(), currentKit.objects.end(),
-      [goalObjectType](ariac::KitObject k) {return k.type == goalObjectType;});
-    gzdbg << "Found " << currentObjectCount << " objects of type '" << goalObjectType << "'\n";
-    score += std::min(long(goalObjectCount), currentObjectCount) * this->scoringParameters.objectPresence;
-    if (currentObjectCount < goalObjectCount)
-    {
-      goalObjectsMissing = true;
-    }
-  }
-  if (!goalObjectsMissing)
-  {
-    gzdbg << "All objects on tray\n";
-    score += this->scoringParameters.allObjectsBonusFactor * numGoalObjects;
-  }
-
-  gzdbg << "Checking object poses\n";
-  for (const auto & currentObject : currentKit.objects)
-  {
-    gzdbg << "Checking object: \n" << currentObject << "\n";
-    for (auto it = remainingGoalObjects.begin(); it != remainingGoalObjects.end(); ++it)
-    {
-      auto goalObject = *it;
-      gzdbg << "Goal object: " << goalObject << "\n";
-      if (goalObject.type != currentObject.type)
-        continue;
-
-      math::Vector3 posnDiff = goalObject.pose.CoordPositionSub(currentObject.pose);
-      posnDiff.z = 0;
-      if (posnDiff.GetLength() > this->scoringParameters.distanceThresh)
-        continue;
-      score += this->scoringParameters.objectPosition;
-
-      // TODO: check orientation
-      score += this->scoringParameters.objectOrientation;
-
-      // Once a match is found, don't permit it to be matched again
-      remainingGoalObjects.erase(it);
-      break;
-    }
-  }
-
-  std::cout << score << std::endl;
+  std::cout << "Total score: " << score << std::endl;
 }
 
 /////////////////////////////////////////////////
 void ROSAriacScoringPlugin::OnTrayInfo(const osrf_gear::Kit::ConstPtr & kitMsg)
 {
-  // Update the state of the tray
-  //TODO: Only pay attention if kit is assigned
-  boost::mutex::scoped_lock currentKitsLock(this->currentKitsMutex);
+  boost::mutex::scoped_lock kitTraysLock(this->kitTraysMutex);
   this->newTrayInfo = true;
 
+  // Get the ID of the tray that the message is from
   std::string trayID = kitMsg->tray.data;
+
+  if (this->kitTrays.find(trayID) == this->kitTrays.end())
+  {
+    // The tray is not part of the current goal - ignore it
+    return;
+  }
+
+  // Update the state of the tray
   ariac::Kit kitState;
   FillKitFromMsg(*kitMsg, kitState);
-  this->currentKits[trayID] = kitState;
+  this->kitTrays[trayID].UpdateKitState(kitState);
 }
 
 /////////////////////////////////////////////////
@@ -191,16 +130,16 @@ void ROSAriacScoringPlugin::OnGoalReceived(const osrf_gear::Goal::ConstPtr & goa
 {
   // TODO: store previous goal
   gzdbg << "Received a goal\n";
-  boost::mutex::scoped_lock assignedKitsLock(this->assignedKitsMutex);
+  boost::mutex::scoped_lock kitTraysLock(this->kitTraysMutex);
   this->newGoal = true;
 
-  this->assignedKits.clear();
+  this->kitTrays.clear();
   for (const auto & kitMsg : goalMsg->kits)
   {
     std::string trayID = kitMsg.tray.data;
     ariac::Kit assignedKit;
     FillKitFromMsg(kitMsg, assignedKit);
-    this->assignedKits[trayID] = assignedKit;
+    this->kitTrays[trayID] = ariac::KitTray(trayID, assignedKit);
   }
 }
 
@@ -211,63 +150,10 @@ void ROSAriacScoringPlugin::FillKitFromMsg(const osrf_gear::Kit &kitMsg, ariac::
   for (const auto & objMsg : kitMsg.objects)
   {
     ariac::KitObject obj;
-    obj.type = objMsg.type;
+    obj.type = ariac::DetermineModelType(objMsg.type);
     geometry_msgs::Point p = objMsg.pose.position;
     geometry_msgs::Quaternion o = objMsg.pose.orientation;
     obj.pose = math::Pose(math::Vector3(p.x, p.y, p.z), math::Quaternion(o.x, o.y, o.z, o.w));
     kit.objects.push_back(obj);
-  }
-}
-
-/////////////////////////////////////////////////
-void ROSAriacScoringPlugin::AddTrayGoalOutlines()
-{
-  gzdbg << "Adding tray goal outlines\n";
-  for (auto item : this->assignedKits)
-  {
-    auto trayID = item.first;
-    auto kit = item.second;
-
-    // TODO: move this to member variable
-    gzdbg << "Getting tray frame: " << trayID << "\n";
-    auto trayFrame = this->world->GetEntity(trayID);
-    if (!trayFrame)
-    {
-      gzdbg << "Cannot find frame for tray: " << trayID << ". Not adding tray goal outlines.\n";
-      continue;
-    }
-
-    ignition::math::Pose3d trayPose;
-    if (trayFrame->HasType(physics::Base::LINK) || trayFrame->HasType(physics::Base::MODEL))
-    {
-      trayPose = trayFrame->GetWorldPose().Ign();
-    }
-    unsigned int objectID = 0;
-    for (auto obj : kit.objects)
-    {
-      std::ostringstream newModelStr;
-      std::string modelType = obj.type + "_outline";
-      // Give each object a unique name so that their names don't clash when their models are
-      // added during the same sim step. Use the tray ID in the name so they don't clash with
-      // existing models on other trays.
-      std::string modelName = trayID + "_part_ " + std::to_string(objectID++) + "_" + modelType;
-
-      ignition::math::Matrix4d transMat(trayPose);
-      ignition::math::Matrix4d pose_local(obj.pose.Ign());
-      obj.pose = (transMat * pose_local).Pose();
-
-      newModelStr <<
-        "<sdf version='" << SDF_VERSION << "'>\n"
-        "  <include>\n"
-        "    <pose>" << obj.pose << "</pose>\n"
-        "    <name>" << modelName << "</name>\n"
-        "    <uri>model://" << modelType << "</uri>\n"
-        "  </include>\n"
-        "</sdf>\n";
-      gzdbg << "Inserting model: " << modelName << "\n";
-      this->world->InsertModelString(newModelStr.str());
-
-      // TODO: add a joint to the tray instead of using static models
-    }
   }
 }

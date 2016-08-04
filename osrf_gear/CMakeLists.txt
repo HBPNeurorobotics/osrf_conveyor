@@ -273,17 +273,34 @@ install(TARGETS ${kit_tray_plugin_name}
   RUNTIME DESTINATION bin
 )
 
-# Create the libROSAriacScoringPlugin.so library.
-set(plugin_name ROSAriacScoringPlugin)
-add_library(${plugin_name} src/ROSAriacScoringPlugin.cc)
-target_link_libraries(${plugin_name}
+# Create the libROSAriacKitTray.so library.
+set(target_name ROSAriacKitTray)
+add_library(${target_name} src/ROSAriacKitTray.cc)
+target_link_libraries(${target_name}
   ${GAZEBO_LIBRARIES}
   ${roscpp_LIBRARIES}
 )
-add_dependencies(${plugin_name}
+add_dependencies(${target_name}
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
 )
-install(TARGETS ${plugin_name}
+install(TARGETS ${target_name}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
+
+# Create the libROSAriacScoringPlugin.so library.
+set(target_name ROSAriacScoringPlugin)
+add_library(${target_name} src/ROSAriacScoringPlugin.cc)
+target_link_libraries(${target_name}
+  ${GAZEBO_LIBRARIES}
+  ${roscpp_LIBRARIES}
+  ROSAriacKitTray
+)
+add_dependencies(${target_name}
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+)
+install(TARGETS ${target_name}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin

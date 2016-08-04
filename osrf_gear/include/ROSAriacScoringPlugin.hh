@@ -33,6 +33,7 @@
 #include <gazebo/util/system.hh>
 #include <osrf_gear/ARIAC.hh>
 #include <osrf_gear/Goal.h>
+#include "ROSAriacKitTray.hh"
 
 namespace gazebo
 {
@@ -55,12 +56,6 @@ namespace gazebo
 
     /// \brief Calculate the score for the trays given the objects in them
     protected: void ScoreTrays();
-
-    /// \brief Calculate the score of a single tray given the objects
-    protected: void ScoreTray(const ariac::Kit & goalKit, const ariac::Kit & currentKit);
-
-    /// \brief Add models of the kit part outlines to the world
-    protected: void AddTrayGoalOutlines();
 
     /// \brief Helper function for filling a Kit from a kit ROS message
     public: static void FillKitFromMsg(const osrf_gear::Kit &kitMsg, ariac::Kit &kit);
@@ -89,14 +84,11 @@ namespace gazebo
     /// \brief Callback for receiving tray state message
     public: void OnTrayInfo(const osrf_gear::Kit::ConstPtr & trayMsg);
 
-    /// \brief The goal state of the kits on the different trays
-    protected: std::map<std::string, ariac::Kit> assignedKits;
+    /// \brief The trays to monitor the score of
+    protected: std::map<std::string, ariac::KitTray> kitTrays;
 
-    /// \brief The current state of the kits on the different trays
-    protected: std::map<std::string, ariac::Kit> currentKits;
-
-    /// \brief Mutex for protecting the assigned kits
-    protected: mutable boost::mutex assignedKitsMutex;
+    /// \brief Mutex for protecting the kit trays being monitored
+    protected: mutable boost::mutex kitTraysMutex;
 
     /// \brief Flag for signalling new tray info to process
     protected: bool newTrayInfo;
@@ -104,21 +96,7 @@ namespace gazebo
     /// \brief Flag for signalling new goal to process
     protected: bool newGoal;
 
-    /// \brief Mutex for protecting the current kits
-    protected: mutable boost::mutex currentKitsMutex;
-
-    public: typedef struct ScoringParameters
-               {
-                 double objectPresence = 1.0;
-                 double objectPosition = 0.0;
-                 double objectOrientation = 1.0;
-
-                 // Bonus when all objects in the tray: fator * (number of objects)
-                 double allObjectsBonusFactor = 1.0;
-                 // Acceptable distance in meters to object's target position
-                 double distanceThresh = 0.03;
-               } ScoringParameters;
-    protected: ScoringParameters scoringParameters;
+    protected: ariac::ScoringParameters scoringParameters;
   };
 }
 #endif
