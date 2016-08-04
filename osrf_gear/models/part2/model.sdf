@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <sdf version="1.5">
   <model name="wood_cube_10cm">
+    <allow_auto_disable>false</allow_auto_disable>
     <link name="link">
       <pose>0 0 0.05 0 0 0</pose>
       <inertial>

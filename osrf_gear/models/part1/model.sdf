@@ -2,6 +2,7 @@
 
 <sdf version="1.5">
   <model name="wood_block_10_2_1cm">
+    <allow_auto_disable>false</allow_auto_disable>
     <link name="link">
       <pose>0 0 0.005 0 0 0</pose>
       <inertial>
