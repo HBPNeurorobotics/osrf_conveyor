@@ -25,11 +25,11 @@
 
 #include <ros/ros.h>
 
-#include <ARIAC.hh>
 #include <gazebo/common/Plugin.hh>
 #include <gazebo/msgs/msgs.hh>
 #include <gazebo/sensors/sensors.hh>
 #include <gazebo/util/system.hh>
+#include <osrf_gear/ARIAC.hh>
 #include <osrf_gear/Goal.h>
 #include "SideContactPlugin.hh"
 
@@ -54,6 +54,9 @@ namespace gazebo
 
     /// \brief Update the kit based on which models are in contact
     protected: void ProcessContactingModels();
+
+    /// \brief Update the kit based on which models are in contact
+    public: std::string DetermineModelType(const std::string &modelName);
 
     /// \brief Publish the Kit ROS message
     protected: void PublishKitMsg();

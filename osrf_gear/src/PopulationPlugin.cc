@@ -262,19 +262,19 @@ void PopulationPlugin::OnUpdate()
       ignition::math::Matrix4d pose_local(obj.pose.Ign());
       obj.pose = (transMat * pose_local).Pose();
     }
-    gzdbg << "Object spawned: " << obj.type << std::endl;
+    std::string modelName = this->GetHandle() + "::" + obj.type;
 
     std::ostringstream newModelStr;
-
     newModelStr <<
       "<sdf version='" << SDF_VERSION << "'>\n"
       "  <include>\n"
       "    <pose>" << obj.pose << "</pose>\n"
-      "    <name>" << obj.type << "</name>\n"
+      "    <name>" << modelName << "</name>\n"
       "    <uri>model://" << obj.type << "</uri>\n"
       "  </include>\n"
       "</sdf>\n";
 
+    gzdbg << "Object spawned: " << modelName << std::endl;
     this->dataPtr->world->InsertModelString(newModelStr.str());
     this->dataPtr->objects.erase(this->dataPtr->objects.begin());
   }

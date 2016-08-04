@@ -15,8 +15,6 @@
  *
 */
 
-#include <string>
-
 #include "ROSAriacKitTrayPlugin.hh"
 
 using namespace gazebo;
@@ -83,17 +81,7 @@ void KitTrayPlugin::ProcessContactingModels()
       ariac::KitObject object;
 
       // Determine the object type
-      std::string modelName = model->GetName();
-      size_t lastCharPosn = modelName.find_last_not_of("0123456789");
-      if (modelName[lastCharPosn] == '_' && lastCharPosn > 1)
-      {
-        // Trim the underscore and number
-        object.type = modelName.substr(0, lastCharPosn);
-      }
-      else
-      {
-        object.type = modelName;
-      }
+      object.type = ariac::DetermineModelType(model->GetName());
 
       // Determine the pose of the object in the frame of the tray
       math::Pose objectPose = model->GetWorldPose();

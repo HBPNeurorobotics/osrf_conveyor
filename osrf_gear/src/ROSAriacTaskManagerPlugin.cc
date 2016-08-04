@@ -34,7 +34,7 @@
 #include <std_srvs/Trigger.h>
 
 
-#include "ARIAC.hh"
+#include "osrf_gear/ARIAC.hh"
 #include "osrf_gear/ROSAriacTaskManagerPlugin.hh"
 #include "osrf_gear/Goal.h"
 #include "osrf_gear/Kit.h"
