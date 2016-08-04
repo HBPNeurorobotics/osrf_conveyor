@@ -122,7 +122,7 @@ bool KitTray::AddTrayGoalOutlines(physics::WorldPtr world)
 }
 
 /////////////////////////////////////////////////
-double KitTray::ScoreTray(const ScoringParameters & scoringParameters)
+TrayScore KitTray::ScoreTray(const ScoringParameters & scoringParameters)
 {
   bool scoringParametersChanged = this->currentScoringParameters != scoringParameters;
 
@@ -132,7 +132,7 @@ double KitTray::ScoreTray(const ScoringParameters & scoringParameters)
     return this->currentScore;
   }
 
-  double score = 0;
+  TrayScore score;
   auto numAssignedObjects = this->assignedKit.objects.size();
   gzdbg << "Comparing the " << numAssignedObjects << " assigned objects with the current " << \
     this->currentKit.objects.size() << " objects\n";
@@ -150,7 +150,8 @@ double KitTray::ScoreTray(const ScoringParameters & scoringParameters)
       std::count_if(this->currentKit.objects.begin(), currentKit.objects.end(),
         [assignedObjectType](ariac::KitObject k) {return k.type == assignedObjectType;});
     gzdbg << "Found " << currentObjectCount << " objects of type '" << assignedObjectType << "'\n";
-    score += std::min(long(assignedObjectCount), currentObjectCount) * scoringParameters.objectPresence;
+    score.partPresence +=
+      std::min(long(assignedObjectCount), currentObjectCount) * scoringParameters.objectPresence;
     if (currentObjectCount < assignedObjectCount)
     {
       assignedObjectsMissing = true;
@@ -159,7 +160,7 @@ double KitTray::ScoreTray(const ScoringParameters & scoringParameters)
   if (!assignedObjectsMissing)
   {
     gzdbg << "All objects on tray\n";
-    score += scoringParameters.allObjectsBonusFactor * numAssignedObjects;
+    score.allPartsBonus += scoringParameters.allObjectsBonusFactor * numAssignedObjects;
   }
 
   gzdbg << "Checking object poses\n";
@@ -176,10 +177,10 @@ double KitTray::ScoreTray(const ScoringParameters & scoringParameters)
       if (posnDiff.GetLength() > scoringParameters.distanceThresh)
         continue;
       gzdbg << "Object of type '" << currentObject.type << "' in the correct position\n";
-      score += scoringParameters.objectPosition;
+      score.partPose += scoringParameters.objectPosition;
 
       // TODO: check orientation
-      score += scoringParameters.objectOrientation;
+      //score += scoringParameters.objectOrientation;
       //gzdbg << "Object '" << currentObject.type << "' in the correct position\n";
 
       // Once a match is found, don't permit it to be matched again

@@ -51,7 +51,7 @@ namespace ariac
     /// \brief Calculate the score of a single tray given the objects.
     /// \param[in] scoringParameters Scoring parameters to use.
     /// \return The total score of the tray.
-    public: double ScoreTray(const ScoringParameters & scoringParameters);
+    public: TrayScore ScoreTray(const ScoringParameters & scoringParameters);
 
     /// \brief Add models of the kit part outlines to the world.
     /// \param[in] world Pointer to the world to which the models should be added.
@@ -74,10 +74,10 @@ namespace ariac
     protected: bool assignedKitChanged;
 
     /// \brief Score of the tray given the current state.
-    protected: double currentScore;
+    protected: TrayScore currentScore;
 
     /// \brief Scoring parameters used to calculate the current score.
-    protected: ariac::ScoringParameters currentScoringParameters;
+    protected: ScoringParameters currentScoringParameters;
 
     /// \brief The number of each type of object in the assigned kit.
     protected: std::map<std::string, unsigned int> assignedObjectTypeCount;

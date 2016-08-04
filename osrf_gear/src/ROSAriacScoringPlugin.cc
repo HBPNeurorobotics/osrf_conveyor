@@ -72,37 +72,33 @@ void ROSAriacScoringPlugin::OnUpdate(const common::UpdateInfo &_info)
 {
   boost::mutex::scoped_lock kitTraysLock(this->kitTraysMutex);
 
-  if (this->newGoal)
+  if (this->newGoalReceived)
   {
-    // Add the outlines of the goal kits
-    // TODO: remove these when goals change
-    for (const auto & item : this->kitTrays)
-    {
-      auto tray = item.second;
-      tray.AddTrayGoalOutlines(this->world);
-    }
+    this->ProcessNewGoal();
   }
 
-  if (this->newGoal || this->newTrayInfo)
+  if (this->newGoalReceived || this->newTrayInfoReceived)
   {
     this->ScoreTrays();
   }
-  this->newGoal = false;
-  this->newTrayInfo = false;
+  this->newGoalReceived = false;
+  this->newTrayInfoReceived = false;
 }
 
 /////////////////////////////////////////////////
-double ROSAriacScoringPlugin::ScoreTrays()
+ariac::GoalScore ROSAriacScoringPlugin::ScoreTrays()
 {
-  double score;
+  ariac::GoalScore score;
+  double total = 0;
   for (const auto & item : this->kitTrays)
   {
     auto tray = item.second;
     auto trayScore = tray.ScoreTray(this->scoringParameters);
-    gzdbg << "Score from tray '" << item.first << "': " << trayScore << "\n";
-    score += trayScore;
+    gzdbg << "Score from tray '" << item.first << "': " << trayScore.total() << "\n";
+    score.trayScores.push_back(trayScore);
+    total += trayScore.total();
   }
-  std::cout << "Total score from trays: " << score << std::endl;
+  std::cout << "Total score from trays: " << total << std::endl;
   return score;
 }
 
@@ -121,7 +117,7 @@ void ROSAriacScoringPlugin::OnTrayInfo(const osrf_gear::Kit::ConstPtr & kitMsg)
   }
 
   // Update the state of the tray
-  this->newTrayInfo = true;
+  this->newTrayInfoReceived = true;
   ariac::Kit kitState;
   FillKitFromMsg(*kitMsg, kitState);
   this->kitTrays[trayID].UpdateKitState(kitState);
@@ -130,19 +126,48 @@ void ROSAriacScoringPlugin::OnTrayInfo(const osrf_gear::Kit::ConstPtr & kitMsg)
 /////////////////////////////////////////////////
 void ROSAriacScoringPlugin::OnGoalReceived(const osrf_gear::Goal::ConstPtr & goalMsg)
 {
-  // TODO: store previous goal
   gzdbg << "Received a goal\n";
-  boost::mutex::scoped_lock kitTraysLock(this->kitTraysMutex);
-  this->newGoal = true;
+  this->newGoalReceived = true;
 
-  // TODO: don't wipe state of trays that are in this goal
-  this->kitTrays.clear();
+  ariac::Goal goal;
   for (const auto & kitMsg : goalMsg->kits)
   {
     std::string trayID = kitMsg.tray.data;
     ariac::Kit assignedKit;
     FillKitFromMsg(kitMsg, assignedKit);
+    goal.kits[trayID] = assignedKit;
+  }
+  this->newGoal = goal;
+}
+
+/////////////////////////////////////////////////
+void ROSAriacScoringPlugin::ProcessNewGoal()
+{
+  // TODO: store previous goal
+  bool goalAssigned = !this->kitTrays.empty();
+  if (goalAssigned)
+  {
+    // Add the score of the previous goal to the total
+    this->gameScore.goalScores.push_back(this->goalScore);
+  }
+  this->goalScore = ariac::GoalScore();
+
+  // Assign the new goal
+  // TODO: don't wipe state of trays that are in this goal
+  this->kitTrays.clear();
+  for (const auto & item : this->newGoal.kits)
+  {
+    auto trayID = item.first;
+    auto assignedKit = item.second;
     this->kitTrays[trayID] = ariac::KitTray(trayID, assignedKit);
+  }
+
+  // Add the outlines of the goal kits
+  // TODO: remove these when goals change
+  for (const auto & item : this->kitTrays)
+  {
+    auto tray = item.second;
+    tray.AddTrayGoalOutlines(this->world);
   }
 }
 

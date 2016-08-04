@@ -27,6 +27,37 @@ namespace ariac
 {
   using namespace gazebo;
 
+  /// \brief The score of a tray.
+  class TrayScore
+  {
+    public: double partPresence = 0.0;
+            double allPartsBonus = 0.0;
+            double partPose = 0.0;
+            double total()
+            {
+              return partPresence + allPartsBonus + partPose;
+            }
+  };
+
+  /// \brief The score of a goal.
+  class GoalScore
+  {
+    public: std::vector<TrayScore> trayScores;
+  };
+
+  /// \brief The score of a competition run.
+  class GameScore
+  {
+    public: double totalProcessTime = 0.0;
+            double partTravelTime = 0.0;
+            double planningTime = 0.0;
+            double partTravelDistance = 0.0;
+            double manipulatorTravelDistance = 0.0;
+
+            // The score of each of the goals during the game.
+            std::vector<GoalScore> goalScores;
+  };
+
   /// \brief The parameters used for scoring the competition.
   class ScoringParameters
   {
