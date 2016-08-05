@@ -37,6 +37,7 @@ namespace ariac
     public: double partPresence = 0.0;
             double allPartsBonus = 0.0;
             double partPose = 0.0;
+            bool isComplete = false;
 
             /// \brief Calculate the total score.
             double total()
@@ -50,6 +51,23 @@ namespace ariac
   {
     /// \brief Mapping between tray IDs and scores
     public: std::map<TrayID_t, TrayScore> trayScores;
+
+            /// \brief Calculate if the goal is complete.
+            /// \return True if all trays are complete.
+            ///   Will return false if there are no trays in the goal.
+            bool isComplete()
+            {
+              bool isComplete = !this->trayScores.empty();
+              for (auto item : this->trayScores)
+              {
+                isComplete &= item.second.isComplete;
+                if (!isComplete)
+                {
+                  break;
+                }
+              }
+              return isComplete;
+            };
 
             /// \brief Calculate the total score.
             double total()

@@ -65,14 +65,25 @@ void AriacScorer::Update()
 }
 
 /////////////////////////////////////////////////
+bool AriacScorer::IsCurrentGoalComplete()
+{
+  return this->goalScore->isComplete();
+}
+
+/////////////////////////////////////////////////
 void AriacScorer::ScoreCurrentGoal()
 {
-  for (const auto & item : this->kitTrays)
+  for (const auto & item : this->currentGoal.kits)
   {
-    auto tray = item.second;
-    auto trayScore = tray.ScoreTray(this->scoringParameters);
-    ROS_INFO_STREAM("Score from tray '" << item.first << "': " << trayScore.total());
-    this->goalScore->trayScores[item.first] = trayScore;
+    auto trayID = item.first;
+    // Only count the trays that are part of this goal.
+    if (this->kitTrays.find(trayID) != this->kitTrays.end())
+    {
+      auto tray = this->kitTrays[trayID];
+      auto trayScore = tray.ScoreTray(this->scoringParameters);
+      ROS_INFO_STREAM("Score from tray '" << trayID << "': " << trayScore.total());
+      this->goalScore->trayScores[trayID] = trayScore;
+    }
   }
 }
 
@@ -158,6 +169,7 @@ void AriacScorer::ProcessNewGoal()
     tray.AddTrayGoalOutlines(this->world);
   }
   */
+  this->currentGoal = this->newGoal;
 }
 
 /////////////////////////////////////////////////

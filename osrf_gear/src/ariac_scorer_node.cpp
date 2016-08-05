@@ -34,6 +34,8 @@ int main(int argc, char ** argv) {
     ariac_scorer.Update();
     ariac::GameScore gameScore = ariac_scorer.GetGameScore();
     ROS_INFO_STREAM("Current game score: " << gameScore.total());
+    bool currentGoalComplete = ariac_scorer.IsCurrentGoalComplete();
+    ROS_INFO_STREAM("Current goal is complete: " << currentGoalComplete);
     ros::spinOnce();
     rate.sleep();
   }

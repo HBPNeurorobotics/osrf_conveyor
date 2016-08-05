@@ -137,6 +137,11 @@ TrayScore KitTray::ScoreTray(const ScoringParameters & scoringParameters)
     }
   }
 
+  if (remainingAssignedObjects.empty())
+  {
+    score.isComplete = true;
+  }
+
   this->currentScore = score;
   this->currentScoringParameters = scoringParameters;
   this->kitStateChanged = false;

@@ -48,6 +48,10 @@ class AriacScorer
   public: ariac::GameScore GetGameScore();
 
   /// \brief Get the score of the current goal.
+  /// \return True if the goal is complete.
+  public: bool IsCurrentGoalComplete();
+
+  /// \brief Get the score of the current goal.
   /// \return The score for the goal.
   public: ariac::GoalScore GetCurrentGoalScore();
 
@@ -67,10 +71,13 @@ class AriacScorer
   public: void OnTrayInfoReceived(const osrf_gear::Kit::ConstPtr & trayMsg);
 
   /// \brief The trays to monitor the score of.
-  protected: std::map<std::string, ariac::KitTray> kitTrays;
+  protected: std::map<ariac::TrayID_t, ariac::KitTray> kitTrays;
 
   /// \brief Mutex for protecting the kit trays being monitored.
   protected: mutable boost::mutex kitTraysMutex;
+
+  /// \brief Current goal being monitored.
+  protected: ariac::Goal currentGoal;
 
   /// \brief Flag for signalling new tray info to process.
   protected: bool newTrayInfoReceived;
