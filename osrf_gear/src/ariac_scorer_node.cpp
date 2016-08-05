@@ -32,6 +32,8 @@ int main(int argc, char ** argv) {
   while(ros::ok())
   {
     ariac_scorer.Update();
+    ariac::GameScore gameScore = ariac_scorer.GetGameScore();
+    ROS_INFO_STREAM("Current game score: " << gameScore.total());
     ros::spinOnce();
     rate.sleep();
   }

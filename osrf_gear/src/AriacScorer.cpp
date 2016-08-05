@@ -43,7 +43,7 @@ ariac::GameScore AriacScorer::GetGameScore()
 /////////////////////////////////////////////////
 ariac::GoalScore AriacScorer::GetCurrentGoalScore()
 {
-  return this->goalScore;
+  return *this->goalScore;
 }
 
 /////////////////////////////////////////////////
@@ -67,16 +67,13 @@ void AriacScorer::Update()
 /////////////////////////////////////////////////
 void AriacScorer::ScoreCurrentGoal()
 {
-  double total = 0;
   for (const auto & item : this->kitTrays)
   {
     auto tray = item.second;
     auto trayScore = tray.ScoreTray(this->scoringParameters);
     ROS_INFO_STREAM("Score from tray '" << item.first << "': " << trayScore.total());
-    this->goalScore.trayScores[item.first] = trayScore;
-    total += trayScore.total();
+    this->goalScore->trayScores[item.first] = trayScore;
   }
-  ROS_INFO_STREAM("Total score from trays: " << total);
 }
 
 /////////////////////////////////////////////////
@@ -84,16 +81,19 @@ void AriacScorer::OnTrayInfoReceived(const osrf_gear::Kit::ConstPtr & kitMsg)
 {
   boost::mutex::scoped_lock kitTraysLock(this->kitTraysMutex);
 
-  // Get the ID of the tray that the message is from
+  // Get the ID of the tray that the message is from.
   std::string trayID = kitMsg->tray.data;
 
   if (this->kitTrays.find(trayID) == this->kitTrays.end())
   {
-    // The tray is not part of the current goal - ignore it
-    return;
+    // This is the first time we've heard from this tray: initialize it.
+    this->kitTrays[trayID] = ariac::KitTray(trayID);
   }
 
-  // Update the state of the tray
+  // Update the state of the tray.
+  // TODO: this should be moved outside of the callback
+  // Do this even if the tray isn't part of the current goal because maybe it
+  // will be part of future goals.
   this->newTrayInfoReceived = true;
   ariac::Kit kitState;
   FillKitFromMsg(*kitMsg, kitState);
@@ -107,6 +107,7 @@ void AriacScorer::OnGoalReceived(const osrf_gear::Goal::ConstPtr & goalMsg)
   this->newGoalReceived = true;
 
   ariac::Goal goal;
+  goal.goalID = goalMsg->goal_id.data;
   for (const auto & kitMsg : goalMsg->kits)
   {
     std::string trayID = kitMsg.tray.data;
@@ -121,22 +122,30 @@ void AriacScorer::OnGoalReceived(const osrf_gear::Goal::ConstPtr & goalMsg)
 void AriacScorer::ProcessNewGoal()
 {
   // TODO: store previous goal
-  bool goalAssigned = !this->kitTrays.empty();
-  if (goalAssigned)
+
+  ariac::GoalID_t goalID = this->newGoal.goalID;
+  if (this->gameScore.goalScores.find(goalID) == this->gameScore.goalScores.end())
   {
-    // Add the score of the previous goal to the total
-    this->gameScore.goalScores.push_back(this->goalScore);
+    // This is a previously unseen goal: start scoring from scratch
+    this->gameScore.goalScores[goalID] = ariac::GoalScore();
   }
-  this->goalScore = ariac::GoalScore();
+  this->goalScore = &this->gameScore.goalScores[goalID];
 
   // Assign the new goal
-  // TODO: don't wipe state of trays that are in this goal
-  this->kitTrays.clear();
   for (const auto & item : this->newGoal.kits)
   {
     auto trayID = item.first;
     auto assignedKit = item.second;
-    this->kitTrays[trayID] = ariac::KitTray(trayID, assignedKit);
+
+    if (this->kitTrays.find(trayID) == this->kitTrays.end())
+    {
+      // This is a previously unmonitored tray: initialize it
+      this->kitTrays[trayID] = ariac::KitTray(trayID, assignedKit);
+    }
+    else
+    {
+      this->kitTrays[trayID].AssignKit(assignedKit);
+    }
   }
 
   // Add the outlines of the goal kits

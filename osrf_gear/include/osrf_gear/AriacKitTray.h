@@ -31,7 +31,7 @@ namespace ariac
     /// \brief Constructor.
     /// \param[in] _trayID ID of the tray.
     /// \param[in] _assignedKit Kit assigned to the tray.
-    public: KitTray(std::string _trayID, const Kit & _assignedKit);
+    public: KitTray(std::string _trayID, const Kit & _assignedKit = Kit());
 
     /// \brief Destructor.
     public: ~KitTray();

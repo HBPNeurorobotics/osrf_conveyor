@@ -84,8 +84,8 @@ class AriacScorer
   /// \brief Parameters to use for calculating scores.
   protected: ariac::ScoringParameters scoringParameters;
 
-  /// \brief The score of the current goal.
-  protected: ariac::GoalScore goalScore;
+  /// \brief Pointer to the score of the current goal.
+  protected: ariac::GoalScore* goalScore;
 
   /// \brief The score of the run.
   protected: ariac::GameScore gameScore;

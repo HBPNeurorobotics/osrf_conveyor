@@ -28,12 +28,17 @@ namespace ariac
 {
   using namespace gazebo;
 
+  typedef std::string TrayID_t;
+  typedef std::string GoalID_t;
+
   /// \brief The score of a tray.
   class TrayScore
   {
     public: double partPresence = 0.0;
             double allPartsBonus = 0.0;
             double partPose = 0.0;
+
+            /// \brief Calculate the total score.
             double total()
             {
               return partPresence + allPartsBonus + partPose;
@@ -44,7 +49,18 @@ namespace ariac
   class GoalScore
   {
     /// \brief Mapping between tray IDs and scores
-    public: std::map<std::string, TrayScore> trayScores;
+    public: std::map<TrayID_t, TrayScore> trayScores;
+
+            /// \brief Calculate the total score.
+            double total()
+            {
+              double total = 0;
+              for (auto item : this->trayScores)
+              {
+                total += item.second.total();
+              }
+              return total;
+            };
   };
 
   /// \brief The score of a competition run.
@@ -57,10 +73,28 @@ namespace ariac
             double manipulatorTravelDistance = 0.0;
 
             // The score of each of the goals during the game.
-            std::vector<GoalScore> goalScores;
+            std::map<GoalID_t, GoalScore> goalScores;
+
+            /// \brief Calculate the total score.
+            double total()
+            {
+              double total = 0;
+              total += totalProcessTime;
+              total += partTravelTime;
+              total += planningTime;
+              total += partTravelDistance;
+              total += manipulatorTravelDistance;
+
+              for (auto item : this->goalScores)
+              {
+                total += item.second.total();
+              }
+              return total;
+            };
   };
 
   /// \brief The parameters used for scoring the competition.
+  // TODO: this should have a different data type
   class ScoringParameters
   {
     /// \brief Equality comparison operator.
@@ -98,9 +132,9 @@ namespace ariac
   };
 
   /// \brief Determine the type of a gazebo model from its name
-  std::string DetermineModelType(const std::string &modelName)
+  TrayID_t DetermineModelType(const std::string &modelName)
   {
-    std::string modelType(modelName);
+    TrayID_t modelType(modelName);
 
     // Trim namespaces
     size_t index = modelType.find_last_of(':');
@@ -194,11 +228,14 @@ namespace ariac
       return _out;
     }
 
+    /// \brief The ID of this goal.
+    public: GoalID_t goalID;
+
     /// \brief Simulation time in which the goal should be triggered.
     public: double time;
 
     /// \brief A goal is composed of multiple kits assigned to specific trays.
-    public: std::map<std::string, Kit> kits;
+    public: std::map<TrayID_t, Kit> kits;
   };
 }
 #endif

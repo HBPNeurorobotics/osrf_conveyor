@@ -95,6 +95,7 @@ GZ_REGISTER_WORLD_PLUGIN(ROSAriacTaskManagerPlugin)
 static void fillGoalMsg(const ariac::Goal &_goal,
                         osrf_gear::Goal &_msgGoal)
 {
+  _msgGoal.goal_id.data = _goal.goalID;
   for (const auto item : _goal.kits)
   {
     osrf_gear::Kit msgKit;
@@ -169,6 +170,7 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
     return;
   }
 
+  unsigned int goalCount = 0;
   sdf::ElementPtr goalElem = _sdf->GetElement("goal");
   while (goalElem)
   {
@@ -252,13 +254,14 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
     }
 
     // Add a new goal.
-    ariac::Goal goal = {time, kits};
+    ariac::GoalID_t goalID = std::to_string(goalCount++);
+    ariac::Goal goal = {goalID, time, kits};
     this->dataPtr->goals.push_back(goal);
 
     goalElem = goalElem->GetNextElement("goal");
   }
 
-  // Sort the goals.
+  // Sort the goals by their start times.
   std::sort(this->dataPtr->goals.begin(), this->dataPtr->goals.end());
 
   // Debug output.

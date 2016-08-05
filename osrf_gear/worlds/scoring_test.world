@@ -123,10 +123,40 @@
           </object>
         </kit>
       </goal>
+      <goal>
+        <time>10.0</time>
+        <kit>
+          <tray>kit_tray_1</tray>
+          <object>
+            <type>part3</type>
+            <pose>-0.2 -0.15 0 0 0 0</pose>
+          </object>
+          <object>
+            <type>part3</type>
+            <pose>-0.2 0 0 0 0 0</pose>
+          </object>
+          <object>
+            <type>part2</type>
+            <pose>-0.2 0.15 0 0 0 0</pose>
+          </object>
+        </kit>
+        <kit>
+          <tray>kit_tray_2</tray>
+          <object>
+            <type>part3</type>
+            <pose>-0.2 -0.15 0 0 0 0</pose>
+          </object>
+          <object>
+            <type>part3</type>
+            <pose>-0.2 0 0 0 0 0</pose>
+          </object>
+          <object>
+            <type>part2</type>
+            <pose>-0.2 0.15 0 0 0 0</pose>
+          </object>
+        </kit>
+      </goal>
     </plugin>
 
-    <!-- The NIST-ARIAC scoring plugin
-    <plugin filename="libROSAriacScoringPlugin.so" name="scorer">
-    </plugin> -->
   </world>
 </sdf>
