@@ -18,6 +18,7 @@
 #define _ARIAC_HH_
 
 #include <ostream>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -42,7 +43,8 @@ namespace ariac
   /// \brief The score of a goal.
   class GoalScore
   {
-    public: std::vector<TrayScore> trayScores;
+    /// \brief Mapping between tray IDs and scores
+    public: std::map<std::string, TrayScore> trayScores;
   };
 
   /// \brief The score of a competition run.

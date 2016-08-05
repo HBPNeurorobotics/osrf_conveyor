@@ -6,4 +6,7 @@
     <arg name="extra_gazebo_args" value="$(arg extra_gazebo_args)" />
     <arg name="world_name" value="$(arg gzworld)" />
   </include>
+
+  <node name="ariac_scorer_node" pkg="osrf_gear" type="ariac_scorer_node"
+        respawn="false" output="screen"/>
 </launch>

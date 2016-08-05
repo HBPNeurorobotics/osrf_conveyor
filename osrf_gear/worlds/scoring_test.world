@@ -28,6 +28,7 @@
 
     <!-- Populate kit tray 1 -->
     <plugin filename="libPopulationPlugin.so" name="populate_kit_tray_1">
+      <activation_topic>~/conveyor/control</activation_topic>
       <loop_forever>false</loop_forever>
       <frame>kit_tray_1</frame>
       <object_sequence>
@@ -56,6 +57,7 @@
 
     <!-- Populate kit tray 2 -->
     <plugin filename="libPopulationPlugin.so" name="populate_kit_tray_2">
+      <activation_topic>~/conveyor/control</activation_topic>
       <loop_forever>false</loop_forever>
       <frame>kit_tray_2</frame>
       <object_sequence>
@@ -123,8 +125,8 @@
       </goal>
     </plugin>
 
-    <!-- The NIST-ARIAC scoring plugin -->
+    <!-- The NIST-ARIAC scoring plugin
     <plugin filename="libROSAriacScoringPlugin.so" name="scorer">
-    </plugin>
+    </plugin> -->
   </world>
 </sdf>

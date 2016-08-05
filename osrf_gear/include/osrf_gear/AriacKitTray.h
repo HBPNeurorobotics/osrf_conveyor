@@ -15,19 +15,13 @@
  *
 */
 
-#include <ostream>
+#include <map>
 #include <string>
-#include <vector>
 
 #include <osrf_gear/ARIAC.hh>
-#include <gazebo/gazebo.hh>
-#include <gazebo/physics/Link.hh>
-#include <gazebo/physics/World.hh>
 
 namespace ariac
 {
-  using namespace gazebo;
-
   /// \brief Class to store information about a kit tray.
   class KitTray
   {
@@ -52,11 +46,6 @@ namespace ariac
     /// \param[in] scoringParameters Scoring parameters to use.
     /// \return The total score of the tray.
     public: TrayScore ScoreTray(const ScoringParameters & scoringParameters);
-
-    /// \brief Add models of the kit part outlines to the world.
-    /// \param[in] world Pointer to the world to which the models should be added.
-    /// \return True if successful.
-    public: bool AddTrayGoalOutlines(physics::WorldPtr world);
 
     /// \brief The ID of the tray.
     public: std::string trayID;

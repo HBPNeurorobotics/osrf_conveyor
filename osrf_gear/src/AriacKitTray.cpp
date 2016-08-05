@@ -15,17 +15,12 @@
  *
 */
 
-#include <string>
+#include "osrf_gear/AriacKitTray.h"
 
-#include <gazebo/math/Vector3.hh>
-#include <gazebo/math/Quaternion.hh>
-#include <geometry_msgs/Point.h>
-#include <geometry_msgs/Quaternion.h>
-#include <ignition/math/Matrix4.hh>
-#include "ROSAriacKitTray.hh"
+#include <iostream>
+#include <vector>
 
 using namespace ariac;
-using namespace gazebo;
 
 /////////////////////////////////////////////////
 KitTray::KitTray()
@@ -47,7 +42,7 @@ KitTray::KitTray(std::string _trayID, const Kit & _assignedKit)
 /////////////////////////////////////////////////
 void KitTray::AssignKit(const Kit & kit)
 {
-  gzdbg << "Assigned new kit.\n";
+  std::cout << "Assigned new kit." << std::endl;
   this->assignedKit = kit;
   this->assignedKitChanged = true;
 
@@ -67,58 +62,8 @@ void KitTray::AssignKit(const Kit & kit)
 /////////////////////////////////////////////////
 void KitTray::UpdateKitState(const Kit & kit)
 {
-  gzdbg << "Updating kit.\n";
   this->currentKit = kit;
   this->kitStateChanged = true;
-}
-
-/////////////////////////////////////////////////
-bool KitTray::AddTrayGoalOutlines(physics::WorldPtr world)
-{
-  gzdbg << "Adding tray goal outlines from " << this->trayID << "\n";
-
-  auto trayFrame = world->GetEntity(this->trayID);
-
-  if (!trayFrame)
-  {
-    gzdbg << "Cannot find frame for tray: " << this->trayID << ". Not adding tray goal outlines.\n";
-    return false;
-  }
-
-  ignition::math::Pose3d trayPose;
-  if (trayFrame->HasType(physics::Base::LINK) || trayFrame->HasType(physics::Base::MODEL))
-  {
-    trayPose = trayFrame->GetWorldPose().Ign();
-  }
-
-  unsigned int objectID = 0;
-  for (auto obj : this->assignedKit.objects)
-  {
-    std::ostringstream newModelStr;
-    std::string modelType = obj.type + "_outline";
-    // Give each object a unique name so that their names don't clash when their models are
-    // added during the same sim step. Use the tray ID in the name so they don't clash with
-    // existing models on other trays.
-    std::string modelName = this->trayID + "_part_ " + std::to_string(objectID++) + "_" + modelType;
-
-    ignition::math::Matrix4d transMat(trayPose);
-    ignition::math::Matrix4d pose_local(obj.pose.Ign());
-    obj.pose = (transMat * pose_local).Pose();
-
-    newModelStr <<
-      "<sdf version='" << SDF_VERSION << "'>\n"
-      "  <include>\n"
-      "    <pose>" << obj.pose << "</pose>\n"
-      "    <name>" << modelName << "</name>\n"
-      "    <uri>model://" << modelType << "</uri>\n"
-      "  </include>\n"
-      "</sdf>\n";
-    gzdbg << "Inserting model: " << modelName << "\n";
-    world->InsertModelString(newModelStr.str());
-
-    // TODO: add a joint to the tray instead of using static models
-  }
-  return true;
 }
 
 /////////////////////////////////////////////////
@@ -134,13 +79,14 @@ TrayScore KitTray::ScoreTray(const ScoringParameters & scoringParameters)
 
   TrayScore score;
   auto numAssignedObjects = this->assignedKit.objects.size();
-  gzdbg << "Comparing the " << numAssignedObjects << " assigned objects with the current " << \
-    this->currentKit.objects.size() << " objects\n";
+  std::cout << "[" << this->trayID << "] Comparing the " << numAssignedObjects <<
+    " assigned objects with the current " <<
+    this->currentKit.objects.size() << " objects" << std::endl;
 
   std::vector<ariac::KitObject> remainingAssignedObjects(assignedKit.objects);
   std::map<std::string, unsigned int> currentObjectTypeCount;
 
-  gzdbg << "Checking object counts\n";
+  std::cout << "[" << this->trayID << "] Checking object counts" << std::endl;
   bool assignedObjectsMissing = false;
   for (auto & value : this->assignedObjectTypeCount)
   {
@@ -149,7 +95,8 @@ TrayScore KitTray::ScoreTray(const ScoringParameters & scoringParameters)
     auto currentObjectCount =
       std::count_if(this->currentKit.objects.begin(), currentKit.objects.end(),
         [assignedObjectType](ariac::KitObject k) {return k.type == assignedObjectType;});
-    gzdbg << "Found " << currentObjectCount << " objects of type '" << assignedObjectType << "'\n";
+    std::cout << "[" << this->trayID << "] Found " << currentObjectCount <<
+      " objects of type '" << assignedObjectType << "'" << std::endl;
     score.partPresence +=
       std::min(long(assignedObjectCount), currentObjectCount) * scoringParameters.objectPresence;
     if (currentObjectCount < assignedObjectCount)
@@ -159,11 +106,11 @@ TrayScore KitTray::ScoreTray(const ScoringParameters & scoringParameters)
   }
   if (!assignedObjectsMissing)
   {
-    gzdbg << "All objects on tray\n";
+    std::cout << "[" << this->trayID << "] All objects on tray" << std::endl;
     score.allPartsBonus += scoringParameters.allObjectsBonusFactor * numAssignedObjects;
   }
 
-  gzdbg << "Checking object poses\n";
+  std::cout << "[" << this->trayID << "] Checking object poses" << std::endl;
   for (const auto & currentObject : this->currentKit.objects)
   {
     for (auto it = remainingAssignedObjects.begin(); it != remainingAssignedObjects.end(); ++it)
@@ -176,12 +123,13 @@ TrayScore KitTray::ScoreTray(const ScoringParameters & scoringParameters)
       posnDiff.z = 0;
       if (posnDiff.GetLength() > scoringParameters.distanceThresh)
         continue;
-      gzdbg << "Object of type '" << currentObject.type << "' in the correct position\n";
+      std::cout << "[" << this->trayID << "] Object of type '" << currentObject.type <<
+        "' in the correct position" << std::endl;
       score.partPose += scoringParameters.objectPosition;
 
       // TODO: check orientation
-      //score += scoringParameters.objectOrientation;
-      //gzdbg << "Object '" << currentObject.type << "' in the correct position\n";
+      score.partPose += scoringParameters.objectOrientation;
+      //std::cout << "Object '" << currentObject.type << "' in the correct position" << std::endl;
 
       // Once a match is found, don't permit it to be matched again
       remainingAssignedObjects.erase(it);
