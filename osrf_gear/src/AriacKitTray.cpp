@@ -20,6 +20,8 @@
 #include <iostream>
 #include <vector>
 
+#include <ros/console.h>
+
 using namespace ariac;
 
 /////////////////////////////////////////////////
@@ -42,7 +44,7 @@ KitTray::KitTray(std::string _trayID, const Kit & _assignedKit)
 /////////////////////////////////////////////////
 void KitTray::AssignKit(const Kit & kit)
 {
-  std::cout << "Assigned new kit." << std::endl;
+  ROS_DEBUG_STREAM("Assigned new kit.");
   this->assignedKit = kit;
   this->assignedKitChanged = true;
 
@@ -79,14 +81,14 @@ TrayScore KitTray::ScoreTray(const ScoringParameters & scoringParameters)
 
   TrayScore score;
   auto numAssignedObjects = this->assignedKit.objects.size();
-  std::cout << "[" << this->trayID << "] Comparing the " << numAssignedObjects <<
+  ROS_DEBUG_STREAM("[" << this->trayID << "] Comparing the " << numAssignedObjects <<
     " assigned objects with the current " <<
-    this->currentKit.objects.size() << " objects" << std::endl;
+    this->currentKit.objects.size() << " objects");
 
   std::vector<ariac::KitObject> remainingAssignedObjects(assignedKit.objects);
   std::map<std::string, unsigned int> currentObjectTypeCount;
 
-  std::cout << "[" << this->trayID << "] Checking object counts" << std::endl;
+  ROS_DEBUG_STREAM("[" << this->trayID << "] Checking object counts");
   bool assignedObjectsMissing = false;
   for (auto & value : this->assignedObjectTypeCount)
   {
@@ -95,8 +97,8 @@ TrayScore KitTray::ScoreTray(const ScoringParameters & scoringParameters)
     auto currentObjectCount =
       std::count_if(this->currentKit.objects.begin(), currentKit.objects.end(),
         [assignedObjectType](ariac::KitObject k) {return k.type == assignedObjectType;});
-    std::cout << "[" << this->trayID << "] Found " << currentObjectCount <<
-      " objects of type '" << assignedObjectType << "'" << std::endl;
+    ROS_DEBUG_STREAM("[" << this->trayID << "] Found " << currentObjectCount <<
+      " objects of type '" << assignedObjectType << "'");
     score.partPresence +=
       std::min(long(assignedObjectCount), currentObjectCount) * scoringParameters.objectPresence;
     if (currentObjectCount < assignedObjectCount)
@@ -106,11 +108,11 @@ TrayScore KitTray::ScoreTray(const ScoringParameters & scoringParameters)
   }
   if (!assignedObjectsMissing)
   {
-    std::cout << "[" << this->trayID << "] All objects on tray" << std::endl;
+    ROS_DEBUG_STREAM("[" << this->trayID << "] All objects on tray");
     score.allPartsBonus += scoringParameters.allObjectsBonusFactor * numAssignedObjects;
   }
 
-  std::cout << "[" << this->trayID << "] Checking object poses" << std::endl;
+  ROS_DEBUG_STREAM("[" << this->trayID << "] Checking object poses");
   for (const auto & currentObject : this->currentKit.objects)
   {
     for (auto it = remainingAssignedObjects.begin(); it != remainingAssignedObjects.end(); ++it)
@@ -123,13 +125,13 @@ TrayScore KitTray::ScoreTray(const ScoringParameters & scoringParameters)
       posnDiff.z = 0;
       if (posnDiff.GetLength() > scoringParameters.distanceThresh)
         continue;
-      std::cout << "[" << this->trayID << "] Object of type '" << currentObject.type <<
-        "' in the correct position" << std::endl;
+      ROS_DEBUG_STREAM("[" << this->trayID << "] Object of type '" << currentObject.type <<
+        "' in the correct position");
       score.partPose += scoringParameters.objectPosition;
 
       // TODO: check orientation
       score.partPose += scoringParameters.objectOrientation;
-      //std::cout << "Object '" << currentObject.type << "' in the correct position" << std::endl;
+      //ROS_DEBUG_STREAM("Object '" << currentObject.type << "' in the correct position");
 
       // Once a match is found, don't permit it to be matched again
       remainingAssignedObjects.erase(it);
@@ -140,6 +142,11 @@ TrayScore KitTray::ScoreTray(const ScoringParameters & scoringParameters)
   if (remainingAssignedObjects.empty())
   {
     score.isComplete = true;
+    if (this->currentScore.isComplete != score.isComplete)
+    {
+      //FIXME: there's a bug here. it's not maintaining its state.
+      ROS_INFO_STREAM("Tray complete: " << this->trayID);
+    }
   }
 
   this->currentScore = score;

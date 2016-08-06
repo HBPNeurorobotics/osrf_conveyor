@@ -217,6 +217,7 @@ add_library(${task_plugin_name}
 target_link_libraries(${task_plugin_name}
   ${GAZEBO_LIBRARIES}
   ${roscpp_LIBRARIES}
+  AriacScorer
 )
 add_dependencies(${task_plugin_name}
   ${${PROJECT_NAME}_EXPORTED_TARGETS}

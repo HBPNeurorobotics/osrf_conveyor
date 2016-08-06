@@ -24,9 +24,8 @@
 #include "osrf_gear/AriacScorer.h"
 
 /////////////////////////////////////////////////
-AriacScorer::AriacScorer(ros::NodeHandle & /*node*/)
+AriacScorer::AriacScorer()
 {
-  // TODO: connect score publisher
 }
 
 /////////////////////////////////////////////////
@@ -81,7 +80,7 @@ void AriacScorer::ScoreCurrentGoal()
     {
       auto tray = this->kitTrays[trayID];
       auto trayScore = tray.ScoreTray(this->scoringParameters);
-      ROS_INFO_STREAM("Score from tray '" << trayID << "': " << trayScore.total());
+      ROS_DEBUG_STREAM("Score from tray '" << trayID << "': " << trayScore.total());
       this->goalScore->trayScores[trayID] = trayScore;
     }
   }
@@ -114,7 +113,7 @@ void AriacScorer::OnTrayInfoReceived(const osrf_gear::Kit::ConstPtr & kitMsg)
 /////////////////////////////////////////////////
 void AriacScorer::OnGoalReceived(const osrf_gear::Goal::ConstPtr & goalMsg)
 {
-  ROS_INFO("Received a goal");
+  ROS_DEBUG("Received a goal");
   this->newGoalReceived = true;
 
   ariac::Goal goal;

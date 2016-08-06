@@ -120,7 +120,7 @@ namespace gazebo
     protected: void OnUpdate();
 
     /// \brief Decide whether to announce a new goal.
-    protected: void ProcessGoals();
+    protected: void ProcessGoalsToAnnounce();
 
     /// \brief Start populating the conveyor belt.
     protected: void PopulateConveyorBelt();

@@ -35,7 +35,7 @@
 class AriacScorer
 {
   /// \brief Constructor.
-  public: AriacScorer(ros::NodeHandle & node);
+  public: AriacScorer();
 
   /// \brief Destructor.
   public: virtual ~AriacScorer();

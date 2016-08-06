@@ -33,22 +33,22 @@
       <frame>kit_tray_1</frame>
       <object_sequence>
         <object>
-          <time>2.0</time>
+          <time>1.0</time>
           <type>part1</type>
           <pose>-0.2 -0.15 0 0 0 0</pose>
         </object>
         <object>
-          <time>4.0</time>
+          <time>3.0</time>
           <type>part2</type>
           <pose>0. 0.15 0 0 0 0</pose>
         </object>
         <object>
-          <time>6.0</time>
+          <time>5.0</time>
           <type>part2</type>
           <pose>-0.2 0.15 0 0 0 0</pose>
         </object>
         <object>
-          <time>8.0</time>
+          <time>7.0</time>
           <type>part2</type>
           <pose>-0.2 0.0 0 0 0 0</pose>
         </object>
@@ -95,7 +95,8 @@
         <kit>
           <tray>kit_tray_1</tray>
           <object>
-            <type>part1</type>
+            <!-- this is purposefully impossible -->
+            <type>part3</type>
             <pose>-0.2 -0.15 0 0 0 0</pose>
           </object>
           <object>
@@ -124,15 +125,16 @@
         </kit>
       </goal>
       <goal>
-        <time>10.0</time>
+        <!-- this goal is achievable -->
+        <time>5.0</time>
         <kit>
           <tray>kit_tray_1</tray>
           <object>
-            <type>part3</type>
+            <type>part1</type>
             <pose>-0.2 -0.15 0 0 0 0</pose>
           </object>
           <object>
-            <type>part3</type>
+            <type>part2</type>
             <pose>-0.2 0 0 0 0 0</pose>
           </object>
           <object>
@@ -143,11 +145,11 @@
         <kit>
           <tray>kit_tray_2</tray>
           <object>
-            <type>part3</type>
+            <type>part2</type>
             <pose>-0.2 -0.15 0 0 0 0</pose>
           </object>
           <object>
-            <type>part3</type>
+            <type>part1</type>
             <pose>-0.2 0 0 0 0 0</pose>
           </object>
           <object>

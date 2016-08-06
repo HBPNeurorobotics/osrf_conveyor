@@ -21,7 +21,7 @@ int main(int argc, char ** argv) {
   ros::init(argc, argv, "ariac_scorer_node");
 
   ros::NodeHandle node;
-  AriacScorer ariac_scorer(node);
+  AriacScorer ariac_scorer;
 
   ros::Subscriber goal_subscriber = node.subscribe(
     "/ariac/goals", 10, &AriacScorer::OnGoalReceived, &ariac_scorer);

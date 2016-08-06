@@ -57,16 +57,16 @@ namespace ariac
             ///   Will return false if there are no trays in the goal.
             bool isComplete()
             {
-              bool isComplete = !this->trayScores.empty();
+              bool isGoalComplete = !this->trayScores.empty();
               for (auto item : this->trayScores)
               {
-                isComplete &= item.second.isComplete;
-                if (!isComplete)
+                isGoalComplete &= item.second.isComplete;
+                if (!isGoalComplete)
                 {
                   break;
                 }
               }
-              return isComplete;
+              return isGoalComplete;
             };
 
             /// \brief Calculate the total score.
