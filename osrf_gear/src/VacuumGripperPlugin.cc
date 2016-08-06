@@ -22,6 +22,8 @@
 
 #include <memory>
 #include <mutex>
+#include <ostream>
+#include <vector>
 #include <string>
 #include <gazebo/common/Events.hh>
 #include <gazebo/physics/Collision.hh>
@@ -42,6 +44,40 @@ namespace gazebo
   /// \brief Private data for the VacuumGripperPlugin class
   struct VacuumGripperPluginPrivate
   {
+    /// \brief Class to store information about each object to be dropped.
+    public: class Object
+            {
+              /// \brief Equality operator, result = this == _obj
+              /// \param[in] _obj Object to check for equality
+              /// \return true if this == _obj
+              public: bool operator ==(const Object &_obj) const
+              {
+                return this->type == _obj.type;
+              }
+
+              /// \brief Stream insertion operator.
+              /// \param[in] _out output stream
+              /// \param[in] _obj object to output
+              /// \return The output stream
+              public: friend std::ostream &operator<<(std::ostream &_out,
+                                                      const Object &_obj)
+              {
+                _out << _obj.type << std::endl;
+                _out << "  Distance: [" << _obj.distance << "]" << std::endl;
+                return _out;
+              }
+
+              /// \brief Object type.
+              public: std::string type;
+
+              /// \brief Once the object travels this distance after being
+              /// picked, it will drop.
+              public: double distance;
+            };
+
+    /// \brief Collection of objects to be dropped.
+    public: std::vector<Object> drops;
+
     /// \brief Model that contains this gripper.
     public: physics::ModelPtr model;
 
@@ -103,6 +139,18 @@ namespace gazebo
 
     /// \brief Whether the suction is enabled or not.
     public: bool enabled;
+
+    /// \brief Whether there's an ongoing drop.
+    public: bool dropPending;
+
+    /// \brief Initial pose where the object to be dropped was picked up.
+    public: math::Pose dropPickupPose;
+
+    /// \brief Link to the attached object to be dropped.
+    public: physics::LinkPtr dropAttachedLink;
+
+    /// \brief Distance that the object should travel before being dropped.
+    public: double dropDistance;
   };
 }
 
@@ -162,6 +210,48 @@ void VacuumGripperPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
     gzerr << "Suction cup link [" << suctionCupLinkElem->Get<std::string>()
           << "] not found!\n";
     return;
+  }
+
+  if (_sdf->HasElement("drops"))
+  {
+    sdf::ElementPtr dropsElem = _sdf->GetElement("drops");
+    if (!dropsElem->HasElement("object"))
+    {
+      gzerr << "VacuumGripperPlugin: Unable to find <object> elements in the "
+            << "<drops> section\n";
+    }
+    else
+    {
+      sdf::ElementPtr objectElem = dropsElem->GetElement("object");
+      while (objectElem)
+      {
+        // Parse the object type.
+        if (!objectElem->HasElement("type"))
+        {
+          gzerr << "VacuumGripperPlugin: Unable to find <type> in object.\n";
+          objectElem = objectElem->GetNextElement("object");
+          continue;
+        }
+        sdf::ElementPtr typeElement = objectElem->GetElement("type");
+        std::string type = typeElement->Get<std::string>();
+
+        // Parse the distance.
+        if (!objectElem->HasElement("distance"))
+        {
+          gzerr << "VacuumGripperPlugin: Unable to find <distance> in object\n";
+          objectElem = objectElem->GetNextElement("object");
+          continue;
+        }
+        sdf::ElementPtr distanceElement = objectElem->GetElement("distance");
+        double distance = distanceElement->Get<double>();
+
+        // Add the object to the set.
+        VacuumGripperPluginPrivate::Object obj = {type, distance};
+        this->dataPtr->drops.push_back(obj);
+
+        objectElem = objectElem->GetNextElement("object");
+      }
+    }
   }
 
   // Find out the collision elements of the suction cup
@@ -270,6 +360,20 @@ void VacuumGripperPlugin::OnUpdate()
   {
     this->HandleAttach();
   }
+
+  if (this->dataPtr->attached && this->dataPtr->dropPending)
+  {
+    auto distanceTraveled = this->dataPtr->dropPickupPose.pos.Distance(
+      this->dataPtr->dropAttachedLink->GetWorldPose().pos);
+    if (distanceTraveled >= this->dataPtr->dropDistance)
+    {
+      gzdbg << "Dropping object!" << std::endl;
+      // Drop the object.
+      this->HandleDetach();
+
+      this->dataPtr->dropPending = false;
+    }
+  }
   // else if (this->dataPtr->zeroCount > this->dataPtr->detachSteps &&
   //          this->dataPtr->attached)
   // {
@@ -345,6 +449,21 @@ void VacuumGripperPlugin::HandleAttach()
         this->dataPtr->fixedJoint->Load(this->dataPtr->suctionCupLink,
             cc[iter->first]->GetLink(), math::Pose());
         this->dataPtr->fixedJoint->Init();
+
+        // Check if the object should drop.
+        auto type = cc[iter->first]->GetLink()->GetModel()->GetName();
+        VacuumGripperPluginPrivate::Object attachedObj = {type, 0.0};
+        auto found = std::find(std::begin(this->dataPtr->drops),
+                               std::end(this->dataPtr->drops), attachedObj);
+        if (found != std::end(this->dataPtr->drops))
+        {
+          this->dataPtr->dropDistance = found->distance;
+
+          // Remove obj from drops.
+          this->dataPtr->drops.erase(found);
+
+          this->InitDrop(cc[iter->first]->GetLink());
+        }
       }
       ++iter;
     }
@@ -361,4 +480,14 @@ void VacuumGripperPlugin::HandleDetach()
 /////////////////////////////////////////////////
 void VacuumGripperPlugin::Publish() const
 {
+}
+
+/////////////////////////////////////////////////
+void VacuumGripperPlugin::InitDrop(physics::LinkPtr _link)
+{
+  this->dataPtr->dropPending = true;
+  this->dataPtr->dropPickupPose = _link->GetWorldPose();
+  this->dataPtr->dropAttachedLink = _link;
+
+  gzdbg << "Drop scheduled" << std::endl;
 }

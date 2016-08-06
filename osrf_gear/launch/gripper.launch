@@ -9,5 +9,5 @@
 
   <node name="spawn_gripper" pkg="gazebo_ros" type="spawn_model"
     args="-file $(find osrf_gear)/models/simple_arm_vacuum_gripper/model.sdf -sdf
-    -model simple_arm_vacuum_gripper -x 1.6 -y 0 -z 1"/>
+    -model simple_arm_vacuum_gripper -x -0.33 -y 1.95 -z 0"/>
 </launch>

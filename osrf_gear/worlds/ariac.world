@@ -79,6 +79,12 @@
       <pose>1.2 -4.1 1.4 0 0 1.5708</pose>
     </include>
 
+    <!-- a beer for testing drops -->
+    <!-- <include>
+      <uri>model://beer</uri>
+      <pose>0.7677 0.7813 0 0 0 0</pose>
+    </include> -->
+
     <!-- an invisible conveyor belt -->
     <model name="conveyor_belt">
       <static>true</static>

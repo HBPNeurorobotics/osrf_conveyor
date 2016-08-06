@@ -80,6 +80,10 @@ namespace gazebo
     /// gripper state.
     private: virtual void Publish() const;
 
+    /// \brief Start the process for dropping an object.
+    /// \param[in] _link Pointer to the link of the attached object
+    private: void InitDrop(physics::LinkPtr _link);
+
     /// \internal
     /// \brief Pointer to private data.
     private: std::unique_ptr<VacuumGripperPluginPrivate> dataPtr;

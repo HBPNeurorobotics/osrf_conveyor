@@ -25,6 +25,14 @@
             simple_arm_vacuum_gripper::vacuum_gripper::vacuum_gripper::suction_cup
           </suction_cup_link>
 
+          <!-- The gripper will drop the following objects -->
+          <drops>
+            <object>
+              <type>beer</type>
+              <distance>0.7</distance>
+            </object>
+          </drops>
+
           <!-- ROS -->
           <robot_namespace>vacuum_gripper</robot_namespace>
           <control_topic>vacuum_gripper_control</control_topic>
