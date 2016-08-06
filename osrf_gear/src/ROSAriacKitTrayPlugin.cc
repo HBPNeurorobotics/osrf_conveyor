@@ -15,16 +15,9 @@
  *
 */
 
-#include <limits>
 #include <string>
 
-#include "KitTrayPlugin.hh"
-#include <gazebo/transport/Node.hh>
-#include <gazebo/math/Vector3.hh>
-#include <gazebo/math/Quaternion.hh>
-#include <osrf_gear/Goal.h>
-#include <geometry_msgs/Point.h>
-#include <geometry_msgs/Quaternion.h>
+#include "ROSAriacKitTrayPlugin.hh"
 
 using namespace gazebo;
 GZ_REGISTER_MODEL_PLUGIN(KitTrayPlugin)
@@ -47,6 +40,7 @@ void KitTrayPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 {
 
   SideContactPlugin::Load(_model, _sdf);
+  this->trayID = this->model->GetName();
 
   // Make sure the ROS node for Gazebo has already been initialized
   if (!ros::isInitialized())
@@ -57,56 +51,81 @@ void KitTrayPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   }
 
   this->rosNode = new ros::NodeHandle("");
-  this->goalSub = this->rosNode->subscribe(
-    "/ariac/goals", 10, &KitTrayPlugin::OnGoalReceived, this);
+  this->currentKitPub = this->rosNode->advertise<osrf_gear::Kit>(
+    "/ariac/trays", 1000);
 }
 
 /////////////////////////////////////////////////
 void KitTrayPlugin::OnUpdate(const common::UpdateInfo &/*_info*/)
 {
+  if (!this->newMsg)
+  {
+    return;
+  }
+
   auto prevNumberContactingModels = this->contactingModels.size();
   this->CalculateContactingModels();
   if (prevNumberContactingModels != this->contactingModels.size()) {
     gzdbg << this->parentSensor->Name() << ": number of contacting models: " \
       << this->contactingModels.size() << "\n";
   }
-  this->ActOnContactingModels();
+  this->ProcessContactingModels();
+  this->PublishKitMsg();
 }
 
 /////////////////////////////////////////////////
-void KitTrayPlugin::ActOnContactingModels()
+void KitTrayPlugin::ProcessContactingModels()
 {
-  int score = 0;
+  this->currentKit.objects.clear();
+  auto trayPose = this->model->GetWorldPose().Ign();
   for (auto model : this->contactingModels) {
     if (model) {
+      ariac::KitObject object;
+
+      // Determine the object type
       std::string modelName = model->GetName();
-      gzdbg << "Checking model: " << modelName << "\n";
-      for (auto kitObj : this->kit.objects)
+      size_t lastCharPosn = modelName.find_last_not_of("0123456789");
+      if (modelName[lastCharPosn] == '_' && lastCharPosn > 1)
       {
-        if (modelName == kitObj.type)
-        {
-          score += 1;
-          gzdbg << "Tray score: " << score << "\n";
-          break;
-        }
+        // Trim the underscore and number
+        object.type = modelName.substr(0, lastCharPosn);
       }
+      else
+      {
+        object.type = modelName;
+      }
+
+      // Determine the pose of the object in the frame of the tray
+      math::Pose objectPose = model->GetWorldPose();
+      ignition::math::Matrix4d transMat(trayPose);
+      ignition::math::Matrix4d objectPoseMat(objectPose.Ign());
+      object.pose = (transMat.Inverse() * objectPoseMat).Pose();
+
+      this->currentKit.objects.push_back(object);
     }
   }
 }
 
 /////////////////////////////////////////////////
-void KitTrayPlugin::OnGoalReceived(const osrf_gear::Goal::ConstPtr & goalMsg)
+void KitTrayPlugin::PublishKitMsg()
 {
-  gzdbg << "Assigned a kit to monitor\n";
-  this->kit.objects.clear();
-  // TODO: only pay attention to kits which 'belong' to this tray
-  for (auto objMsg : goalMsg->kits.at(0).objects)
+  // Publish current kit
+  osrf_gear::Kit msgKit;
+  msgKit.tray.data = this->trayID;
+  for (const auto &obj : this->currentKit.objects)
   {
-    ariac::KitObject obj;
-    obj.type = objMsg.type;
-    geometry_msgs::Point p = objMsg.pose.position;
-    geometry_msgs::Quaternion o = objMsg.pose.orientation;
-    obj.pose = math::Pose(math::Vector3(p.x, p.y, p.z), math::Quaternion(o.x, o.y, o.z, o.w));
-    this->kit.objects.push_back(obj);
+    osrf_gear::KitObject msgObj;
+    msgObj.type = obj.type;
+    msgObj.pose.position.x = obj.pose.pos.x;
+    msgObj.pose.position.y = obj.pose.pos.y;
+    msgObj.pose.position.z = obj.pose.pos.z;
+    msgObj.pose.orientation.x = obj.pose.rot.x;
+    msgObj.pose.orientation.y = obj.pose.rot.y;
+    msgObj.pose.orientation.z = obj.pose.rot.z;
+    msgObj.pose.orientation.w = obj.pose.rot.w;
+
+    // Add the object to the kit.
+    msgKit.objects.push_back(msgObj);
   }
+  this->currentKitPub.publish(msgKit);
 }

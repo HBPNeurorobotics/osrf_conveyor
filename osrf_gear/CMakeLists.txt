@@ -88,7 +88,7 @@ target_link_libraries(${ros_vacuum_gripper_plugin_name}
   ${sensor_msgs_LIBRARIES}
 )
 add_dependencies(${ros_vacuum_gripper_plugin_name}
-    ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
 )
 install(TARGETS ${ros_vacuum_gripper_plugin_name}
   ARCHIVE DESTINATION lib
@@ -129,8 +129,8 @@ target_link_libraries(${ros_conveyor_belt_plugin_name}
   ${conveyor_belt_plugin_name}
   ${GAZEBO_LIBRARIES}
 )
-target_link_libraries(${ros_conveyor_belt_plugin_name}
-  ${GAZEBO_LIBRARIES}
+add_dependencies(${ros_conveyor_belt_plugin_name}
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
 )
 install(TARGETS ${ros_conveyor_belt_plugin_name}
   ARCHIVE DESTINATION lib
@@ -157,8 +157,8 @@ target_link_libraries(${ros_proximity_ray_plugin_name}
   ${proximity_ray_plugin_name}
   ${GAZEBO_LIBRARIES}
 )
-target_link_libraries(${ros_proximity_ray_plugin_name}
-  ${GAZEBO_LIBRARIES}
+add_dependencies(${ros_proximity_ray_plugin_name}
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
 )
 install(TARGETS ${ros_proximity_ray_plugin_name}
   ARCHIVE DESTINATION lib
@@ -188,8 +188,8 @@ target_link_libraries(${ros_conveyor_controller_name}
   ${proximity_ray_plugin_name}
   ${roscpp_LIBRARIES}
   ${GAZEBO_LIBRARIES})
-target_link_libraries(${ros_conveyor_controller_name}
-  ${GAZEBO_LIBRARIES}
+add_dependencies(${ros_conveyor_controller_name}
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
 )
 install(TARGETS ${ros_conveyor_controller_name}
   ARCHIVE DESTINATION lib
@@ -218,8 +218,8 @@ target_link_libraries(${task_plugin_name}
   ${GAZEBO_LIBRARIES}
   ${roscpp_LIBRARIES}
 )
-add_dependencies(${ros_logical_camera_plugin_name}
-    ${${PROJECT_NAME}_EXPORTED_TARGETS}
+add_dependencies(${task_plugin_name}
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
 )
 install(TARGETS ${task_plugin_name}
   ARCHIVE DESTINATION lib
@@ -235,7 +235,7 @@ target_link_libraries(${ros_logical_camera_plugin_name}
   ${roscpp_LIBRARIES}
 )
 add_dependencies(${ros_logical_camera_plugin_name}
-    ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
 )
 install(TARGETS ${ros_logical_camera_plugin_name}
   ARCHIVE DESTINATION lib
@@ -256,21 +256,71 @@ install(TARGETS ${object_disposal_plugin_name}
   RUNTIME DESTINATION bin
 )
 
-# Create the libKitTrayPlugin.so library.
-set(kit_tray_plugin_name KitTrayPlugin)
-add_library(${kit_tray_plugin_name} src/KitTrayPlugin.cc)
+# Create the libROSAriacKitTrayPlugin.so library.
+set(kit_tray_plugin_name ROSAriacKitTrayPlugin)
+add_library(${kit_tray_plugin_name} src/ROSAriacKitTrayPlugin.cc)
 target_link_libraries(${kit_tray_plugin_name}
   ${GAZEBO_LIBRARIES}
   ${roscpp_LIBRARIES}
   ${side_contact_plugin_name}
 )
 add_dependencies(${kit_tray_plugin_name}
-    ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
 )
 install(TARGETS ${kit_tray_plugin_name}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
+)
+
+# Create the libAriacKitTray.so library.
+set(target_name AriacKitTray)
+add_library(${target_name} src/AriacKitTray.cpp)
+target_link_libraries(${target_name}
+  ${GAZEBO_LIBRARIES}
+  ${roscpp_LIBRARIES}
+)
+add_dependencies(${target_name}
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+)
+install(TARGETS ${target_name}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
+
+# Create the libAriacScorer.so library.
+set(target_name AriacScorer)
+add_library(${target_name} src/AriacScorer.cpp)
+target_link_libraries(${target_name}
+  ${GAZEBO_LIBRARIES}
+  ${roscpp_LIBRARIES}
+  AriacKitTray
+)
+add_dependencies(${target_name}
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+)
+install(TARGETS ${target_name}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
+
+# Create the ARIAC scorer node
+set(target_name ariac_scorer_node)
+add_executable(${target_name} src/ariac_scorer_node.cpp)
+target_link_libraries(${target_name}
+  ${GAZEBO_LIBRARIES}
+  ${roscpp_LIBRARIES}
+  AriacScorer
+)
+add_dependencies(${target_name}
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+)
+install(TARGETS ${target_name}
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
 #############

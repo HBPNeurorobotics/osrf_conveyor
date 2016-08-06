@@ -51,7 +51,7 @@
     <!-- a tray for building kits -->
     <include>
       <uri>model://kit_tray</uri>
-      <pose>-0.5 -1.5 1.1 0 0 0</pose>
+      <pose>0.6 -1.5 1.27 0 0 0</pose>
     </include>
 
     <!-- Populate the conveyor belt -->
@@ -90,34 +90,37 @@
         <kit>
           <object>
             <type>coke_can</type>
-            <pose>-1 2.5 0.2 0 0 0</pose>
+            <pose>-1 2.5 0 0 0 0</pose>
           </object>
           <object>
-            <type>cordless_drill/</type>
-            <pose>-1 2.5 0.2 0 0 0</pose>
+            <type>cordless_drill</type>
+            <pose>-1 2.5 0 0 0 0</pose>
           </object>
           <object>
             <type>beer</type>
-            <pose>-1 2.5 0.2 0 0 0</pose>
+            <pose>-1 2.5 0 0 0 0</pose>
           </object>
         </kit>
         <!-- 2nd kit -->
         <kit>
           <object>
             <type>coke_can</type>
-            <pose>-1 2.5 0.2 0 0 0</pose>
+            <pose>-1 2.5 0 0 0 0</pose>
           </object>
           <object>
-            <type>cordless_drill/</type>
-            <pose>-1 2.5 0.2 0 0 0</pose>
+            <type>cordless_drill</type>
+            <pose>-1 2.5 0 0 0 0</pose>
           </object>
           <object>
             <type>beer</type>
-            <pose>-1 2.5 0.2 0 0 0</pose>
+            <pose>-1 2.5 0 0 0 0</pose>
           </object>
         </kit>
       </goal>
     </plugin>
 
+    <!-- The NIST-ARIAC scoring plugin -->
+    <plugin filename="libROSAriacScoringPlugin.so" name="scorer">
+    </plugin>
   </world>
 </sdf>

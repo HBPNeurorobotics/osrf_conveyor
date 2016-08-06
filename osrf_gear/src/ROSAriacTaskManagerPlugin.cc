@@ -34,7 +34,7 @@
 #include <std_srvs/Trigger.h>
 
 
-#include "ARIAC.hh"
+#include "osrf_gear/ARIAC.hh"
 #include "osrf_gear/ROSAriacTaskManagerPlugin.hh"
 #include "osrf_gear/Goal.h"
 #include "osrf_gear/Kit.h"
@@ -95,10 +95,12 @@ GZ_REGISTER_WORLD_PLUGIN(ROSAriacTaskManagerPlugin)
 static void fillGoalMsg(const ariac::Goal &_goal,
                         osrf_gear::Goal &_msgGoal)
 {
-  for (const auto &kit : _goal.kits)
+  _msgGoal.goal_id.data = _goal.goalID;
+  for (const auto item : _goal.kits)
   {
     osrf_gear::Kit msgKit;
-    for (const auto &obj : kit.objects)
+    msgKit.tray.data = item.first;
+    for (const auto &obj : item.second.objects)
     {
       osrf_gear::KitObject msgObj;
       msgObj.type = obj.type;
@@ -168,6 +170,7 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
     return;
   }
 
+  unsigned int goalCount = 0;
   sdf::ElementPtr goalElem = _sdf->GetElement("goal");
   while (goalElem)
   {
@@ -190,12 +193,12 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
     }
 
     // Store all kits for a goal.
-    std::vector<ariac::Kit> kits;
+    std::map<std::string, ariac::Kit> kits;
 
     sdf::ElementPtr kitElem = goalElem->GetElement("kit");
     while (kitElem)
     {
-      // Parse the objects inside the kit.
+      // Check the validity of the kit.
       if (!kitElem->HasElement("object"))
       {
         gzerr << "Unable to find <object> element in <kit>. Ignoring"
@@ -206,6 +209,14 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
 
       ariac::Kit kit;
 
+      // Parse the tray the kit is assigned to.
+      std::string trayID;
+      if (kitElem->HasElement("tray"))
+      {
+        trayID = kitElem->Get<std::string>("tray");
+      }
+
+      // Parse the objects inside the kit.
       sdf::ElementPtr objectElem = kitElem->GetElement("object");
       while (objectElem)
       {
@@ -237,19 +248,20 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
       }
 
       // Add a new kit to the collection of kits.
-      kits.push_back(kit);
+      kits[trayID] = kit;
 
       kitElem = kitElem->GetNextElement("kit");
     }
 
     // Add a new goal.
-    ariac::Goal goal = {time, kits};
+    ariac::GoalID_t goalID = std::to_string(goalCount++);
+    ariac::Goal goal = {goalID, time, kits};
     this->dataPtr->goals.push_back(goal);
 
     goalElem = goalElem->GetNextElement("goal");
   }
 
-  // Sort the goals.
+  // Sort the goals by their start times.
   std::sort(this->dataPtr->goals.begin(), this->dataPtr->goals.end());
 
   // Debug output.

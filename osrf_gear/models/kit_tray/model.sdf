@@ -1,27 +1,29 @@
 <?xml version="1.0" ?>
 <sdf version="1.6">
     <model name="kit_tray">
-        <plugin name="kit_tray_plugin" filename="libKitTrayPlugin.so">
+        <static>true</static>
+        <plugin name="kit_tray_plugin" filename="libROSAriacKitTrayPlugin.so">
             <contact_sensor_name>kit_tray_contact</contact_sensor_name>
         </plugin>
         <link name="tray">
             <sensor name='kit_tray_contact' type='contact'>
-                <update_rate>10</update_rate>
+                <update_rate>1</update_rate>
                 <contact>
                     <collision>tray_collision</collision>
                 </contact>
             </sensor>
+            <gravity>true</gravity>
             <collision name="tray_collision">
               <geometry>
                 <box>
-                <size>0.5 1.0 0.05</size>
+                <size>0.5 1.0 0.001</size>
                 </box>
               </geometry>
             </collision>
             <visual name="visual">
               <geometry>
                 <box>
-                <size>0.5 1.0 0.05</size>
+                <size>0.5 1.0 0.001</size>
                 </box>
               </geometry>
             </visual>

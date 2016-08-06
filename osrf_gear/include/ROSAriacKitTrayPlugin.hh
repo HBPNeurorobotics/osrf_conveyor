@@ -25,11 +25,11 @@
 
 #include <ros/ros.h>
 
-#include <ARIAC.hh>
 #include <gazebo/common/Plugin.hh>
 #include <gazebo/msgs/msgs.hh>
 #include <gazebo/sensors/sensors.hh>
 #include <gazebo/util/system.hh>
+#include <osrf_gear/ARIAC.hh>
 #include <osrf_gear/Goal.h>
 #include "SideContactPlugin.hh"
 
@@ -52,14 +52,26 @@ namespace gazebo
     /// \brief Callback that receives the world update event
     protected: void OnUpdate(const common::UpdateInfo &_info);
 
-    /// \brief Act on models that are ontop of the link
-    protected: void ActOnContactingModels();
+    /// \brief Update the kit based on which models are in contact
+    protected: void ProcessContactingModels();
 
-    /// \brief Kit to be built on this tray
-    protected: ariac::Kit kit;
+    /// \brief Update the kit based on which models are in contact
+    public: std::string DetermineModelType(const std::string &modelName);
+
+    /// \brief Publish the Kit ROS message
+    protected: void PublishKitMsg();
+
+    /// \brief Kit which is currently on the tray
+    protected: ariac::Kit currentKit;
+
+    /// \brief ID of tray
+    protected: std::string trayID;
+
+    /// \brief ROS node handle
     protected: ros::NodeHandle *rosNode;
-    protected: ros::Subscriber goalSub;
-    public: void OnGoalReceived(const osrf_gear::Goal::ConstPtr & goalMsg);
+
+    /// \brief Publisher for the kit state
+    protected: ros::Publisher currentKitPub;
   };
 }
 #endif
