@@ -145,11 +145,15 @@ namespace ariac
     // Bonus when all objects in the tray: factor * (number of objects)
     public: double allObjectsBonusFactor = 1.0;
 
-    // Acceptable distance in meters to object's target position
+    // Acceptable distance in meters to object's target position.
+    // The measured distance is between the center of the model and its target,
+    // projected onto the tray.
     public: double distanceThresh = 0.03;
 
-    // Acceptable difference to object's target orientation
-    public: double orientationThresh = 0.001;
+    // Acceptable difference in radians to object's target orientation.
+    // The measured difference is from a top-down view of the tray, but only if
+    // the quaternions are aligned.
+    public: double orientationThresh = 0.1;
   };
 
   /// \brief Determine the type of a gazebo model from its name

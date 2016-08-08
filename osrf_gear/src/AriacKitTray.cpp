@@ -133,14 +133,24 @@ TrayScore KitTray::ScoreTray(const ScoringParameters & scoringParameters)
         "' in the correct position");
       score.partPose += scoringParameters.objectPosition;
 
-      // Check the orientation of the object
+      // Check the orientation of the object.
       math::Quaternion objOrientation = currentObject.pose.rot;
       math::Quaternion goalOrientation = assignedObject.pose.rot;
 
-      // If the quaternions represent the same orientation, q1 = +-q2 => q1.dot(q2) = 1
-      double orientationDiff = std::abs(objOrientation.Dot(goalOrientation));
-      if (orientationDiff < (1.0 - scoringParameters.orientationThresh))
+      // Filter objects that aren't in the appropriate orientation (loosely).
+      // If the quaternions represent the same orientation, q1 = +-q2 => q1.dot(q2) = +-1
+      double orientationDiff = objOrientation.Dot(goalOrientation);
+      // TODO: this value can probably be derived using relationships between
+      // euler angles and quaternions.
+      double quaternionDiffThresh = 0.05;
+      if (std::abs(orientationDiff) < (1.0 - quaternionDiffThresh))
         continue;
+
+      // Now filter the poses based on a threshold set in radians (more user-friendly).
+      double yawDiff = objOrientation.GetYaw() - goalOrientation.GetYaw();
+      if (std::abs(yawDiff) > scoringParameters.orientationThresh)
+        continue;
+
       ROS_DEBUG_STREAM("[" << this->trayID << "] Object of type '" << currentObject.type <<
         "' in the correct orientation");
       score.partPose += scoringParameters.objectOrientation;

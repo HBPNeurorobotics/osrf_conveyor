@@ -181,8 +181,9 @@ void AriacScorer::FillKitFromMsg(const osrf_gear::Kit &kitMsg, ariac::Kit &kit)
     obj.type = ariac::DetermineModelType(objMsg.type);
     geometry_msgs::Point p = objMsg.pose.position;
     geometry_msgs::Quaternion o = objMsg.pose.orientation;
-    obj.pose = gazebo::math::Pose(
-      gazebo::math::Vector3(p.x, p.y, p.z), gazebo::math::Quaternion(o.x, o.y, o.z, o.w));
+    gazebo::math::Vector3 objPosition(p.x, p.y, p.z);
+    gazebo::math::Quaternion objOrientation(o.w, o.x, o.y, o.z);
+    obj.pose = gazebo::math::Pose(objPosition, objOrientation);
     kit.objects.push_back(obj);
   }
 }
