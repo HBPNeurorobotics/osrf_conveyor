@@ -28,8 +28,8 @@ import yaml
 
 this_dir = os.path.abspath(os.path.dirname(__file__))
 template_files = [
-    os.path.join(this_dir, '..', 'worlds', 'gear.world.template'),
-    os.path.join(this_dir, '..', 'launch', 'gear.launch.template'),
+    os.path.join(this_dir, '..', '..', 'share', 'osrf_gear', 'worlds', 'gear.world.template'),
+    os.path.join(this_dir, '..', '..', 'share', 'osrf_gear', 'launch', 'gear.launch.template'),
 ]
 arm_configs = {
     'ur10': {
@@ -225,9 +225,21 @@ def main(sysargv=None):
             print('writing file ' + file_path)
             with open(file_path, 'w+') as f:
                 f.write(content)
-    cmd = ['roslaunch', os.path.join(args.output, 'gear.launch')]
+    cmd = [
+        'roslaunch',
+        os.path.join(args.output, 'gear.launch'),
+        'world_path:=' + os.path.join(args.output, 'gear.world')
+    ]
     print("Running command: " + ' '.join(cmd))
-    return subprocess.call()
+    if not args.dry_run:
+        try:
+            p = subprocess.Popen(cmd)
+            p.wait()
+        except KeyboardInterrupt:
+            pass
+        finally:
+            p.wait()
+        return p.returncode
 
 if __name__ == '__main__':
     sys.exit(main())

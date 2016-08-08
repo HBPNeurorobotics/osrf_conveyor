@@ -5,10 +5,11 @@
   <arg name="limited" default="false"/>
   <arg name="gui" default="true"/>
   <arg name="debug" default="false"/>
+  <arg name="world_path" />
 
   <!-- startup simulated world -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
-    <arg name="world_name" default="$(find osrf_gear)/worlds/ariac.world"/>
+    <arg name="world_name" default="$(arg world_path)"/>
     <!-- Always start paused because the arm spawn needs it that way. -->
     <arg name="paused" value="true"/>
     <arg name="gui" value="$(arg gui)"/>
