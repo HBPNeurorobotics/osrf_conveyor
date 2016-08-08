@@ -64,22 +64,22 @@
         <object>
           <time>2.0</time>
           <type>part2</type>
-          <pose>-0.2 -0.15 0 0 0 0</pose>
+          <pose>-0.2 -0.15 0 0 0 0.1</pose>
         </object>
         <object>
           <time>4.0</time>
           <type>part2</type>
-          <pose>0. 0.15 0 0 0 0</pose>
+          <pose>0. 0.15 0 0 0 -0.1</pose>
         </object>
         <object>
           <time>6.0</time>
           <type>part2</type>
-          <pose>-0.2 0.15 0 0 0 0</pose>
+          <pose>-0.2 0.15 0 0 0 0.15</pose>
         </object>
         <object>
           <time>8.0</time>
           <type>part1</type>
-          <pose>-0.2 0.0 0 0 0 0</pose>
+          <pose>-0.2 0.0 0 0 0 0.2</pose>
         </object>
       </object_sequence>
     </plugin>

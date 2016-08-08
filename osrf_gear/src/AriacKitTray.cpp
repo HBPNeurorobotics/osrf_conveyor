@@ -85,10 +85,12 @@ TrayScore KitTray::ScoreTray(const ScoringParameters & scoringParameters)
     " assigned objects with the current " <<
     this->currentKit.objects.size() << " objects");
 
+  // Keep track of which assigned objects have already been 'matched' to one on the tray.
+  // This is to prevent multiple objects being close to a single target pose both scoring points.
   std::vector<ariac::KitObject> remainingAssignedObjects(assignedKit.objects);
-  std::map<std::string, unsigned int> currentObjectTypeCount;
 
   ROS_DEBUG_STREAM("[" << this->trayID << "] Checking object counts");
+  std::map<std::string, unsigned int> currentObjectTypeCount;
   bool assignedObjectsMissing = false;
   for (auto & value : this->assignedObjectTypeCount)
   {
@@ -117,10 +119,12 @@ TrayScore KitTray::ScoreTray(const ScoringParameters & scoringParameters)
   {
     for (auto it = remainingAssignedObjects.begin(); it != remainingAssignedObjects.end(); ++it)
     {
+      // Only check poses of parts of the same type
       auto assignedObject = *it;
       if (assignedObject.type != currentObject.type)
         continue;
 
+      // Check the position of the object (ignoring orientation)
       math::Vector3 posnDiff = assignedObject.pose.CoordPositionSub(currentObject.pose);
       posnDiff.z = 0;
       if (posnDiff.GetLength() > scoringParameters.distanceThresh)
@@ -129,9 +133,17 @@ TrayScore KitTray::ScoreTray(const ScoringParameters & scoringParameters)
         "' in the correct position");
       score.partPose += scoringParameters.objectPosition;
 
-      // TODO: check orientation
+      // Check the orientation of the object
+      math::Quaternion objOrientation = currentObject.pose.rot;
+      math::Quaternion goalOrientation = assignedObject.pose.rot;
+
+      // If the quaternions represent the same orientation, q1 = +-q2 => q1.dot(q2) = 1
+      double orientationDiff = std::abs(objOrientation.Dot(goalOrientation));
+      if (orientationDiff < (1.0 - scoringParameters.orientationThresh))
+        continue;
+      ROS_DEBUG_STREAM("[" << this->trayID << "] Object of type '" << currentObject.type <<
+        "' in the correct orientation");
       score.partPose += scoringParameters.objectOrientation;
-      //ROS_DEBUG_STREAM("Object '" << currentObject.type << "' in the correct position");
 
       // Once a match is found, don't permit it to be matched again
       remainingAssignedObjects.erase(it);
@@ -139,6 +151,7 @@ TrayScore KitTray::ScoreTray(const ScoringParameters & scoringParameters)
     }
   }
 
+  // Check if all assigned objects have been matched to one on the tray
   if (remainingAssignedObjects.empty())
   {
     score.isComplete = true;

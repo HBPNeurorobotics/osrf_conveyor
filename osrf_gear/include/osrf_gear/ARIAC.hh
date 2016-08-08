@@ -147,6 +147,9 @@ namespace ariac
 
     // Acceptable distance in meters to object's target position
     public: double distanceThresh = 0.03;
+
+    // Acceptable difference to object's target orientation
+    public: double orientationThresh = 0.001;
   };
 
   /// \brief Determine the type of a gazebo model from its name
