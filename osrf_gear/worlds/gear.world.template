@@ -1,16 +1,19 @@
 <?xml version="1.0" ?>
 <sdf version="1.5">
   <world name="ariac">
-
+    <!-- Set the initial camera pose to be looking at the workspace. -->
     <gui>
       <camera name="user_camera">
         <pose>-3 5 4 0 0.65 -0.685</pose>
       </camera>
     </gui>
 
+@[if not options.disable_shadows]@
+    <!-- Disable shadows. -->
     <scene>
       <shadows>false</shadows>
     </scene>
+@[end if]@
 
     <!-- A global light source -->
     <include>
@@ -43,30 +46,44 @@
       <pose>0 0 0 0 0 1.57</pose>
     </include>
 
-    <!-- a break beam sensor -->
+@[for name, sensor in sensors.items()]@
+@[if sensor.type == "break_beam"]@
+    <!-- a break beam sensor called @(name) -->
     <include>
       <uri>model://break_beam</uri>
-      <pose>1.6 2.25 0.95 0 0 3.14159</pose>
+      <name>@(name)</name>
+      <pose>@(' '.join(sensor.pose.xyz)) @(' '.join(sensor.pose.rpy))</pose>
     </include>
 
-    <!-- a proximity sensor -->
+@[end if]@
+@[if sensor.type == "proximity_sensor"]@
+    <!-- a proximity sensor called @(name) -->
     <include>
       <uri>model://proximity_sensor</uri>
-      <pose>0.8 4.4 1 0 0 0</pose>
+      <name>@(name)</name>
+      <pose>@(' '.join(sensor.pose.xyz)) @(' '.join(sensor.pose.rpy))</pose>
     </include>
 
-    <!-- a logical camera -->
+@[end if]@
+@[if sensor.type == "logical_camera"]@
+    <!-- a logical camera called @(name) -->
     <include>
       <uri>model://logical_camera</uri>
-      <pose>1.21816 3 2 -3.14159 1.5708 0</pose>
+      <name>@(name)</name>
+      <pose>@(' '.join(sensor.pose.xyz)) @(' '.join(sensor.pose.rpy))</pose>
     </include>
 
-    <!-- a laser profiler -->
+@[end if]@
+@[if sensor.type == "laser_profiler"]@
+    <!-- a laser profiler called @(name) -->
     <include>
       <uri>model://laser_profiler</uri>
-      <pose>1.21816 4 1.35 -3.14159 1.5708 1.5708</pose>
+      <name>@(name)</name>
+      <pose>@(' '.join(sensor.pose.xyz)) @(' '.join(sensor.pose.rpy))</pose>
     </include>
 
+@[end if]@
+@[end for]@
     <!-- a tray for building kits -->
     <include>
       <uri>model://kit_tray</uri>
@@ -186,5 +203,6 @@
         </kit>
       </goal>
     </plugin>
+
   </world>
 </sdf>
