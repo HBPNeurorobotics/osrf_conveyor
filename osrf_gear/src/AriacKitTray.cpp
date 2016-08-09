@@ -58,7 +58,12 @@ void KitTray::AssignKit(const Kit & kit)
     }
     this->assignedObjectTypeCount[obj.type] += 1;
   }
+}
 
+/////////////////////////////////////////////////
+void KitTray::UnassignCurrentKit()
+{
+  this->assignedKit.objects.clear();
 }
 
 /////////////////////////////////////////////////
@@ -168,7 +173,8 @@ TrayScore KitTray::ScoreTray(const ScoringParameters & scoringParameters)
     if (this->currentScore.isComplete != score.isComplete)
     {
       //FIXME: there's a bug here. it's not maintaining its state.
-      ROS_INFO_STREAM("Tray complete: " << this->trayID);
+      //       only happens if there are multiple trays in the goal.
+      //ROS_INFO_STREAM("Tray complete: " << this->trayID);
     }
   }
 

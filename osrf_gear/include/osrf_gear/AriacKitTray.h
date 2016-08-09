@@ -39,6 +39,9 @@ namespace ariac
     /// \brief Assign a kit to the tray.
     public: void AssignKit(const Kit & kit);
 
+    /// \brief Stop monitoring the assigned kit.
+    public: void UnassignCurrentKit();
+
     /// \brief Update the current state of the kit on the tray.
     public: void UpdateKitState(const Kit & kit);
 

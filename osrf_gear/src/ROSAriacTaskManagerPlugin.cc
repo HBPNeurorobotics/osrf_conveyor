@@ -16,6 +16,7 @@
 */
 
 #include <algorithm>
+#include <limits>
 #include <mutex>
 #include <ostream>
 #include <string>
@@ -90,8 +91,11 @@ namespace gazebo
     /// \brief Connection event.
     public: event::ConnectionPtr connection;
 
+    /// \brief The time the last update was called.
+    public: common::Time lastUpdateTime;
+
     /// \brief The time specified in the object is relative to this time.
-    public: common::Time startTime;
+    public: common::Time gameStartTime;
 
     /// \brief Pointer to the current state.
     public: std::string currentState = "init";
@@ -188,15 +192,23 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
   sdf::ElementPtr goalElem = _sdf->GetElement("goal");
   while (goalElem)
   {
-    // Parse the time.
-    if (!goalElem->HasElement("time"))
+    // Parse the start time.
+    if (!goalElem->HasElement("start_time"))
     {
-      gzerr << "Unable to find <time> element in <goal>. Ignoring" << std::endl;
+      gzerr << "Unable to find <start_time> element in <goal>. Ignoring" << std::endl;
       goalElem = goalElem->GetNextElement("goal");
       continue;
     }
-    sdf::ElementPtr timeElement = goalElem->GetElement("time");
-    double time = timeElement->Get<double>();
+    sdf::ElementPtr startTimeElement = goalElem->GetElement("start_time");
+    double startTime = startTimeElement->Get<double>();
+
+    // Parse the allowed completion time.
+    double allowedTime = std::numeric_limits<double>::infinity();
+    if (goalElem->HasElement("allowed_time"))
+    {
+      sdf::ElementPtr allowedTimeElement = goalElem->GetElement("allowed_time");
+      allowedTime = allowedTimeElement->Get<double>();
+    }
 
     // Parse the kits.
     if (!goalElem->HasElement("kit"))
@@ -268,8 +280,8 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
     }
 
     // Add a new goal.
-    ariac::GoalID_t goalID = std::to_string(goalCount++);
-    ariac::Goal goal = {goalID, time, kits};
+    ariac::GoalID_t goalID = "goal_" + std::to_string(goalCount++);
+    ariac::Goal goal = {goalID, startTime, allowedTime, kits, 0.0};
     this->dataPtr->goalsToAnnounce.push_back(goal);
 
     goalElem = goalElem->GetNextElement("goal");
@@ -309,7 +321,7 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
   this->dataPtr->trayInfoSub = this->dataPtr->rosnode->subscribe(
     "/ariac/trays", 10, &AriacScorer::OnTrayInfoReceived, &this->dataPtr->ariacScorer);
 
-  this->dataPtr->startTime = this->dataPtr->world->GetSimTime();
+  this->dataPtr->gameStartTime = this->dataPtr->world->GetSimTime();
 
   this->dataPtr->connection = event::Events::ConnectWorldUpdateEnd(
     boost::bind(&ROSAriacTaskManagerPlugin::OnUpdate, this));
@@ -319,10 +331,12 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
 void ROSAriacTaskManagerPlugin::OnUpdate()
 {
   std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
+  auto currentSimTime = this->dataPtr->world->GetSimTime();
 
+  double elapsedTime = (currentSimTime - this->dataPtr->lastUpdateTime).Double();
   if (this->dataPtr->currentState == "ready")
   {
-    this->dataPtr->startTime = this->dataPtr->world->GetSimTime();
+    this->dataPtr->gameStartTime = currentSimTime;
     this->dataPtr->currentState = "go";
 
     this->PopulateConveyorBelt();
@@ -332,6 +346,7 @@ void ROSAriacTaskManagerPlugin::OnUpdate()
     // Update the goal manager.
     this->ProcessGoalsToAnnounce();
 
+    // Update the score.
     this->dataPtr->ariacScorer.Update();
     auto gameScore = this->dataPtr->ariacScorer.GetGameScore();
     if (gameScore.total() != this->dataPtr->currentGameScore.total())
@@ -339,32 +354,38 @@ void ROSAriacTaskManagerPlugin::OnUpdate()
       ROS_INFO_STREAM("Current game score: " << gameScore.total());
       this->dataPtr->currentGameScore = gameScore;
     }
-    bool goalCompleted = this->dataPtr->ariacScorer.IsCurrentGoalComplete();
-    if (!this->dataPtr->goalsInProgress.empty() && goalCompleted)
-    {
-      auto completedGoal = this->dataPtr->goalsInProgress.top();
-      this->dataPtr->goalsInProgress.pop();
-      ROS_INFO_STREAM("Goal complete: " << completedGoal.goalID);
-      if (this->dataPtr->goalsInProgress.size())
-      {
-        auto goal = this->dataPtr->goalsInProgress.top();
-        ROS_INFO_STREAM("Restoring goal: " << goal.goalID);
 
-        // Assign the previous goal to the scorer
-        // TODO: make this easier
-        osrf_gear::Goal goalMsg;
-        fillGoalMsg(goal, goalMsg);
-        osrf_gear::GoalConstPtr goalMsgConstPtr(new osrf_gear::Goal(goalMsg));
-        this->dataPtr->ariacScorer.OnGoalReceived(goalMsgConstPtr);
+    if(!this->dataPtr->goalsInProgress.empty())
+    {
+      this->dataPtr->goalsInProgress.top().timeTaken += elapsedTime;
+      auto goalID = this->dataPtr->goalsInProgress.top().goalID;
+      auto timeTaken = this->dataPtr->goalsInProgress.top().timeTaken;
+
+      // Check for completed goals.
+      bool goalCompleted = this->dataPtr->ariacScorer.IsCurrentGoalComplete();
+      if (goalCompleted)
+      {
+        ROS_INFO_STREAM("Goal complete: " << goalID);
+        this->StopCurrentGoal();
+      }
+      else
+      {
+        // Check if the time limit for the current goal has been exceeded.
+        bool goalTimedOut = timeTaken > this->dataPtr->goalsInProgress.top().allowedTime;
+        if (goalTimedOut)
+        {
+          ROS_INFO_STREAM("Goal timed out: " << goalID);
+          this->StopCurrentGoal();
+        }
       }
     }
-    // ToDo: Determine if the maximum time limit has been reached.
   }
 
   // ToDo: Publish at a lower frequency.
   std_msgs::String msg;
   msg.data = this->dataPtr->currentState;
   this->dataPtr->gazeboTaskStatePub.publish(msg);
+  this->dataPtr->lastUpdateTime = currentSimTime;
 }
 
 /////////////////////////////////////////////////
@@ -374,25 +395,16 @@ void ROSAriacTaskManagerPlugin::ProcessGoalsToAnnounce()
     return;
 
   // Check whether announce a new goal from the list.
-  auto elapsed = this->dataPtr->world->GetSimTime() - this->dataPtr->startTime;
-  if (elapsed.Double() >= this->dataPtr->goalsToAnnounce.front().time)
+  auto elapsed = this->dataPtr->world->GetSimTime() - this->dataPtr->gameStartTime;
+  if (elapsed.Double() >= this->dataPtr->goalsToAnnounce.front().startTime)
   {
     auto goal = this->dataPtr->goalsToAnnounce.front();
-    gzdbg << "Announcing goal: " << goal << std::endl;
-    ROS_INFO_STREAM("Assigning goal: " << goal.goalID);
-
-    osrf_gear::Goal goalMsg;
-    fillGoalMsg(goal, goalMsg);
-    this->dataPtr->goalPub.publish(goalMsg);
 
     // Move goal to the 'in process' stack
     this->dataPtr->goalsInProgress.push(ariac::Goal(goal));
     this->dataPtr->goalsToAnnounce.erase(this->dataPtr->goalsToAnnounce.begin());
 
-    // Assign the new goal to the scorer
-    // TODO: make this easier
-    osrf_gear::GoalConstPtr goalMsgConstPtr(new osrf_gear::Goal(goalMsg));
-    this->dataPtr->ariacScorer.OnGoalReceived(goalMsgConstPtr);
+    this->AssignGoal(goal);
   }
 }
 
@@ -422,4 +434,40 @@ void ROSAriacTaskManagerPlugin::PopulateConveyorBelt()
   gazebo::msgs::GzString msg;
   msg.set_data("restart");
   this->dataPtr->populatePub->Publish(msg);
+}
+
+/////////////////////////////////////////////////
+void ROSAriacTaskManagerPlugin::AssignGoal(const ariac::Goal & goal)
+{
+    osrf_gear::Goal goalMsg;
+    fillGoalMsg(goal, goalMsg);
+    osrf_gear::GoalConstPtr goalMsgConstPtr(new osrf_gear::Goal(goalMsg));
+
+    // Publish the goal to ROS topic
+    ROS_INFO_STREAM("Announcing goal: " << goal.goalID);
+    this->dataPtr->goalPub.publish(goalMsg);
+
+    // Assign the scorer the goal to monitor
+    gzdbg << "Assigning goal: " << goal << std::endl;
+    // TODO: don't pass this a ROS message unnecessarily
+    this->dataPtr->ariacScorer.OnGoalReceived(goalMsgConstPtr);
+}
+
+/////////////////////////////////////////////////
+void ROSAriacTaskManagerPlugin::StopCurrentGoal()
+{
+  if (this->dataPtr->goalsInProgress.size())
+  {
+    ROS_INFO_STREAM("Stopping goal: " << this->dataPtr->goalsInProgress.top().goalID);
+    this->dataPtr->goalsInProgress.pop();
+    this->dataPtr->ariacScorer.UnassignCurrentGoal();
+  }
+
+  if (this->dataPtr->goalsInProgress.size())
+  {
+    // Assign the previous goal to the scorer
+    auto goal = this->dataPtr->goalsInProgress.top();
+    ROS_INFO_STREAM("Restoring goal: " << goal.goalID);
+    this->AssignGoal(goal);
+  }
 }

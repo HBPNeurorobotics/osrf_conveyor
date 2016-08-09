@@ -172,6 +172,23 @@ void AriacScorer::ProcessNewGoal()
 }
 
 /////////////////////////////////////////////////
+ariac::GoalScore AriacScorer::UnassignCurrentGoal()
+{
+  auto goalScore = *this->goalScore;
+  for (const auto & item: this->currentGoal.kits)
+  {
+    auto trayID = item.first;
+    auto it = this->kitTrays.find(trayID);
+    if (it != this->kitTrays.end())
+    {
+      it->second.UnassignCurrentKit();
+    }
+  }
+  this->currentGoal.kits.clear();
+  return goalScore;
+}
+
+/////////////////////////////////////////////////
 void AriacScorer::FillKitFromMsg(const osrf_gear::Kit &kitMsg, ariac::Kit &kit)
 {
   kit.objects.clear();

@@ -129,6 +129,12 @@ namespace gazebo
     public: bool HandleStartService(
       std_srvs::Trigger::Request & req, std_srvs::Trigger::Response & res);
 
+    /// \brief Assign a goal to be monitored by the scorer.
+    protected: void AssignGoal(const ariac::Goal & goal);
+
+    /// \brief Stop scoring the current goal and assign the next goal on stack.
+    protected: void StopCurrentGoal();
+
     /// \brief Private data pointer.
     private: std::unique_ptr<ROSAriacTaskManagerPluginPrivate> dataPtr;
   };

@@ -55,6 +55,10 @@ class AriacScorer
   /// \return The score for the goal.
   public: ariac::GoalScore GetCurrentGoalScore();
 
+  /// \brief Stop processing the current goal.
+  /// \return The score for the goal.
+  public: ariac::GoalScore UnassignCurrentGoal();
+
   /// \brief Process a new goal.
   protected: void ProcessNewGoal();
 

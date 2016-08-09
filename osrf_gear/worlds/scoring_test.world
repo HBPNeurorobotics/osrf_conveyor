@@ -64,22 +64,22 @@
         <object>
           <time>2.0</time>
           <type>part2</type>
-          <pose>-0.2 -0.15 0 0 0 0.1</pose>
+          <pose>-0.2 -0.15 0 0 0 0.05</pose>
         </object>
         <object>
           <time>4.0</time>
           <type>part2</type>
-          <pose>0. 0.15 0 0 0 -0.1</pose>
+          <pose>0. 0.15 0 0 0 -0.05</pose>
         </object>
         <object>
           <time>6.0</time>
           <type>part2</type>
-          <pose>-0.2 0.15 0 0 0 0.15</pose>
+          <pose>-0.2 0.15 0 0 0 0.05</pose>
         </object>
         <object>
           <time>8.0</time>
           <type>part1</type>
-          <pose>-0.2 0.0 0 0 0 0.2</pose>
+          <pose>-0.2 0.0 0 0 0 0.09</pose>
         </object>
       </object_sequence>
     </plugin>
@@ -91,7 +91,8 @@
       <conveyor_activation_topic>~/conveyor/control</conveyor_activation_topic>
       <goals_topic>/ariac/goals</goals_topic>
       <goal>
-        <time>0.0</time>
+        <start_time>0.0</start_time>
+        <allowed_time>15.0</allowed_time>
         <kit>
           <tray>kit_tray_1</tray>
           <object>
@@ -126,7 +127,8 @@
       </goal>
       <goal>
         <!-- this goal is achievable -->
-        <time>5.0</time>
+        <start_time>10.0</start_time>
+        <allowed_time>5.0</allowed_time>
         <kit>
           <tray>kit_tray_1</tray>
           <object>

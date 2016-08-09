@@ -230,7 +230,7 @@ namespace ariac
     /// \return True if this < _goal.
     public: bool operator<(const Goal &_goal) const
     {
-      return this->time < _goal.time;
+      return this->startTime < _goal.startTime;
     }
 
     /// \brief Stream insertion operator.
@@ -241,7 +241,8 @@ namespace ariac
                                             const Goal &_goal)
     {
       _out << "<Goal>" << std::endl;
-      _out << "Time: [" << _goal.time << "]" << std::endl;
+      _out << "Start time: [" << _goal.startTime << "]" << std::endl;
+      _out << "Allowed time: [" << _goal.allowedTime << "]" << std::endl;
       _out << "Kits:" << std::endl;
       for (auto item : _goal.kits)
       {
@@ -257,10 +258,17 @@ namespace ariac
     public: GoalID_t goalID;
 
     /// \brief Simulation time in which the goal should be triggered.
-    public: double time;
+    public: double startTime;
+
+    /// \brief Simulation time in seconds permitted for the goal to be
+    /// completed before cancelling it. Infinite by default.
+    public: double allowedTime;
 
     /// \brief A goal is composed of multiple kits assigned to specific trays.
     public: std::map<TrayID_t, Kit> kits;
+
+    /// \brief Simulation time in seconds spent on this goal.
+    public: double timeTaken;
   };
 }
 #endif
