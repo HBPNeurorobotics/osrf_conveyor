@@ -97,6 +97,9 @@ namespace gazebo
     /// \brief The time specified in the object is relative to this time.
     public: common::Time gameStartTime;
 
+    /// \brief The time in seconds that has been spent on the current goal.
+    public: double timeSpentOnCurrentGoal;
+
     /// \brief Pointer to the current state.
     public: std::string currentState = "init";
 
@@ -355,11 +358,12 @@ void ROSAriacTaskManagerPlugin::OnUpdate()
       this->dataPtr->currentGameScore = gameScore;
     }
 
-    if(!this->dataPtr->goalsInProgress.empty())
+    if (!this->dataPtr->goalsInProgress.empty())
     {
       this->dataPtr->goalsInProgress.top().timeTaken += elapsedTime;
       auto goalID = this->dataPtr->goalsInProgress.top().goalID;
-      auto timeTaken = this->dataPtr->goalsInProgress.top().timeTaken;
+      // TODO: timing should probably be managed by the scorer but we want to use sim time
+      this->dataPtr->timeSpentOnCurrentGoal = this->dataPtr->goalsInProgress.top().timeTaken;
 
       // Check for completed goals.
       bool goalCompleted = this->dataPtr->ariacScorer.IsCurrentGoalComplete();
@@ -371,14 +375,26 @@ void ROSAriacTaskManagerPlugin::OnUpdate()
       else
       {
         // Check if the time limit for the current goal has been exceeded.
-        bool goalTimedOut = timeTaken > this->dataPtr->goalsInProgress.top().allowedTime;
-        if (goalTimedOut)
+        if (this->dataPtr->timeSpentOnCurrentGoal > this->dataPtr->goalsInProgress.top().allowedTime)
         {
           ROS_INFO_STREAM("Goal timed out: " << goalID);
           this->StopCurrentGoal();
         }
       }
     }
+
+    if (this->dataPtr->goalsInProgress.empty() && this->dataPtr->goalsToAnnounce.empty())
+    {
+      this->dataPtr->currentGameScore.totalProcessTime =
+        (currentSimTime - this->dataPtr->gameStartTime).Double();
+      this->dataPtr->currentState = "end_game";
+    }
+  }
+  else if (this->dataPtr->currentState == "end_game")
+  {
+    ROS_INFO_STREAM("No more goals to process. Final score: " << this->dataPtr->currentGameScore.total());
+    ROS_INFO_STREAM("Score breakdown:\n" << this->dataPtr->currentGameScore);
+    this->dataPtr->currentState = "done";
   }
 
   // ToDo: Publish at a lower frequency.
@@ -449,8 +465,7 @@ void ROSAriacTaskManagerPlugin::AssignGoal(const ariac::Goal & goal)
 
     // Assign the scorer the goal to monitor
     gzdbg << "Assigning goal: " << goal << std::endl;
-    // TODO: don't pass this a ROS message unnecessarily
-    this->dataPtr->ariacScorer.OnGoalReceived(goalMsgConstPtr);
+    this->dataPtr->ariacScorer.AssignGoal(goal);
 }
 
 /////////////////////////////////////////////////
@@ -460,7 +475,7 @@ void ROSAriacTaskManagerPlugin::StopCurrentGoal()
   {
     ROS_INFO_STREAM("Stopping goal: " << this->dataPtr->goalsInProgress.top().goalID);
     this->dataPtr->goalsInProgress.pop();
-    this->dataPtr->ariacScorer.UnassignCurrentGoal();
+    this->dataPtr->ariacScorer.UnassignCurrentGoal(this->dataPtr->timeSpentOnCurrentGoal);
   }
 
   if (this->dataPtr->goalsInProgress.size())

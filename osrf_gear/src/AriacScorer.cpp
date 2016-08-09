@@ -52,7 +52,7 @@ void AriacScorer::Update()
 
   if (this->newGoalReceived)
   {
-    this->ProcessNewGoal();
+    this->AssignGoal(this->newGoal);
   }
 
   if (this->newGoalReceived || this->newTrayInfoReceived)
@@ -129,20 +129,19 @@ void AriacScorer::OnGoalReceived(const osrf_gear::Goal::ConstPtr & goalMsg)
 }
 
 /////////////////////////////////////////////////
-void AriacScorer::ProcessNewGoal()
+void AriacScorer::AssignGoal(const ariac::Goal & goal)
 {
-  // TODO: store previous goal
-
-  ariac::GoalID_t goalID = this->newGoal.goalID;
+  ariac::GoalID_t goalID = goal.goalID;
   if (this->gameScore.goalScores.find(goalID) == this->gameScore.goalScores.end())
   {
     // This is a previously unseen goal: start scoring from scratch
     this->gameScore.goalScores[goalID] = ariac::GoalScore();
+    this->gameScore.goalScores[goalID].goalID = goalID;
   }
   this->goalScore = &this->gameScore.goalScores[goalID];
 
   // Assign the new goal
-  for (const auto & item : this->newGoal.kits)
+  for (const auto & item : goal.kits)
   {
     auto trayID = item.first;
     auto assignedKit = item.second;
@@ -157,6 +156,7 @@ void AriacScorer::ProcessNewGoal()
       this->kitTrays[trayID].AssignKit(assignedKit);
     }
   }
+  this->currentGoal = goal;
 
   // Add the outlines of the goal kits
   // TODO: remove these when goals change
@@ -168,13 +168,13 @@ void AriacScorer::ProcessNewGoal()
     tray.AddTrayGoalOutlines(this->world);
   }
   */
-  this->currentGoal = this->newGoal;
 }
 
 /////////////////////////////////////////////////
-ariac::GoalScore AriacScorer::UnassignCurrentGoal()
+ariac::GoalScore AriacScorer::UnassignCurrentGoal(double timeTaken)
 {
   auto goalScore = *this->goalScore;
+  goalScore.timeTaken = timeTaken;
   for (const auto & item: this->currentGoal.kits)
   {
     auto trayID = item.first;

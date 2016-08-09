@@ -55,18 +55,20 @@ class AriacScorer
   /// \return The score for the goal.
   public: ariac::GoalScore GetCurrentGoalScore();
 
-  /// \brief Stop processing the current goal.
-  /// \return The score for the goal.
-  public: ariac::GoalScore UnassignCurrentGoal();
+  /// \brief Assign a goal to process.
+  /// \param[in] The goal.
+  public: void AssignGoal(const ariac::Goal & goal);
 
-  /// \brief Process a new goal.
-  protected: void ProcessNewGoal();
+  /// \brief Stop processing the current goal.
+  /// \param[in] The time spent on the goal.
+  /// \return The score for the goal.
+  public: ariac::GoalScore UnassignCurrentGoal(double timeTaken);
 
   /// \brief Calculate the score for the trays given the objects in them.
   protected: void ScoreCurrentGoal();
 
   /// \brief Helper function for filling a Kit from a kit ROS message.
-  public: static void FillKitFromMsg(const osrf_gear::Kit &kitMsg, ariac::Kit &kit);
+  public: static void FillKitFromMsg(const osrf_gear::Kit & kitMsg, ariac::Kit & kit);
 
   /// \brief Callback for receiving goal message.
   public: void OnGoalReceived(const osrf_gear::Goal::ConstPtr & goalMsg);

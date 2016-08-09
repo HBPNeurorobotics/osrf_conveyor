@@ -34,13 +34,30 @@ namespace ariac
   /// \brief The score of a tray.
   class TrayScore
   {
-    public: double partPresence = 0.0;
+    /// \brief Stream insertion operator.
+    /// \param[in] _out output stream.
+    /// \param[in] _obj TrayScore object to output.
+    /// \return The output stream
+    public: friend std::ostream &operator<<(std::ostream &_out,
+                                            const TrayScore &_obj)
+    {
+      _out << "<tray_score " << _obj.trayID << ">" << std::endl;
+      _out << "Total score: [" << _obj.total() << "]" << std::endl;
+      _out << "Complete: [" << (_obj.isComplete ? "true" : "false") << "]" << std::endl;
+      _out << "Part presence score: [" << _obj.partPresence << "]" << std::endl;
+      _out << "All parts bonus: [" << _obj.allPartsBonus << "]" << std::endl;
+      _out << "Part pose score: [" << _obj.partPose << "]" << std::endl;
+      _out << "</tray_score>" << std::endl;
+      return _out;
+    }
+    public: TrayID_t trayID;
+            double partPresence = 0.0;
             double allPartsBonus = 0.0;
             double partPose = 0.0;
             bool isComplete = false;
 
             /// \brief Calculate the total score.
-            double total()
+            double total() const
             {
               return partPresence + allPartsBonus + partPose;
             }
@@ -49,16 +66,41 @@ namespace ariac
   /// \brief The score of a goal.
   class GoalScore
   {
-    /// \brief Mapping between tray IDs and scores
+    /// \brief Stream insertion operator.
+    /// \param[in] _out output stream.
+    /// \param[in] _obj GoalScore object to output.
+    /// \return The output stream
+    public: friend std::ostream &operator<<(std::ostream &_out,
+                                            const GoalScore &_obj)
+    {
+      _out << "<goal_score " << _obj.goalID << ">" << std::endl;
+      _out << "Total score: [" << _obj.total() << "]" << std::endl;
+      _out << "Time taken: [" << _obj.timeTaken << "]" << std::endl;
+      _out << "Complete: [" << (_obj.isComplete() ? "true" : "false") << "]" << std::endl;
+      for (const auto & item : _obj.trayScores)
+      {
+        _out << item.second << std::endl;
+      }
+      _out << "</goal_score>" << std::endl;
+      return _out;
+    }
+
+    /// \brief Mapping between tray IDs and scores.
     public: std::map<TrayID_t, TrayScore> trayScores;
+
+            /// \brief ID of the goal being scored.
+            GoalID_t goalID;
+
+            /// \brief Time in seconds spend on the goal.
+            double timeTaken = 0.0;
 
             /// \brief Calculate if the goal is complete.
             /// \return True if all trays are complete.
             ///   Will return false if there are no trays in the goal.
-            bool isComplete()
+            bool isComplete() const
             {
               bool isGoalComplete = !this->trayScores.empty();
-              for (auto item : this->trayScores)
+              for (const auto & item : this->trayScores)
               {
                 isGoalComplete &= item.second.isComplete;
                 if (!isGoalComplete)
@@ -70,10 +112,10 @@ namespace ariac
             };
 
             /// \brief Calculate the total score.
-            double total()
+            double total() const
             {
-              double total = 0;
-              for (auto item : this->trayScores)
+              double total = 0.0;
+              for (const auto & item : this->trayScores)
               {
                 total += item.second.total();
               }
@@ -84,6 +126,24 @@ namespace ariac
   /// \brief The score of a competition run.
   class GameScore
   {
+    /// \brief Stream insertion operator.
+    /// \param[in] _out output stream.
+    /// \param[in] _obj GameScore object to output.
+    /// \return The output stream
+    public: friend std::ostream &operator<<(std::ostream &_out,
+                                            const GameScore &_obj)
+    {
+      _out << "<game_score>" << std::endl;
+      _out << "Total score: [" << _obj.total() << "]" << std::endl;
+      _out << "Total process time: [" << _obj.totalProcessTime << "]" << std::endl;
+      for (const auto & item : _obj.goalScores)
+      {
+        _out << item.second << std::endl;
+      }
+      _out << "</game_score>" << std::endl;
+      return _out;
+    }
+
     public: double totalProcessTime = 0.0;
             double partTravelTime = 0.0;
             double planningTime = 0.0;
@@ -94,7 +154,7 @@ namespace ariac
             std::map<GoalID_t, GoalScore> goalScores;
 
             /// \brief Calculate the total score.
-            double total()
+            double total() const
             {
               double total = 0;
               total += totalProcessTime;
@@ -103,7 +163,7 @@ namespace ariac
               total += partTravelDistance;
               total += manipulatorTravelDistance;
 
-              for (auto item : this->goalScores)
+              for (const auto & item : this->goalScores)
               {
                 total += item.second.total();
               }
@@ -211,7 +271,7 @@ namespace ariac
                                             const Kit &_kit)
     {
       _out << "<kit>";
-      for (auto obj : _kit.objects)
+      for (const auto & obj : _kit.objects)
         _out << std::endl << obj;
       _out << std::endl << "</kit>" << std::endl;
 
@@ -244,7 +304,7 @@ namespace ariac
       _out << "Start time: [" << _goal.startTime << "]" << std::endl;
       _out << "Allowed time: [" << _goal.allowedTime << "]" << std::endl;
       _out << "Kits:" << std::endl;
-      for (auto item : _goal.kits)
+      for (const auto & item : _goal.kits)
       {
         _out << "<tray>" << item.first << "</tray>" << std::endl;
         _out << item.second << std::endl;

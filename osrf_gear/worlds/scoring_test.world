@@ -79,7 +79,7 @@
         <object>
           <time>8.0</time>
           <type>part1</type>
-          <pose>-0.2 0.0 0 0 0 0.09</pose>
+          <pose>-0.2 0.0 0 0 0 0.9</pose>
         </object>
       </object_sequence>
     </plugin>
@@ -127,7 +127,7 @@
       </goal>
       <goal>
         <!-- this goal is achievable -->
-        <start_time>10.0</start_time>
+        <start_time>5.0</start_time>
         <allowed_time>5.0</allowed_time>
         <kit>
           <tray>kit_tray_1</tray>

@@ -85,6 +85,7 @@ TrayScore KitTray::ScoreTray(const ScoringParameters & scoringParameters)
   }
 
   TrayScore score;
+  score.trayID = this->trayID;
   auto numAssignedObjects = this->assignedKit.objects.size();
   ROS_DEBUG_STREAM("[" << this->trayID << "] Comparing the " << numAssignedObjects <<
     " assigned objects with the current " <<
