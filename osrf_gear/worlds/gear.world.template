@@ -84,11 +84,23 @@
 
 @[end if]@
 @[end for]@
+    <!-- a tray for building kits -->
+    <include>
+      <uri>model://kit_tray</uri>
+      <pose>-0.5 -1.5 1.1 0 0 0</pose>
+    </include>
+
     <!-- a wall to delete objects at the end of the belt -->
     <include>
       <uri>model://deletion_wall</uri>
       <pose>1.2 -4.1 1.4 0 0 1.5708</pose>
     </include>
+
+    <!-- a beer for testing drops -->
+    <!-- <include>
+      <uri>model://beer</uri>
+      <pose>0.7677 0.7813 0 0 0 0</pose>
+    </include> -->
 
     <!-- an invisible conveyor belt -->
     <model name="conveyor_belt">
@@ -190,6 +202,10 @@
           </object>
         </kit>
       </goal>
+    </plugin>
+
+    <!-- The NIST-ARIAC scoring plugin -->
+    <plugin filename="libROSAriacScoringPlugin.so" name="scorer">
     </plugin>
 
   </world>
