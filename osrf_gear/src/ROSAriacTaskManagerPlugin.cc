@@ -41,6 +41,7 @@
 #include "osrf_gear/Goal.h"
 #include "osrf_gear/Kit.h"
 #include "osrf_gear/KitObject.h"
+#include "osrf_gear/VacuumGripperState.h"
 
 namespace gazebo
 {
@@ -75,6 +76,9 @@ namespace gazebo
 
     /// \brief ROS subscriber for the tray states.
     public: ros::Subscriber trayInfoSub;
+
+    /// \brief ROS subscriber for the gripper state.
+    public: ros::Subscriber gripperStateSub;
 
     /// \brief Publishes the Gazebo task state.
     public: ros::Publisher gazeboTaskStatePub;
@@ -323,6 +327,9 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
   // Initialize the game scorer.
   this->dataPtr->trayInfoSub = this->dataPtr->rosnode->subscribe(
     "/ariac/trays", 10, &AriacScorer::OnTrayInfoReceived, &this->dataPtr->ariacScorer);
+  this->dataPtr->gripperStateSub = this->dataPtr->rosnode->subscribe(
+    "/ariac/vacuum_gripper_state", 10, &AriacScorer::OnGripperStateReceived,
+    &this->dataPtr->ariacScorer);
 
   this->dataPtr->gameStartTime = this->dataPtr->world->GetSimTime();
 
@@ -350,7 +357,7 @@ void ROSAriacTaskManagerPlugin::OnUpdate()
     this->ProcessGoalsToAnnounce();
 
     // Update the score.
-    this->dataPtr->ariacScorer.Update();
+    this->dataPtr->ariacScorer.Update(elapsedTime);
     auto gameScore = this->dataPtr->ariacScorer.GetGameScore();
     if (gameScore.total() != this->dataPtr->currentGameScore.total())
     {

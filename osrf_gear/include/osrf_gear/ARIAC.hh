@@ -136,6 +136,7 @@ namespace ariac
       _out << "<game_score>" << std::endl;
       _out << "Total score: [" << _obj.total() << "]" << std::endl;
       _out << "Total process time: [" << _obj.totalProcessTime << "]" << std::endl;
+      _out << "Part travel time: [" << _obj.partTravelTime << "]" << std::endl;
       for (const auto & item : _obj.goalScores)
       {
         _out << item.second << std::endl;

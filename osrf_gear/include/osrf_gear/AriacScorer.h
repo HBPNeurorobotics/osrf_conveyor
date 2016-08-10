@@ -30,6 +30,7 @@
 #include "osrf_gear/AriacKitTray.h"
 #include <osrf_gear/Goal.h>
 #include <osrf_gear/Kit.h>
+#include "osrf_gear/VacuumGripperState.h"
 
 /// \brief A scorer for the ARIAC game.
 class AriacScorer
@@ -41,9 +42,10 @@ class AriacScorer
   public: virtual ~AriacScorer();
 
   /// \brief Update the scorer.
-  public: void Update();
+  public: void Update(double timeStep = 0.0);
 
   /// \brief Get the current score.
+  /// \param[in] The time in seconds since the last update.
   /// \return The score for the game.
   public: ariac::GameScore GetGameScore();
 
@@ -62,7 +64,7 @@ class AriacScorer
   /// \brief Stop processing the current goal.
   /// \param[in] The time spent on the goal.
   /// \return The score for the goal.
-  public: ariac::GoalScore UnassignCurrentGoal(double timeTaken);
+  public: ariac::GoalScore UnassignCurrentGoal(double timeTaken = 0.0);
 
   /// \brief Calculate the score for the trays given the objects in them.
   protected: void ScoreCurrentGoal();
@@ -75,6 +77,9 @@ class AriacScorer
 
   /// \brief Callback for receiving tray state message.
   public: void OnTrayInfoReceived(const osrf_gear::Kit::ConstPtr & trayMsg);
+
+  /// \brief Callback for receiving gripper state message.
+  public: void OnGripperStateReceived(const osrf_gear::VacuumGripperState &stateMsg);
 
   /// \brief The trays to monitor the score of.
   protected: std::map<ariac::TrayID_t, ariac::KitTray> kitTrays;
@@ -90,6 +95,9 @@ class AriacScorer
 
   /// \brief Flag for signalling new goal to process.
   protected: bool newGoalReceived;
+
+  /// \brief Whether or not there is a travelling part in the gripper.
+  protected: bool isPartTravelling = false;
 
   /// \brief Goal receivd from goal messages.
   protected: ariac::Goal newGoal;

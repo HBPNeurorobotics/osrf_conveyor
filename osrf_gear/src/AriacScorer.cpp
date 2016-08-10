@@ -46,8 +46,13 @@ ariac::GoalScore AriacScorer::GetCurrentGoalScore()
 }
 
 /////////////////////////////////////////////////
-void AriacScorer::Update()
+void AriacScorer::Update(double timeStep)
 {
+  if (this->isPartTravelling)
+  {
+    this->gameScore.partTravelTime += timeStep;
+  }
+
   boost::mutex::scoped_lock kitTraysLock(this->kitTraysMutex);
 
   if (this->newGoalReceived)
@@ -203,4 +208,10 @@ void AriacScorer::FillKitFromMsg(const osrf_gear::Kit &kitMsg, ariac::Kit &kit)
     obj.pose = gazebo::math::Pose(objPosition, objOrientation);
     kit.objects.push_back(obj);
   }
+}
+
+/////////////////////////////////////////////////
+void AriacScorer::OnGripperStateReceived(const osrf_gear::VacuumGripperState &stateMsg)
+{
+  this->isPartTravelling = stateMsg.enabled && stateMsg.attached;
 }
