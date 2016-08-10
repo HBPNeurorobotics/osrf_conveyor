@@ -31,6 +31,7 @@
 #include <gazebo/transport/transport.hh>
 #include <ros/ros.h>
 #include <sdf/sdf.hh>
+#include <std_msgs/Float32.h>
 #include <std_msgs/String.h>
 #include <std_srvs/Trigger.h>
 
@@ -82,6 +83,9 @@ namespace gazebo
 
     /// \brief Publishes the Gazebo task state.
     public: ros::Publisher gazeboTaskStatePub;
+
+    /// \brief Publishes the game score total.
+    public: ros::Publisher gazeboTaskScorePub;
 
     /// \brief Service that allows the user to start the competition.
     public: ros::ServiceServer teamStartServiceServer;
@@ -176,9 +180,13 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
   if (_sdf->HasElement("team_start_service_name"))
     teamStartServiceName = _sdf->Get<std::string>("team_start_service_name");
 
-  std::string gazeboTaskStateTopic = "gazebo_task/state";
+  std::string gazeboTaskStateTopic = "competition_state";
   if (_sdf->HasElement("gazebo_task_state_topic"))
     gazeboTaskStateTopic = _sdf->Get<std::string>("gazebo_task_state_topic");
+
+  std::string gazeboTaskScoreTopic = "current_score";
+  if (_sdf->HasElement("gazebo_task_score_topic"))
+    gazeboTaskScoreTopic = _sdf->Get<std::string>("gazebo_task_score_topic");
 
   std::string conveyorActivationTopic = "activation_topic";
   if (_sdf->HasElement("conveyor_activation_topic"))
@@ -313,6 +321,10 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
   this->dataPtr->gazeboTaskStatePub = this->dataPtr->rosnode->advertise<
     std_msgs::String>(gazeboTaskStateTopic, 1000);
 
+  // Publisher for announcing the score of the game.
+  this->dataPtr->gazeboTaskScorePub = this->dataPtr->rosnode->advertise<
+    std_msgs::Float32>(gazeboTaskScoreTopic, 1000);
+
   // Subscribe to the topic for receiving the state of the team's task.
   this->dataPtr->teamStartServiceServer =
     this->dataPtr->rosnode->advertiseService(teamStartServiceName,
@@ -361,7 +373,7 @@ void ROSAriacTaskManagerPlugin::OnUpdate()
     auto gameScore = this->dataPtr->ariacScorer.GetGameScore();
     if (gameScore.total() != this->dataPtr->currentGameScore.total())
     {
-      ROS_INFO_STREAM("Current game score: " << gameScore.total());
+      ROS_DEBUG_STREAM("Current game score: " << gameScore.total());
       this->dataPtr->currentGameScore = gameScore;
     }
 
@@ -404,10 +416,15 @@ void ROSAriacTaskManagerPlugin::OnUpdate()
     this->dataPtr->currentState = "done";
   }
 
-  // ToDo: Publish at a lower frequency.
-  std_msgs::String msg;
-  msg.data = this->dataPtr->currentState;
-  this->dataPtr->gazeboTaskStatePub.publish(msg);
+  // TODO: Publish at a lower frequency.
+  std_msgs::Float32 scoreMsg;
+  scoreMsg.data = this->dataPtr->currentGameScore.total();
+  this->dataPtr->gazeboTaskScorePub.publish(scoreMsg);
+
+  std_msgs::String stateMsg;
+  stateMsg.data = this->dataPtr->currentState;
+  this->dataPtr->gazeboTaskStatePub.publish(stateMsg);
+
   this->dataPtr->lastUpdateTime = currentSimTime;
 }
 
@@ -462,12 +479,10 @@ void ROSAriacTaskManagerPlugin::PopulateConveyorBelt()
 /////////////////////////////////////////////////
 void ROSAriacTaskManagerPlugin::AssignGoal(const ariac::Goal & goal)
 {
-    osrf_gear::Goal goalMsg;
-    fillGoalMsg(goal, goalMsg);
-    osrf_gear::GoalConstPtr goalMsgConstPtr(new osrf_gear::Goal(goalMsg));
-
     // Publish the goal to ROS topic
     ROS_INFO_STREAM("Announcing goal: " << goal.goalID);
+    osrf_gear::Goal goalMsg;
+    fillGoalMsg(goal, goalMsg);
     this->dataPtr->goalPub.publish(goalMsg);
 
     // Assign the scorer the goal to monitor

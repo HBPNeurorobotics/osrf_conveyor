@@ -22,6 +22,8 @@
 #include <osrf_gear/Proximity.h>
 #include <sensor_msgs/JointState.h>
 #include <sensor_msgs/LaserScan.h>
+#include <std_msgs/Float32.h>
+#include <std_msgs/String.h>
 #include <std_srvs/Trigger.h>
 #include <trajectory_msgs/JointTrajectory.h>
 
@@ -56,6 +58,23 @@ public:
       "/ariac/arm/command", 10);
   }
 
+  /// Called when a new message is received on the '/ariac/current_score' topic.
+  void current_score_callback(const std_msgs::Float32::ConstPtr & msg) {
+    if (msg->data != current_score_)
+    {
+      ROS_INFO_STREAM("Score: " << msg->data);
+    }
+    current_score_ = msg->data;
+  }
+
+  /// Called when a new message is received on the '/ariac/competition_state' topic.
+  void competition_state_callback(const std_msgs::String::ConstPtr & msg) {
+    if (msg->data == "done" && competition_state_ != "done")
+    {
+      ROS_INFO("Competition ended.");
+    }
+    competition_state_ = msg->data;
+  }
   /// Called when a new Goal message is received on the '/ariac/goals' topic.
   void goal_callback(const osrf_gear::Goal::ConstPtr & goal_msg) {
     ROS_INFO_STREAM("Received goal:\n" << *goal_msg);
@@ -103,6 +122,8 @@ public:
   }
 
 private:
+  std::string competition_state_;
+  double current_score_;
   ros::Publisher joint_trajectory_publisher_;
   std::vector<osrf_gear::Goal> received_goals_;
   sensor_msgs::JointState current_joint_states_;
@@ -128,21 +149,35 @@ int main(int argc, char ** argv) {
   ros::NodeHandle node;
 
   MyCompetitionClass comp_class(node);  // Instance of custom class from above.
+
+  // "Connect" new data on the '/ariac/current_score' topic to the callback in the custom class.
+  ros::Subscriber current_score_subscriber = node.subscribe(
+    "/ariac/current_score", 10, &MyCompetitionClass::current_score_callback, &comp_class);
+
+  // "Connect" new data on the '/ariac/competition_state' topic to callback in the custom class.
+  ros::Subscriber competition_state_subscriber = node.subscribe(
+    "/ariac/competition_state", 10, &MyCompetitionClass::competition_state_callback, &comp_class);
+
   // "Connect" new data on the '/ariac/goals' topic to the callback in the custom class.
   ros::Subscriber goals_subscriber = node.subscribe(
     "/ariac/goals", 10, &MyCompetitionClass::goal_callback, &comp_class);
+
   // "Connect" new data on the '/ariac/arm/joint_states' topic to the callback in the custom class.
   ros::Subscriber joint_state_subscriber = node.subscribe(
     "/ariac/arm/joint_states", 10, &MyCompetitionClass::joint_state_callback, &comp_class);
+
   // "Connect" new data on the '/ariac/proximity_sensor_changed' topic to the free-function callback.
   ros::Subscriber proximity_sensor_subscriber = node.subscribe(
     "/ariac/proximity_sensor_changed", 10, proximity_sensor_callback);
+
   // "Connect" new data on the '/ariac/break_beam_changed' topic to the callback in the custom class.
   ros::Subscriber break_beam_subscriber = node.subscribe(
     "/ariac/break_beam_changed", 10, &MyCompetitionClass::break_beam_callback, &comp_class);
+
   // "Connect" new data on the '/ariac/logical_camera' topic to the callback in the custom class.
   ros::Subscriber logical_camera_subscriber = node.subscribe(
     "/ariac/logical_camera", 10, &MyCompetitionClass::logical_camera_callback, &comp_class);
+
   // "Connect" new data on the '/ariac/laser_profiler' topic to the free-function callback.
   ros::Subscriber laser_profiler_subscriber = node.subscribe(
     "/ariac/laser_profiler", 10, laser_profiler_callback);
