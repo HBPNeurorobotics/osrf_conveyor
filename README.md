@@ -22,8 +22,6 @@ cd $GEAR_WS/src
 cd $GEAR_WS/src
 # This repository
 git clone https://bitbucket.org/osrf/gear
-# OSRF fork of the ROS-Industrial universal robot repository.
-git clont https://github.com/osrf/universal_robot.git -b gear_nist
 # If you've got a custom version of gazebo, the gazebo_ros_pkgs
 # git clone https://github.com/ros-simulation/gazebo_ros_pkgs.git -b indigo-devel
 ```
