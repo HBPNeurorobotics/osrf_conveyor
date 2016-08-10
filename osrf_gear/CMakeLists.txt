@@ -344,6 +344,10 @@ install(DIRECTORY models/
 install(DIRECTORY launch/
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch)
 
+# Install all the vendor files from outside packages
+install(DIRECTORY vendor/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/vendor)
+
 # Configure the setup script
 catkin_add_env_hooks(99_osrf_gear_setup
   DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/cmake
