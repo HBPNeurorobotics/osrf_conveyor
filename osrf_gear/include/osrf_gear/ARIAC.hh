@@ -227,10 +227,10 @@ namespace ariac
     modelType = modelType.substr(index + 1);
 
     // Trim trailing underscore and number caused by inserting multiple of the same model
-    index = modelName.find_last_not_of("0123456789");
-    if (modelName[index] == '_' && index > 1)
+    index = modelType.find_last_not_of("0123456789");
+    if (modelType[index] == '_' && index > 1)
     {
-      modelType = modelName.substr(0, index);
+      modelType = modelType.substr(0, index);
     }
 
     return modelType;

@@ -40,7 +40,7 @@ class ROSConveyorController : public WorldPlugin
   private: double beltVelocity;
 
   private: ros::Subscriber logicalCameraImageSub;
-  private: std::string searchModelName = "unit_box";
+  private: std::string searchModelType = "unit_box";
   private: bool modelDetected = false;
 
   public: ~ROSConveyorController()
@@ -117,7 +117,7 @@ class ROSConveyorController : public WorldPlugin
     bool modelDetected = false;
     for (osrf_gear::Model model : _msg->models)
     {
-      if (model.name == this->searchModelName)
+      if (model.type == this->searchModelType)
       {
         modelDetected = true;
         break;
