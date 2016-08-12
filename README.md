@@ -44,11 +44,11 @@ If you don't want to do this, use `catkin_make_isolated --install` instead the `
 
 1. Run
 
-Recommendation: do this in a different shell than you build
+    Recommendation: do this in a different shell than you build
 
         cd $GEAR_WS
         source ./install/setup.bash
 
-You can run the example with `roslaunch`:
+    You can run the example with `roslaunch`:
 
         roslaunch osrf_gear ur10_example_world.launch
