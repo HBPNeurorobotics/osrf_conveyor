@@ -125,7 +125,7 @@
     </model>
 
     <!-- Populate the conveyor belt -->
-    <plugin filename="libPopulationPlugin.so" name="populate_conveyor">
+    <plugin filename="libROSPopulationPlugin.so" name="ros_object_population">
       <activation_topic>~/conveyor/control</activation_topic>
       <loop_forever>true</loop_forever>
       <frame>conveyor_belt</frame>

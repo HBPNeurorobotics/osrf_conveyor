@@ -111,6 +111,9 @@ namespace gazebo
 
     /// \brief Mutex to avoid race conditions.
     public: std::mutex mutex;
+
+    /// \brief Elapsed time since "startTime" when the plugin is paused.
+    public: common::Time elapsedWhenPaused;
   };
 }
 
@@ -227,17 +230,47 @@ void PopulationPlugin::Load(physics::WorldPtr _world, sdf::ElementPtr _sdf)
 }
 
 /////////////////////////////////////////////////
+void PopulationPlugin::Pause()
+{
+  if (!this->dataPtr->enabled)
+    return;
+
+  this->dataPtr->enabled = false;
+  this->dataPtr->elapsedWhenPaused =
+    this->dataPtr->world->GetSimTime() - this->dataPtr->startTime;
+
+  gzmsg << "Object population paused" << std::endl;
+}
+
+/////////////////////////////////////////////////
+void PopulationPlugin::Resume()
+{
+  if (this->dataPtr->enabled)
+    return;
+
+  this->dataPtr->enabled = true;
+  this->dataPtr->startTime = this->dataPtr->world->GetSimTime() -
+    this->dataPtr->elapsedWhenPaused;
+
+   gzmsg << "Object population resumed" << std::endl;
+}
+
+/////////////////////////////////////////////////
 void PopulationPlugin::Restart()
 {
   this->dataPtr->enabled = true;
   this->dataPtr->startTime = this->dataPtr->world->GetSimTime();
   this->dataPtr->objects = this->dataPtr->initialObjects;
+
+   gzmsg << "Object population restarted" << std::endl;
 }
 
 /////////////////////////////////////////////////
 void PopulationPlugin::OnUpdate()
 {
   std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
+
+  this->Publish();
 
   if (!this->dataPtr->enabled)
     return;
@@ -287,8 +320,21 @@ void PopulationPlugin::OnActivation(ConstGzStringPtr &_msg)
 
   if (_msg->data() == "restart")
     this->Restart();
-  else if (_msg->data() == "stop")
-    this->dataPtr->enabled = false;
+  else if (_msg->data() == "pause")
+    this->Pause();
+  else if (_msg->data() == "resume")
+    this->Resume();
   else
     gzerr << "Unknown activation command [" << _msg->data() << "]" << std::endl;
+}
+
+/////////////////////////////////////////////////
+bool PopulationPlugin::Enabled() const
+{
+  return this->dataPtr->enabled;
+}
+
+/////////////////////////////////////////////////
+void PopulationPlugin::Publish() const
+{
 }
