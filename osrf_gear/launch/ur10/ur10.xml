@@ -13,7 +13,7 @@
 
   <!-- send robot urdf to param server -->
   <param name="robot_description"
-         command="$(find xacro)/xacro.py '$(find osrf_gear)/launch/ur10/ur10_with_vacuum_gripper.urdf.xacro' use_velocity_interface:=true" />
+         command="$(find xacro)/xacro.py '$(find osrf_gear)/launch/ur10/ur10_with_vacuum_gripper.urdf.xacro' use_effort_interface:=true" />
 
   <!-- push robot_description to factory and spawn robot in gazebo -->
   <node name="spawn_gazebo_model" pkg="gazebo_ros" type="spawn_model"
