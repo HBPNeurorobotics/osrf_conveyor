@@ -1,2 +1,2 @@
-string name                     # model name
+string type                     # model type
 geometry_msgs/Pose pose         # model pose

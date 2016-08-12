@@ -85,7 +85,7 @@
       <conveyor_activation_topic>~/conveyor/control</conveyor_activation_topic>
       <goals_topic>/ariac/goals</goals_topic>
       <goal>
-        <time>0.0</time>
+        <start_time>0.0</start_time>
         <!-- 1st kit -->
         <kit>
           <object>
@@ -117,10 +117,6 @@
           </object>
         </kit>
       </goal>
-    </plugin>
-
-    <!-- The NIST-ARIAC scoring plugin -->
-    <plugin filename="libROSAriacScoringPlugin.so" name="scorer">
     </plugin>
   </world>
 </sdf>

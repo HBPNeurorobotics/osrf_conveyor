@@ -17,6 +17,7 @@
 
 #include "ROSLogicalCameraPlugin.hh"
 
+#include "osrf_gear/ARIAC.hh"
 #include "osrf_gear/LogicalCameraImage.h"
 
 #include <gazebo/physics/Link.hh>
@@ -136,7 +137,7 @@ void ROSLogicalCameraPlugin::OnImage(ConstLogicalCameraImagePtr &_msg)
     modelMsg.pose.orientation.y = orientation.y();
     modelMsg.pose.orientation.z = orientation.z();
     modelMsg.pose.orientation.w = orientation.w();
-    modelMsg.name = _msg->model(i).name();
+    modelMsg.type = ariac::DetermineModelType(_msg->model(i).name());
     imageMsg.models.push_back(modelMsg);
   }
   this->imagePub.publish(imageMsg);

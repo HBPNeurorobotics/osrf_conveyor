@@ -99,8 +99,12 @@
       <xacro:if value="$(arg joint_limited)">
         <limit lower="${-pi}" upper="${pi}" effort="330.0" velocity="2.16"/>
       </xacro:if>
-      <dynamics damping="0.0" friction="0.0"/>
+      <dynamics damping="20.0" friction="0.0"/>
     </joint>
+
+    <gazebo reference="${prefix}shoulder_pan_joint">
+      <implicitSpringDamper>1</implicitSpringDamper>
+    </gazebo>
 
     <link name="${prefix}shoulder_link">
       <visual>
@@ -132,8 +136,12 @@
       <xacro:if value="$(arg joint_limited)">
         <limit lower="${-pi}" upper="${pi}" effort="330.0" velocity="2.16"/>
       </xacro:if>
-      <dynamics damping="0.0" friction="0.0"/>
+      <dynamics damping="20.0" friction="0.0"/>
     </joint>
+
+    <gazebo reference="${prefix}shoulder_lift_joint">
+      <implicitSpringDamper>1</implicitSpringDamper>
+    </gazebo>
 
     <link name="${prefix}upper_arm_link">
       <visual>
@@ -165,8 +173,12 @@
       <xacro:if value="$(arg joint_limited)">
         <limit lower="${-pi}" upper="${pi}" effort="150.0" velocity="3.15"/>
       </xacro:if>
-      <dynamics damping="0.0" friction="0.0"/>
+      <dynamics damping="20.0" friction="0.0"/>
     </joint>
+
+    <gazebo reference="${prefix}elbow_joint">
+      <implicitSpringDamper>1</implicitSpringDamper>
+    </gazebo>
 
     <link name="${prefix}forearm_link">
       <visual>
@@ -198,8 +210,12 @@
       <xacro:if value="$(arg joint_limited)">
         <limit lower="${-pi}" upper="${pi}" effort="54.0" velocity="3.2"/>
       </xacro:if>
-      <dynamics damping="0.0" friction="0.0"/>
+      <dynamics damping="1.0" friction="0.0"/>
     </joint>
+
+    <gazebo reference="${prefix}wrist_1_joint">
+      <implicitSpringDamper>1</implicitSpringDamper>
+    </gazebo>
 
     <link name="${prefix}wrist_1_link">
       <visual>
@@ -231,8 +247,12 @@
       <xacro:if value="$(arg joint_limited)">
         <limit lower="${-pi}" upper="${pi}" effort="54.0" velocity="3.2"/>
       </xacro:if>
-      <dynamics damping="0.0" friction="0.0"/>
+      <dynamics damping="1.0" friction="0.0"/>
     </joint>
+
+    <gazebo reference="${prefix}wrist_2_joint">
+      <implicitSpringDamper>1</implicitSpringDamper>
+    </gazebo>
 
     <link name="${prefix}wrist_2_link">
       <visual>
@@ -264,8 +284,12 @@
       <xacro:if value="$(arg joint_limited)">
         <limit lower="${-pi}" upper="${pi}" effort="54.0" velocity="3.2"/>
       </xacro:if>
-      <dynamics damping="0.0" friction="0.0"/>
+      <dynamics damping="0.5" friction="0.0"/>
     </joint>
+
+    <gazebo reference="${prefix}wrist_3_joint">
+      <implicitSpringDamper>1</implicitSpringDamper>
+    </gazebo>
 
     <link name="${prefix}wrist_3_link">
       <visual>
