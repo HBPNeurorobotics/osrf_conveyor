@@ -9,12 +9,12 @@
 
 1. Create a catkin workspace
 
-    ```
-source /opt/ros/indigo/setup.bash
-export GEAR_WS=~/gear_ws  # set this to what ever you want
-mkdir -p $GEAR_WS/src
-cd $GEAR_WS/src
-    ```
+```
+    source /opt/ros/indigo/setup.bash
+    export GEAR_WS=~/gear_ws  # set this to what ever you want
+    mkdir -p $GEAR_WS/src
+    cd $GEAR_WS/src
+```
 
 1. Download this repository, and others to build
 
