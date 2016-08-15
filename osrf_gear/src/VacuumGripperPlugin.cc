@@ -63,16 +63,15 @@ namespace gazebo
                                                       const Object &_obj)
               {
                 _out << _obj.type << std::endl;
-                _out << "  Distance: [" << _obj.distance << "]" << std::endl;
+                _out << "  Dst: [" << _obj.destination << "]" << std::endl;
                 return _out;
               }
 
               /// \brief Object type.
               public: std::string type;
 
-              /// \brief Once the object travels this distance after being
-              /// picked, it will drop.
-              public: double distance;
+              /// \brief Destination where the object is teleported after a drop
+              public: math::Pose destination;
             };
 
     /// \brief Collection of objects to be dropped.
@@ -143,14 +142,15 @@ namespace gazebo
     /// \brief Whether there's an ongoing drop.
     public: bool dropPending;
 
-    /// \brief Initial pose where the object to be dropped was picked up.
-    public: math::Pose dropPickupPose;
+    /// \brief Attached model to be dropped.
+    public: physics::ModelPtr dropAttachedModel;
 
-    /// \brief Link to the attached object to be dropped.
-    public: physics::LinkPtr dropAttachedLink;
+    /// \brief If the attached object is scheduled to be dropped, the drop will
+    /// occur when the object enters inside this box.
+    public: math::Box dropRegion;
 
-    /// \brief Distance that the object should travel before being dropped.
-    public: double dropDistance;
+    /// \brief The current object scheduled for dropping.
+    public: Object dropCurrentObject;
   };
 }
 
@@ -215,6 +215,39 @@ void VacuumGripperPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   if (_sdf->HasElement("drops"))
   {
     sdf::ElementPtr dropsElem = _sdf->GetElement("drops");
+
+    if (!dropsElem->HasElement("drop_region"))
+    {
+      gzerr << "VacuumGripperPlugin: Unable to find <drop_region> elements in "
+            << "the <drops> section\n";
+      return;
+    }
+
+    sdf::ElementPtr dropRegionElem = dropsElem->GetElement("drop_region");
+
+    if (!dropRegionElem->HasElement("min"))
+    {
+      gzerr << "VacuumGripperPlugin: Unable to find <min> elements in "
+            << "the <drop_region> section\n";
+      return;
+    }
+
+    sdf::ElementPtr minElem = dropRegionElem->GetElement("min");
+    gazebo::math::Vector3 min = dropRegionElem->Get<math::Vector3>("min");
+
+    if (!dropRegionElem->HasElement("max"))
+    {
+      gzerr << "VacuumGripperPlugin: Unable to find <max> elements in "
+            << "the <drop_region> section\n";
+      return;
+    }
+
+    sdf::ElementPtr maxElem = dropRegionElem->GetElement("max");
+    gazebo::math::Vector3 max = dropRegionElem->Get<math::Vector3>("max");
+
+    this->dataPtr->dropRegion.min = min;
+    this->dataPtr->dropRegion.max = max;
+
     if (!dropsElem->HasElement("object"))
     {
       gzerr << "VacuumGripperPlugin: Unable to find <object> elements in the "
@@ -235,18 +268,19 @@ void VacuumGripperPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
         sdf::ElementPtr typeElement = objectElem->GetElement("type");
         std::string type = typeElement->Get<std::string>();
 
-        // Parse the distance.
-        if (!objectElem->HasElement("distance"))
+        // Parse the destination.
+        if (!objectElem->HasElement("destination"))
         {
-          gzerr << "VacuumGripperPlugin: Unable to find <distance> in object\n";
-          objectElem = objectElem->GetNextElement("object");
+          gzerr << "VacuumGripperPlugin: Unable to find <destination> in "
+                << "object\n";
+          objectElem = objectElem->GetNextElement("destination");
           continue;
         }
-        sdf::ElementPtr distanceElement = objectElem->GetElement("distance");
-        double distance = distanceElement->Get<double>();
+        sdf::ElementPtr dstElement = objectElem->GetElement("destination");
+        math::Pose destination = dstElement->Get<math::Pose>();
 
         // Add the object to the set.
-        VacuumGripperPluginPrivate::Object obj = {type, distance};
+        VacuumGripperPluginPrivate::Object obj = {type, destination};
         this->dataPtr->drops.push_back(obj);
 
         objectElem = objectElem->GetNextElement("object");
@@ -363,17 +397,21 @@ void VacuumGripperPlugin::OnUpdate()
 
   if (this->dataPtr->attached && this->dataPtr->dropPending)
   {
-    auto distanceTraveled = this->dataPtr->dropPickupPose.pos.Distance(
-      this->dataPtr->dropAttachedLink->GetWorldPose().pos);
-    if (distanceTraveled >= this->dataPtr->dropDistance)
+    auto objPose = this->dataPtr->dropAttachedModel->GetWorldPose();
+    if (this->dataPtr->dropRegion.Contains(objPose.pos))
     {
-      gzdbg << "Dropping object!" << std::endl;
       // Drop the object.
       this->HandleDetach();
 
+      // Teleport it to the destination.
+      this->dataPtr->dropAttachedModel->SetWorldPose(
+        this->dataPtr->dropCurrentObject.destination);
+
       this->dataPtr->dropPending = false;
+      gzdbg << "Object dropped and teleported" << std::endl;
     }
   }
+
   // else if (this->dataPtr->zeroCount > this->dataPtr->detachSteps &&
   //          this->dataPtr->attached)
   // {
@@ -452,17 +490,23 @@ void VacuumGripperPlugin::HandleAttach()
 
         // Check if the object should drop.
         auto type = cc[iter->first]->GetLink()->GetModel()->GetName();
-        VacuumGripperPluginPrivate::Object attachedObj = {type, 0.0};
+        math::Pose dst;
+        VacuumGripperPluginPrivate::Object attachedObj = {type, dst};
         auto found = std::find(std::begin(this->dataPtr->drops),
                                std::end(this->dataPtr->drops), attachedObj);
         if (found != std::end(this->dataPtr->drops))
         {
-          this->dataPtr->dropDistance = found->distance;
+          // Save the object that is scheduled for dropping.
+          this->dataPtr->dropCurrentObject = *found;
 
           // Remove obj from drops.
           this->dataPtr->drops.erase(found);
 
-          this->InitDrop(cc[iter->first]->GetLink());
+          this->dataPtr->dropPending = true;
+          this->dataPtr->dropAttachedModel =
+            cc[iter->first]->GetLink()->GetModel();
+
+          gzdbg << "Drop scheduled" << std::endl;
         }
       }
       ++iter;
@@ -480,14 +524,4 @@ void VacuumGripperPlugin::HandleDetach()
 /////////////////////////////////////////////////
 void VacuumGripperPlugin::Publish() const
 {
-}
-
-/////////////////////////////////////////////////
-void VacuumGripperPlugin::InitDrop(physics::LinkPtr _link)
-{
-  this->dataPtr->dropPending = true;
-  this->dataPtr->dropPickupPose = _link->GetWorldPose();
-  this->dataPtr->dropAttachedLink = _link;
-
-  gzdbg << "Drop scheduled" << std::endl;
 }
