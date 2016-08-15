@@ -62,7 +62,17 @@ def prepare_arguments(parser):
     add = mex_group.add_argument
     add('config', nargs="?", metavar="CONFIG",
         help='yaml string that is the configuration')
-    add('-f', '--file', help='path to yaml file that contains the configuration')
+    add('-f', '--file', nargs='+', help='list of paths to yaml files that contain the '
+    'configuration (contents will be concatenated)')
+    '''
+    add(
+        '-c', '--comp-config-file',
+        help='path to yaml file that contains the competition configuration')
+    add(
+        '-e', '--entry-config-file',
+        help='path to yaml file that contains the configuration of the '
+       m 'entry of a participant')
+       '''
 
 eval_local_vars = {n: getattr(math, n) for n in dir(math) if not n.startswith('__')}
 
@@ -89,6 +99,13 @@ class ArmInfo:
         self.type = arm_type
         self.initial_joint_states = initial_joint_states
 
+
+class ModelToSpawnInfo:
+    def __init__(self, name, model_type, pose, reference_frame):
+        self.name = name
+        self.type = model_type
+        self.pose = pose
+        self.reference_frame = reference_frame
 
 class SensorInfo:
     def __init__(self, name, sensor_type, pose):
@@ -166,17 +183,46 @@ def create_sensor_infos(sensors_dict):
     return sensor_infos
 
 
+def create_model_to_spawn_info(model_name, model_to_spawn_data):
+    model_type = get_required_field(model_name, model_to_spawn_data, 'type')
+    pose_dict = get_required_field(model_name, model_to_spawn_data, 'pose')
+    reference_frame = get_required_field(model_name, model_to_spawn_data, 'reference_frame')
+    for key in model_to_spawn_data:
+        if key not in ['type', 'pose', 'reference_frame']:
+            print("Warning: ignoring unknown entry in '{0}': {1}"
+                  .format(model_name, key), file=sys.stderr)
+    pose_info = create_pose_info(pose_dict)
+    return ModelToSpawnInfo(model_name, model_type, pose_info, reference_frame)
+
+
+def create_models_to_spawn_infos(models_to_spawn_dict):
+    models_to_spawn_infos = {}
+    for reference_frame, reference_frame_data in models_to_spawn_dict.items():
+        models = get_required_field(reference_frame, reference_frame_data, 'models')
+        model_count = 0
+        for model_name, model_to_spawn_data in models.items():
+            model_to_spawn_data['reference_frame'] = reference_frame
+            # assign each model a unique name
+            model_name = reference_frame + "::" + model_name + '_' + str(model_count)
+            models_to_spawn_infos[model_name] = create_model_to_spawn_info(
+                model_name, model_to_spawn_data)
+            model_count += 1
+    return models_to_spawn_infos
+
+
 def create_options_object():
     return Options()
 
 
 def prepare_template_data(config_dict):
-    template_data = {}
+    template_data = {'arm': None, 'sensors': None, 'models_to_spawn': None}
     for key, value in config_dict.items():
         if key == 'arm':
             template_data['arm'] = create_arm_info(value)
         elif key == 'sensors':
             template_data['sensors'] = create_sensor_infos(value)
+        elif key == 'models_to_spawn':
+            template_data['models_to_spawn'] = create_models_to_spawn_infos(value)
         else:
             print("Error: unknown top level entry '{0}'".format(key), file=sys.stderr)
             sys.exit(1)
@@ -198,10 +244,12 @@ def main(sysargv=None):
         description='Prepares and then executes a gazebo simulation based on configurations.')
     prepare_arguments(parser)
     args = parser.parse_args(sysargv)
-    config_data = args.config
+    config_data = args.config or ''
     if args.file is not None:
-        with open(args.file, 'r') as f:
-            config_data = f.read()
+        for file in args.file:
+            with open(file, 'r') as f:
+                comp_config_data = f.read()
+                config_data += comp_config_data
     dict_config = yaml.load(config_data)
     expanded_dict_config = expand_yaml_substitutions(dict_config)
     print(yaml.dump({'Using configuration': expanded_dict_config}))
