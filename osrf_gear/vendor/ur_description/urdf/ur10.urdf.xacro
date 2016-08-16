@@ -94,12 +94,12 @@
       <origin xyz="0.0 0.0 ${shoulder_height}" rpy="0.0 0.0 0.0" />
       <axis xyz="0 0 1" />
       <xacro:unless value="$(arg joint_limited)">
-        <limit lower="${-2.0 * pi}" upper="${2.0 * pi}" effort="330.0" velocity="2.16"/>
+        <limit lower="${-2.0 * pi}" upper="${2.0 * pi}" effort="${330.0 + 200}" velocity="2.16"/>
       </xacro:unless>
       <xacro:if value="$(arg joint_limited)">
         <limit lower="${-pi}" upper="${pi}" effort="330.0" velocity="2.16"/>
       </xacro:if>
-      <dynamics damping="20.0" friction="0.0"/>
+      <dynamics damping="20.0" friction="20.0"/>
     </joint>
 
     <gazebo reference="${prefix}shoulder_pan_joint">

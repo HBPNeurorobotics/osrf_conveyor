@@ -45,7 +45,7 @@ namespace gazebo
   /// <loop_forever>: Optional parameter. If true, all objects will be spawned
   /// as a circular buffer. After spawning the last element of the collection,
   /// the first one will be inserted.
-  /// 
+  ///
   /// <frame>: Optional parameter. If present, the poses of the objects will be
   /// in the frame of this link/model. Otherwise the world frame is used.
   ///
@@ -89,6 +89,12 @@ namespace gazebo
     // Documentation inherited.
     public: virtual void Load(physics::WorldPtr _world, sdf::ElementPtr _sdf);
 
+    /// \brief Pause the object population.
+    public: void Pause();
+
+    /// \brief Resume the object population after a pause.
+    public: void Resume();
+
     /// \brief Restart the the object population.
     public: virtual void Restart();
 
@@ -101,6 +107,13 @@ namespace gazebo
     /// \param[in] _msg String message that indicates the activation command.
     ///   * start|restart: Start/restart the object population.
     protected: void OnActivation(ConstGzStringPtr &_msg);
+
+    /// \brief True when the plugin is enabled or false if it's paused.
+    protected: bool Enabled() const;
+
+    /// \brief Overwrite this method for sending periodic updates with the
+    /// plugin state.
+    private: virtual void Publish() const;
 
     /// \brief Private data pointer.
     private: std::unique_ptr<PopulationPluginPrivate> dataPtr;

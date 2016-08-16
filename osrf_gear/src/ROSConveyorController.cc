@@ -61,25 +61,25 @@ class ROSConveyorController : public WorldPlugin
     this->world = _parent;
     this->rosnode = new ros::NodeHandle("");
 
-    // Create a subscriber for the proximity sensor output 
+    // Create a subscriber for the proximity sensor output
     std::string sensorStateChangeTopic = "/ariac/proximity_sensor_changed";
-    this->proximitySensorSub = 
+    this->proximitySensorSub =
       this->rosnode->subscribe(sensorStateChangeTopic, 1000,
         &ROSConveyorController::OnSensorStateChange, this);
 
-    // Create a subscriber for the break beam output 
+    // Create a subscriber for the break beam output
     std::string breakBeamStateChangeTopic = "/ariac/break_beam_changed";
-    this->breakBeamSub = 
+    this->breakBeamSub =
       this->rosnode->subscribe(breakBeamStateChangeTopic, 1000,
         &ROSConveyorController::OnSensorStateChange, this);
 
-    // Create a subscriber for the logical camera images 
+    // Create a subscriber for the logical camera images
     std::string logicalCameraImageTopic = "/ariac/logical_camera";
-    this->logicalCameraImageSub = 
+    this->logicalCameraImageSub =
       this->rosnode->subscribe(logicalCameraImageTopic, 1000,
         &ROSConveyorController::OnLogicalCameraImage, this);
 
-    // Create a client for the conveyor control commands 
+    // Create a client for the conveyor control commands
     std::string conveyorControlTopic = "/sim/conveyor_control";
     this->controlClient = this->rosnode->serviceClient<osrf_gear::ConveyorBeltControl>(
       conveyorControlTopic);
@@ -87,11 +87,7 @@ class ROSConveyorController : public WorldPlugin
     this->beltVelocity = 0.5;
 
     // Turn belt on
-    osrf_gear::ConveyorBeltState controlMsg;
-    controlMsg.velocity = this->beltVelocity;
-    osrf_gear::ConveyorBeltControl controlRequest;
-    controlRequest.request.state = controlMsg;
-    this->controlClient.call(controlRequest);
+    this->SendControlRequest(this->beltVelocity);
   }
 
   private: void OnSensorStateChange(const osrf_gear::Proximity::ConstPtr &_msg)

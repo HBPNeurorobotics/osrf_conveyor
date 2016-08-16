@@ -29,6 +29,7 @@ add_message_files(DIRECTORY msg
   KitObject.msg
   LogicalCameraImage.msg
   Model.msg
+  PopulationState.msg
   Proximity.msg
   VacuumGripperState.msg
 )
@@ -37,6 +38,7 @@ add_service_files(DIRECTORY srv
   FILES
   AGVControl.srv
   ConveyorBeltControl.srv
+  PopulationControl.srv
   VacuumGripperControl.srv
 )
 
@@ -218,6 +220,24 @@ target_link_libraries(${population_plugin_name}
   ${GAZEBO_LIBRARIES}
 )
 install(TARGETS ${population_plugin_name}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
+
+# Create the libROSPopulationPlugin.so library.
+set(ros_population_plugin_name ROSPopulationPlugin)
+add_library(${ros_population_plugin_name} src/ROSPopulationPlugin.cc)
+target_link_libraries(${ros_population_plugin_name}
+  ${catkin_LIBRARIES}
+  ${population_plugin_name}
+  ${GAZEBO_LIBRARIES}
+  ${roscpp_LIBRARIES}
+)
+add_dependencies(${ros_population_plugin_name}
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+)
+install(TARGETS ${ros_population_plugin_name}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
