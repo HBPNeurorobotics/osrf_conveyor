@@ -37,6 +37,13 @@
       </spot>
     </light>
 
+    <!-- the AGV -->
+    <include>
+      <uri>model://warehouse_robot</uri>
+      <pose>0.3 3.3 0 0 0 3.1415</pose>
+      <plugin name="agv_plugin" filename="libROSAGVPlugin.so"/>
+    </include>
+
     <!-- the workcell -->
     <include>
       <uri>model://workcell</uri>
