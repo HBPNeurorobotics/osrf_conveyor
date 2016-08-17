@@ -84,17 +84,23 @@
 
 @[end if]@
 @[end for]@
-    <!-- a tray for building kits -->
-    <include>
-      <uri>model://kit_tray</uri>
-      <pose>-0.5 -1.5 1.1 0 0 0</pose>
-    </include>
 
     <!-- a wall to delete objects at the end of the belt -->
     <include>
       <uri>model://deletion_wall</uri>
       <pose>1.2 -4.1 1.4 0 0 1.5708</pose>
     </include>
+
+    <!-- the AGV -->
+    <model name ="agv1">
+      <pose>0.3 3.3 0 0 0 3.1415</pose>
+      <include>
+        <uri>model://warehouse_robot</uri>
+      </include>
+      <plugin name="agv_plugin" filename="libROSAGVPlugin.so">
+        <index>1</index>
+      </plugin>
+    </model>
 
     <!-- an invisible conveyor belt -->
     <model name="conveyor_belt">
@@ -143,17 +149,17 @@
       <object_sequence>
         <object>
           <time>8.0</time>
-          <type>coke_can</type>
+          <type>wood_block_10_2_1cm</type>
           <pose>0 0 0 0 0 0</pose>
         </object>
         <object>
           <time>4.0</time>
-          <type>cordless_drill</type>
+          <type>wood_block_10_2_1cm</type>
           <pose>0 0.1 0 0 0 0</pose>
         </object>
         <object>
           <time>12.0</time>
-          <type>beer</type>
+          <type>wood_block_10_2_1cm</type>
           <pose>0 -0.1 0 0 0 0</pose>
         </object>
       </object_sequence>
@@ -173,7 +179,7 @@
             <pose>-1 2.5 0.2 0 0 0</pose>
           </object>
           <object>
-            <type>cordless_drill/</type>
+            <type>cordless_drill</type>
             <pose>-1 2.5 0.2 0 0 0</pose>
           </object>
           <object>
