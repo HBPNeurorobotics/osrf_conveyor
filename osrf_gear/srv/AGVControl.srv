@@ -1,0 +1,6 @@
+# AGV Control
+
+bool trayComplete
+
+---
+bool success
