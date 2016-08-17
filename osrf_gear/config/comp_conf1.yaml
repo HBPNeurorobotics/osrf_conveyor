@@ -1,0 +1,40 @@
+models_to_spawn:
+  workcell::bin8::link:
+    models:
+      part_0:
+        type: part2
+        pose:
+          xyz: [0.1, 0.1, 0.725]
+          rpy: [0, 0, 0]
+      part_1:
+        type: part2
+        pose:
+          xyz: [0.2, 0.1, 0.725]
+          rpy: [0, 0, 0]
+      part_2:
+        type: part2
+        pose:
+          xyz: [0., 0.1, 0.725]
+          rpy: [0, 0, 0]
+      part_3:
+        type: part2
+        pose:
+          xyz: [-0.1, 0.1, 0.725]
+          rpy: [0, 0, 0]
+      part_4:
+        type: part2
+        pose:
+          xyz: [-0.2, 0.1, 0.725]
+          rpy: [0, 0, 0]
+  workcell::bin4::link:
+    models:
+      part_0:
+        type: part1
+        pose:
+          xyz: [0.1, 0.1, 0.725]
+          rpy: [0, 0, 'pi/2']
+      part_2:
+        type: part1
+        pose:
+          xyz: [0.2, 0.1, 0.725]
+          rpy: [0, 0, '-pi/2']

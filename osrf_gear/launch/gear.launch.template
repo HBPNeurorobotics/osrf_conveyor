@@ -28,4 +28,18 @@ initial_joint_states_string = \
     <arg name="extra_spawn_model_args" value="@(initial_joint_states_string)" />
   </include>
 @[end if]@
+
+  <!-- spawn models over the bins -->
+@[for name, model in models_to_spawn.items()]@
+@{
+initial_pose_string = \
+  ' '.join([val for pair in zip(['-x', '-y', '-z'], model.pose.xyz) for val in pair]) + " " + \
+  ' '.join([val for pair in zip(['-R', '-P', '-Y'], model.pose.rpy) for val in pair])
+}@
+
+  <node name="osrf_gear_spawn_@(model.name.replace('::', '_'))" pkg="gazebo_ros" type="spawn_model"
+    args="-file $(find osrf_gear)/models/@(model.type)/model.sdf -sdf
+    -reference_frame @(model.reference_frame) @(initial_pose_string) -model @(model.name)" />
+@[end for]@
+
 </launch>
