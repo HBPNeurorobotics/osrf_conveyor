@@ -27,7 +27,6 @@ GZ_REGISTER_MODEL_PLUGIN(ROSAGVPlugin);
 /////////////////////////////////////////////////
 ROSAGVPlugin::ROSAGVPlugin()
 {
-  this->index = 0;
 }
 
 /////////////////////////////////////////////////
@@ -39,10 +38,15 @@ ROSAGVPlugin::~ROSAGVPlugin()
 /////////////////////////////////////////////////
 void ROSAGVPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf)
 {
-  _sdf->PrintValues("     ");
+  std::string index;
+
   if (_sdf->HasElement("index"))
   {
-    this->index = _sdf->Get<int>("index");
+    index = _sdf->Get<std::string>("index");
+  }
+  else
+  {
+    gzerr << "AGV is missing an index. The AGV will not work.\n";
   }
 
   // load parameters
@@ -62,13 +66,13 @@ void ROSAGVPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf)
     return;
   }
 
-  std::string topic = "/ariac/agv";
-  if (_sdf->HasElement("topic"))
-    topic = _sdf->Get<std::string>("topic");
+  std::string name = std::string("agv") + index;
+
+  std::string topic = "/ariac/" + name;
 
   this->rosnode = new ros::NodeHandle(this->robotNamespace);
 
-  this->anim.reset(new gazebo::common::PoseAnimation("agv", 22, false));
+  this->anim.reset(new gazebo::common::PoseAnimation(name, 22, false));
 
   gazebo::common::PoseKeyFrame *key = anim->CreateKeyFrame(0);
   key->Translation(ignition::math::Vector3d(0.3, 3.3, 0));
@@ -101,7 +105,7 @@ bool ROSAGVPlugin::OnCommand(
   osrf_gear::AGVControl::Request &_req,
   osrf_gear::AGVControl::Response &_res)
 {
-  _res.success = _req.index == this->index && _req.trayComplete &&
+  _res.success = _req.trayComplete &&
       (anim->GetTime() <= 0.0 || anim->GetTime() >= anim->GetLength());
 
   if (_res.success)

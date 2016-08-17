@@ -62,9 +62,6 @@ namespace gazebo
 
     /// \brief Pointer to the model
     private: gazebo::physics::ModelPtr model;
-
-    /// \brief Index number of this AGV.
-    private: int index;
   };
 }
 #endif
