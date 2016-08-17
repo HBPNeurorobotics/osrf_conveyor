@@ -1,6 +1,7 @@
 # AGV Control
 
 bool trayComplete
+int32 index
 
 ---
 bool success

@@ -38,11 +38,15 @@
     </light>
 
     <!-- the AGV -->
-    <include>
-      <uri>model://warehouse_robot</uri>
+    <model name ="agv1">
       <pose>0.3 3.3 0 0 0 3.1415</pose>
-      <plugin name="agv_plugin" filename="libROSAGVPlugin.so"/>
-    </include>
+      <include>
+        <uri>model://warehouse_robot</uri>
+      </include>
+      <plugin name="agv_plugin" filename="libROSAGVPlugin.so">
+        <index>1</index>
+      </plugin>
+    </model>
 
     <!-- the workcell -->
     <include>

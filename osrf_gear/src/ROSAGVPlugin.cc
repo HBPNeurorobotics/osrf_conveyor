@@ -27,6 +27,7 @@ GZ_REGISTER_MODEL_PLUGIN(ROSAGVPlugin);
 /////////////////////////////////////////////////
 ROSAGVPlugin::ROSAGVPlugin()
 {
+  this->index = 0;
 }
 
 /////////////////////////////////////////////////
@@ -38,6 +39,12 @@ ROSAGVPlugin::~ROSAGVPlugin()
 /////////////////////////////////////////////////
 void ROSAGVPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf)
 {
+  _sdf->PrintValues("     ");
+  if (_sdf->HasElement("index"))
+  {
+    this->index = _sdf->Get<int>("index");
+  }
+
   // load parameters
   this->robotNamespace = "";
   if (_sdf->HasElement("robotNamespace"))
@@ -55,63 +62,29 @@ void ROSAGVPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf)
     return;
   }
 
-  std::string topic = "/sim/agv";
+  std::string topic = "/ariac/agv";
   if (_sdf->HasElement("topic"))
     topic = _sdf->Get<std::string>("topic");
 
   this->rosnode = new ros::NodeHandle(this->robotNamespace);
 
-  // start: 0.3 3.3 0 0 3.1415
-  // 1: 1.5707
-  // 2: -4.2 3.3 0 0 0 0
-  // 3: 1.5707
-  // 4: -4.2 9.45 0 0 0
+  this->anim.reset(new gazebo::common::PoseAnimation("agv", 22, false));
 
-  this->anim.reset(
-      new gazebo::common::PoseAnimation("agv1", 22, false));
-
-  gazebo::common::PoseKeyFrame *key;
-  key = anim->CreateKeyFrame(0);
+  gazebo::common::PoseKeyFrame *key = anim->CreateKeyFrame(0);
   key->Translation(ignition::math::Vector3d(0.3, 3.3, 0));
   key->Rotation(ignition::math::Quaterniond(0, 0, 3.1415));
-
-  /*key = anim->CreateKeyFrame(2);
-  key->Translation(ignition::math::Vector3d(0.3, 3.3, 0));
-  key->Rotation(ignition::math::Quaterniond(0, 0, 1.5707));
-  */
 
   key = anim->CreateKeyFrame(4);
-  key->Translation(ignition::math::Vector3d(-4.2, 3.3, 0));
+  key->Translation(ignition::math::Vector3d(-4.2, 3.8, 0));
   key->Rotation(ignition::math::Quaterniond(0, 0, 3.1415));
-
-  /*key = anim->CreateKeyFrame(6);
-  key->Translation(ignition::math::Vector3d(-4.2, 3.3, 0));
-  key->Rotation(ignition::math::Quaterniond(0, 0, 0));
-  */
 
   key = anim->CreateKeyFrame(10);
   key->Translation(ignition::math::Vector3d(-4.2, 9.45, 0));
   key->Rotation(ignition::math::Quaterniond(0, 0, 3.1415));
 
-  // Turn around
-  /*key = anim->CreateKeyFrame(12);
-  key->Translation(ignition::math::Vector3d(-4.2, 9.45, 0));
-  key->Rotation(ignition::math::Quaterniond(0, 0, 3.1415));
-  */
-
   key = anim->CreateKeyFrame(16);
-  key->Translation(ignition::math::Vector3d(-4.2, 3.3, 0));
+  key->Translation(ignition::math::Vector3d(-4.2, 3.8, 0));
   key->Rotation(ignition::math::Quaterniond(0, 0, 3.1415));
-
-  /*key = anim->CreateKeyFrame(18);
-  key->Translation(ignition::math::Vector3d(-4.2, 3.3, 0));
-  key->Rotation(ignition::math::Quaterniond(0, 0, -1.5707));
-  */
-
-  /*key = anim->CreateKeyFrame(20);
-  key->Translation(ignition::math::Vector3d(0.3, 3.3, 0));
-  key->Rotation(ignition::math::Quaterniond(0, 0, -1.5707));
-  */
 
   key = anim->CreateKeyFrame(22);
   key->Translation(ignition::math::Vector3d(0.3, 3.3, 0));
@@ -128,9 +101,14 @@ bool ROSAGVPlugin::OnCommand(
   osrf_gear::AGVControl::Request &_req,
   osrf_gear::AGVControl::Response &_res)
 {
-  gzdbg << "AGV tray complete\n";
-  if (_req.trayComplete)
+  _res.success = _req.index == this->index && _req.trayComplete &&
+      (anim->GetTime() <= 0.0 || anim->GetTime() >= anim->GetLength());
+
+  if (_res.success)
+  {
+    anim->SetTime(0);
     this->model->SetAnimation(anim);
-  _res.success = true;
-  return true;
+  }
+
+  return _res.success;
 }

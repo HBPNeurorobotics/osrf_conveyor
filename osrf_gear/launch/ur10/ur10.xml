@@ -30,10 +30,12 @@
 
   <!-- Undo this and use files from ur_gazebo when changes merged upstream. -->
   <!-- <include file="$(find ur_gazebo)/launch/controller_utils.launch"/> -->
-  <include file="$(find osrf_gear)/vendor/ur_gazebo/launch/controller_utils.launch"/>
+  <!--<include file="$(find osrf_gear)/vendor/ur_gazebo/launch/controller_utils.launch"/>
 
   <rosparam file="$(find osrf_gear)/launch/ur10/arm_controller_ur10_custom.yaml" ns="ariac" command="load"/>
+  
   <node name="arm_controller_spawner" pkg="controller_manager" type="controller_manager"
         args="spawn ariac/arm" respawn="false" output="screen"/>
+       -->
 
 </launch>
