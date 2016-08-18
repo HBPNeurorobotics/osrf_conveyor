@@ -262,10 +262,7 @@ def create_models_over_bins_infos(models_over_bins_dict):
 def create_options_info(options_dict):
     options = configurable_options 
     for option, val in options_dict.items():
-        if option in configurable_options.keys():
-            options[option] = val
-        else:
-            print("Warning: ignoring unknown entry in 'options': " + option, file=sys.stderr)
+        options[option] = val
     return options
 
 

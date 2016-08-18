@@ -1,6 +1,7 @@
 # Competition configuration options
 # options:
 #   insert_models_over_bins: true     # Whether or not to insert the models that are specified in models_over_bins
+#   spawn_extra_models: true          # Whether or not to spawn the models that are specified in models_to_spawn
 #
 # Models to be inserted above the bins
 # models_over_bins:
@@ -26,6 +27,7 @@
 
 options:
   insert_models_over_bins: true
+  spawn_extra_models: false
 
 models_over_bins:
   bin4:
@@ -89,3 +91,11 @@ models_over_bins:
         num_models_x: 4
         num_models_y: 5
 
+models_to_spawn:
+  agv1::kit_tray::tray:
+    models:
+      part1:
+        type: part1
+        pose:
+          xyz: [0.1, -0.15, 0]
+        rpy: [0, 0, 0]

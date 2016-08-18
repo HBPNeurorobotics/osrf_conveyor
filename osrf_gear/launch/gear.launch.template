@@ -29,7 +29,8 @@ initial_joint_states_string = \
   </include>
 @[end if]@
 
-  <!-- spawn models over the bins -->
+@[if options['spawn_extra_models']]@
+  <!-- spawn any other models -->
 @[for model in models_to_spawn]@
 @{
 initial_pose_string = \
@@ -45,5 +46,6 @@ initial_pose_string = \
       @(initial_pose_string)
       -model @(model.name)" />
 @[end for]@
+@[end if]@
 
 </launch>
