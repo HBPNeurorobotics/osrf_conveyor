@@ -43,11 +43,11 @@ models_over_bins:
         num_models_y: 4
 
       piston_rod_part:
-        xyz_start: [0.5, 0.1, 0.0]
-        xyz_end: [0.5, 0.5, 0.0]
-        rpy: [0, 0, 0]
+        xyz_start: [0.5, 0.05, 0.0]
+        xyz_end: [0.5, 0.45, 0.0]
+        rpy: [0, 0, 'pi/4']
         num_models_x: 1
-        num_models_y: 6
+        num_models_y: 4
 
   bin5:
     models:
@@ -72,13 +72,14 @@ models_over_bins:
        piston_rod_part:
         xyz_start: [0.1, 0.1, 0.0]
         xyz_end: [0.5, 0.5, 0.0]
-        rpy: [0, 0, 0]
-        num_models_x: 5
-        num_models_y: 5
+        rpy: [0, 0, 'pi/4']
+        num_models_x: 3
+        num_models_y: 3
 
   bin2:
     models:
-       gasket_part:
+      #  gasket_part:
+      gear_part:
         xyz_start: [0.1, 0.1, 0.0]
         xyz_end: [0.5, 0.5, 0.0]
         rpy: [0, 0, 0]
@@ -87,10 +88,11 @@ models_over_bins:
 
   bin1:
     models:
-       disk_part:
+      #  disk_part:
+      piston_rod_part:
         xyz_start: [0.1, 0.1, 0.0]
         xyz_end: [0.5, 0.5, 0.0]
-        rpy: [0, 0, 0]
+        rpy: [0, 0, 'pi/4']
         num_models_x: 4
         num_models_y: 5
 
