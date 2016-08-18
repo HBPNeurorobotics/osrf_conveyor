@@ -50,6 +50,16 @@ sensor_configs = {
     'logical_camera': None,
     'laser_profiler': None,
 }
+default_bin_origins = {
+  'bin1': [-1.67, 0.66, 0.75],
+  'bin2': [-1.67, -0.1, 0.75],
+  'bin3': [-1.67, -0.86, 0.75],
+  'bin4': [-1.67, -1.62, 0.75],
+  'bin5': [-0.91, -1.62, 0.75],
+  'bin6': [-0.91, -0.86, 0.75],
+  'bin7': [-0.91, -0.1, 0.75],
+  'bin8': [-0.91, 0.66, 0.75],
+}
 
 
 def prepare_arguments(parser):
@@ -188,34 +198,38 @@ def create_model_to_spawn_info(model_name, model_to_spawn_data):
 
 
 def create_models_to_spawn_infos(models_to_spawn_dict):
-    models_to_spawn_infos = {}
-    reference_frames_data = get_required_field(
-        'models_to_spawn', models_to_spawn_dict, 'reference_frames')
-    for reference_frame, reference_frame_data in reference_frames_data.items():
+    models_to_spawn_infos = []
+    for reference_frame, reference_frame_data in models_to_spawn_dict.items():
         models = get_required_field(reference_frame, reference_frame_data, 'models')
         model_count = 0
         for model_name, model_to_spawn_data in models.items():
             model_to_spawn_data['reference_frame'] = reference_frame
-            # assign each model a unique name
-            model_name = reference_frame + "::" + model_name + '_' + str(model_count)
-            models_to_spawn_infos[model_name] = create_model_to_spawn_info(
-                model_name, model_to_spawn_data)
+            # assign each model a unique name because gazebo can't do this
+            # if the models all spawn at the same time
+            model_name = reference_frame + '::' + model_name + '_' + str(model_count)
+            models_to_spawn_infos.append(create_model_to_spawn_info(
+                model_name, model_to_spawn_data))
             model_count += 1
     return models_to_spawn_infos
 
 
 def create_models_over_bins_infos(models_over_bins_dict):
-    models_to_spawn_infos = {}
-    reference_frames_dict = get_required_field(
-        'models_over_bins', models_over_bins_dict, 'reference_frames')
-    for reference_frame, reference_frame_dict in reference_frames_dict.items():
-        models = get_required_field(
-            reference_frame, reference_frame_dict, 'models')
+    models_to_spawn_infos = []
+    for bin_name, bin_dict in models_over_bins_dict.items():
+        if bin_name in default_bin_origins:
+            offset_xyz = default_bin_origins[bin_name]
+            # Allow the origin of the bin to be over-written
+            if 'xyz' in bin_dict:
+                offset_xyz = bin_dict['xyz']
+        else:
+            offset_xyz = get_required_field(bin_name, bin_dict, 'xyz')
+
+        models = get_required_field(bin_name, bin_dict, 'models') or {}
         for model_type, model_to_spawn_dict in models.items():
             model_count = 0
             model_to_spawn_data = {}
             model_to_spawn_data['type'] = model_type
-            model_to_spawn_data['reference_frame'] = reference_frame
+            model_to_spawn_data['reference_frame'] = 'world'
             xyz_start = get_required_field(
                 model_type, model_to_spawn_dict, 'xyz_start')
             xyz_end = get_required_field(
@@ -233,14 +247,15 @@ def create_models_over_bins_infos(models_over_bins_dict):
             for idx_x in range(num_models_x):
                 for idx_y in range(num_models_y):
                     xyz = [
-                        xyz_start[0] + idx_x * step_size[0],
-                        xyz_start[1] + idx_y * step_size[1],
-                        xyz_start[2]] 
+                        offset_xyz[0] + xyz_start[0] + idx_x * step_size[0],
+                        offset_xyz[1] + xyz_start[1] + idx_y * step_size[1],
+                        offset_xyz[2] + xyz_start[2]] 
                     model_to_spawn_data['pose'] = {'xyz': xyz, 'rpy': rpy}
-                    # assign each model a unique name
-                    model_name = reference_frame + "::" + model_type + '_' + str(model_count)
-                    models_to_spawn_infos[model_name] = create_model_to_spawn_info(
-                        model_name, model_to_spawn_data)
+                    # assign each model a unique name because gazebo can't do this
+                    # if the models all spawn at the same time
+                    model_name = bin_name + '::' + model_type + '_' + str(model_count)
+                    models_to_spawn_infos.append(create_model_to_spawn_info(
+                        model_name, model_to_spawn_data))
                     model_count += 1
     return models_to_spawn_infos
 
@@ -250,17 +265,22 @@ def create_options_object():
 
 
 def prepare_template_data(config_dict):
-    template_data = {'arm': None, 'sensors': None, 'models_to_spawn': {}}
+    template_data = {
+        'arm': None,
+        'sensors': {},
+        'models_to_insert': [],
+        'models_to_spawn': []}
     for key, value in config_dict.items():
         if key == 'arm':
             template_data['arm'] = create_arm_info(value)
         elif key == 'sensors':
-            template_data['sensors'] = create_sensor_infos(value)
+            template_data['sensors'].update(
+                create_sensor_infos(value))
         elif key == 'models_over_bins':
-            template_data['models_to_spawn'].update(
+            template_data['models_to_insert'].extend(
                 create_models_over_bins_infos(value))
         elif key == 'models_to_spawn':
-            template_data['models_to_spawn'].update(
+            template_data['models_to_spawn'].extend(
                 create_models_to_spawn_infos(value))
         else:
             print("Error: unknown top level entry '{0}'".format(key), file=sys.stderr)

@@ -30,7 +30,7 @@ initial_joint_states_string = \
 @[end if]@
 
   <!-- spawn models over the bins -->
-@[for name, model in models_to_spawn.items()]@
+@[for model in models_to_spawn]@
 @{
 initial_pose_string = \
   ' '.join([val for pair in zip(['-x', '-y', '-z'], model.pose.xyz) for val in pair]) + " " + \

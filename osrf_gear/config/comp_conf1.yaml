@@ -1,41 +1,84 @@
-models_over_bins:
-  reference_frames:
-    workcell::bin1::link:
-      models:
-        part1:
-          xyz_start: [-0.2, 0., 0.725]
-          xyz_end: [0.2, 0., 0.725]
-          rpy: [0, 0, '-pi/2']
-          num_models_x: 4
-          num_models_y: 1
+# Models to be inserted above the bins
+# models_over_bins:
+#   bin1:                             # Name of the bin (bin1-bin8, as named in the model)
+#     xyz: [1.5, 1.7, 0.75]           # (optional) Origin of the bin, if you want to over-write the default
+#     models:                         # List of models to insert
+#       model_type_1:                 # Type of model to insert (e.g. part1) from local or gazebo database
+#         xyz_start: [0.1, 0.2, 0.0]  # Origin of the first model to insert
+#         xyz_end: [0.4, 0.6, 0.0]    # Origin of the last model to insert
+#         rpy: [0, 0, 0]              # Orientation of all models to insert
+#         num_models_x: 4             # How many models to insert along the x dimension
+#         num_models_y: 6             # How many models to insert along the y dimension
 
-    workcell::bin4::link:
-      models:
-        part1:
-          xyz_start: [-0.2, 0., 0.725]
-          xyz_end: [0.2, 0., 0.725]
-          rpy: [0, 0, '-pi/2']
-          num_models_x: 4
-          num_models_y: 1
-
-    workcell::bin6::link:
-      models:
-        part4:
-          xyz_start: [-0.2, -0.2, 0.725]
-          xyz_end: [0.2, 0.2, 0.725]
-          rpy: [0, 0, 'pi/2']
-          num_models_x: 4
-          num_models_y: 5
-
-# This is the format for spawning models in a particular
-# reference frame, as this can't be done in SDF.
-
+# Models to be spawned in particular reference frames
 # models_to_spawn:
-#   reference_frames:
-#     workcell::bin8::link:
-#       models:
-#         part_0:
-#           type: part2
-#           pose:
-#             xyz: [0.1, 0.1, 0.725]
-#             rpy: [0, 0, 0]
+#   reference_frame_name:             # Name of the reference frame (e.g. workcell::bin8::link)
+#     models:                         # List of models to spawn
+#       model_name:                   # Name of the model
+#         type: part2                 # Type of model
+#         pose:
+#           xyz: [0.1, 0.1, 0.725]    # Co-ordinates of the model origin in the specified reference frame
+#           rpy: [0, 0, '-pi/2']      # Roll, pitch, yaw of the model in the specified reference frame
+
+models_over_bins:
+  bin4:
+    models:
+      part1:
+        xyz_start: [0.2, 0.1, 0.0]
+        xyz_end: [0.2, 0.5, 0.0]
+        rpy: [0, 0, 0]
+        num_models_x: 1
+        num_models_y: 4
+
+      part2:
+        xyz_start: [0.5, 0.1, 0.0]
+        xyz_end: [0.5, 0.5, 0.0]
+        rpy: [0, 0, 0]
+        num_models_x: 1
+        num_models_y: 6
+
+  bin5:
+    models:
+      part1:
+        xyz_start: [0.3, 0.1, 0.0]
+        xyz_end: [0.3, 0.5, 0.0]
+        rpy: [0, 0, 0]
+        num_models_x: 1
+        num_models_y: 4
+
+  bin6:
+    models:
+      part1:
+        xyz_start: [0.3, 0.1, 0.0]
+        xyz_end: [0.3, 0.5, 0.0]
+        rpy: [0, 0, 0]
+        num_models_x: 1
+        num_models_y: 4
+
+  bin3:
+    models:
+       part2:
+        xyz_start: [0.1, 0.1, 0.0]
+        xyz_end: [0.5, 0.5, 0.0]
+        rpy: [0, 0, 0]
+        num_models_x: 5
+        num_models_y: 5
+
+  bin2:
+    models:
+       part3:
+        xyz_start: [0.1, 0.1, 0.0]
+        xyz_end: [0.5, 0.5, 0.0]
+        rpy: [0, 0, 0]
+        num_models_x: 3
+        num_models_y: 3
+
+  bin1:
+    models:
+       part4:
+        xyz_start: [0.1, 0.1, 0.0]
+        xyz_end: [0.5, 0.5, 0.0]
+        rpy: [0, 0, 0]
+        num_models_x: 4
+        num_models_y: 5
+

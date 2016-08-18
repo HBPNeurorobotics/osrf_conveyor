@@ -141,6 +141,15 @@
       </link>
     </model>
 
+    <!-- Populate the bins -->
+@[for model in models_to_insert]@
+    <include>
+      <name>@(model.name)</name>
+      <uri>model://@(model.type)</uri>
+      <pose>@(' '.join(model.pose.xyz)) @(' '.join(model.pose.rpy))</pose>
+    </include>
+@[end for]@
+
     <!-- Populate the conveyor belt -->
     <plugin filename="libPopulationPlugin.so" name="populate_conveyor">
       <activation_topic>~/conveyor/control</activation_topic>
