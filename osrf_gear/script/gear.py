@@ -51,14 +51,18 @@ sensor_configs = {
     'laser_profiler': None,
 }
 default_bin_origins = {
-  'bin1': [-1.67, 0.66, 0.75],
-  'bin2': [-1.67, -0.1, 0.75],
-  'bin3': [-1.67, -0.86, 0.75],
-  'bin4': [-1.67, -1.62, 0.75],
-  'bin5': [-0.91, -1.62, 0.75],
-  'bin6': [-0.91, -0.86, 0.75],
-  'bin7': [-0.91, -0.1, 0.75],
-  'bin8': [-0.91, 0.66, 0.75],
+    'bin1': [-1.67, 0.66, 0.75],
+    'bin2': [-1.67, -0.1, 0.75],
+    'bin3': [-1.67, -0.86, 0.75],
+    'bin4': [-1.67, -1.62, 0.75],
+    'bin5': [-0.91, -1.62, 0.75],
+    'bin6': [-0.91, -0.86, 0.75],
+    'bin7': [-0.91, -0.1, 0.75],
+    'bin8': [-0.91, 0.66, 0.75],
+}
+configurable_options = {
+    'insert_models_over_bins': True,
+    'disable_shadows': False,
 }
 
 
@@ -120,11 +124,6 @@ class PoseInfo:
     def __init__(self, xyz, rpy):
         self.xyz = [str(f) for f in xyz]
         self.rpy = [str(f) for f in rpy]
-
-
-class Options:
-    def __init__(self, disable_shadows=False):
-        self.disable_shadows = disable_shadows
 
 
 def get_required_field(entry_name, data_dict, required_entry):
@@ -260,8 +259,14 @@ def create_models_over_bins_infos(models_over_bins_dict):
     return models_to_spawn_infos
 
 
-def create_options_object():
-    return Options()
+def create_options_info(options_dict):
+    options = configurable_options 
+    for option, val in options_dict.items():
+        if option in configurable_options.keys():
+            options[option] = val
+        else:
+            print("Warning: ignoring unknown entry in 'options': " + option, file=sys.stderr)
+    return options
 
 
 def prepare_template_data(config_dict):
@@ -269,7 +274,8 @@ def prepare_template_data(config_dict):
         'arm': None,
         'sensors': {},
         'models_to_insert': [],
-        'models_to_spawn': []}
+        'models_to_spawn': [],
+        'options': {}}
     for key, value in config_dict.items():
         if key == 'arm':
             template_data['arm'] = create_arm_info(value)
@@ -279,13 +285,14 @@ def prepare_template_data(config_dict):
         elif key == 'models_over_bins':
             template_data['models_to_insert'].extend(
                 create_models_over_bins_infos(value))
+        elif key == 'options':
+            template_data['options'].update(create_options_info(value))
         elif key == 'models_to_spawn':
             template_data['models_to_spawn'].extend(
                 create_models_to_spawn_infos(value))
         else:
             print("Error: unknown top level entry '{0}'".format(key), file=sys.stderr)
             sys.exit(1)
-    template_data['options'] = create_options_object()
     return template_data
 
 

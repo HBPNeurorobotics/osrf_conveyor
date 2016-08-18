@@ -153,6 +153,7 @@
       </link>
     </model>
 
+@[if options['insert_models_over_bins']]@
     <!-- Populate the bins -->
 @[for model in models_to_insert]@
     <include>
@@ -161,6 +162,7 @@
       <pose>@(' '.join(model.pose.xyz)) @(' '.join(model.pose.rpy))</pose>
     </include>
 @[end for]@
+@[end if]@
 
     <!-- Populate the conveyor belt -->
     <plugin filename="libPopulationPlugin.so" name="populate_conveyor">

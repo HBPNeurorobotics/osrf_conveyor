@@ -1,3 +1,7 @@
+# Competition configuration options
+# options:
+#   insert_models_over_bins: true     # Whether or not to insert the models that are specified in models_over_bins
+#
 # Models to be inserted above the bins
 # models_over_bins:
 #   bin1:                             # Name of the bin (bin1-bin8, as named in the model)
@@ -9,7 +13,7 @@
 #         rpy: [0, 0, 0]              # Orientation of all models to insert
 #         num_models_x: 4             # How many models to insert along the x dimension
 #         num_models_y: 6             # How many models to insert along the y dimension
-
+#
 # Models to be spawned in particular reference frames
 # models_to_spawn:
 #   reference_frame_name:             # Name of the reference frame (e.g. workcell::bin8::link)
@@ -19,6 +23,9 @@
 #         pose:
 #           xyz: [0.1, 0.1, 0.725]    # Co-ordinates of the model origin in the specified reference frame
 #           rpy: [0, 0, '-pi/2']      # Roll, pitch, yaw of the model in the specified reference frame
+
+options:
+  insert_models_over_bins: true
 
 models_over_bins:
   bin4:
