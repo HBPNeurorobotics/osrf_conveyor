@@ -8,7 +8,7 @@
       </camera>
     </gui>
 
-@[if not options.disable_shadows]@
+@[if not options['disable_shadows']]@
     <!-- Disable shadows. -->
     <scene>
       <shadows>false</shadows>
@@ -100,6 +100,18 @@
       <plugin name="agv_plugin" filename="libROSAGVPlugin.so">
         <index>1</index>
       </plugin>
+
+      <!-- a tray for building kits -->
+      <include>
+        <uri>model://kit_tray</uri>
+        <pose>0.0 0.15 0.75 0 0 0</pose>
+      </include>
+  
+      <!-- join the tray and agv -->
+      <joint name="agv_tray" type="fixed">
+          <parent>warehouse_robot::link</parent>
+          <child>kit_tray::tray</child>
+      </joint>
     </model>
 
     <!-- an invisible conveyor belt -->
@@ -142,6 +154,7 @@
       </link>
     </model>
 
+@[if options['insert_models_over_bins']]@
     <!-- Populate the bins -->
 @[for model in models_to_insert]@
     <include>
@@ -150,6 +163,7 @@
       <pose>@(' '.join(model.pose.xyz)) @(' '.join(model.pose.rpy))</pose>
     </include>
 @[end for]@
+@[end if]@
 
     <!-- Populate the conveyor belt -->
     <plugin filename="libPopulationPlugin.so" name="populate_conveyor">
@@ -159,17 +173,17 @@
       <object_sequence>
         <object>
           <time>8.0</time>
-          <type>wood_block_10_2_1cm</type>
+          <type>part1</type>
           <pose>0 0 0 0 0 0</pose>
         </object>
         <object>
           <time>4.0</time>
-          <type>wood_block_10_2_1cm</type>
+          <type>part2</type>
           <pose>0 0.1 0 0 0 0</pose>
         </object>
         <object>
           <time>12.0</time>
-          <type>wood_block_10_2_1cm</type>
+          <type>part3</type>
           <pose>0 -0.1 0 0 0 0</pose>
         </object>
       </object_sequence>
@@ -184,35 +198,48 @@
       <goal>
         <start_time>0.0</start_time>
         <kit>
+          <tray>agv1</tray>
           <object>
-            <type>coke_can</type>
-            <pose>-1 2.5 0.2 0 0 0</pose>
+            <type>part1</type>
+            <pose>0.1 -0.15 0.0 0 0 0</pose>
           </object>
           <object>
-            <type>cordless_drill</type>
-            <pose>-1 2.5 0.2 0 0 0</pose>
+            <type>part2</type>
+            <pose>0 0.25 0.0 0 0 0</pose>
           </object>
           <object>
-            <type>beer</type>
-            <pose>-1 2.5 0.2 0 0 0</pose>
-          </object>
-        </kit>
-        <kit>
-          <object>
-            <type>coke_can</type>
-            <pose>-1 2.5 0.2 0 0 0</pose>
-          </object>
-          <object>
-            <type>cordless_drill/</type>
-            <pose>-1 2.5 0.2 0 0 0</pose>
-          </object>
-          <object>
-            <type>beer</type>
-            <pose>-1 2.5 0.2 0 0 0</pose>
+            <type>part3</type>
+            <pose>-0.1 0.15 0.0 0 0 0</pose>
           </object>
         </kit>
       </goal>
     </plugin>
+
+@[if options['fill_demo_tray']]@
+    <!-- Populate kit tray 1 -->
+    <plugin filename="libPopulationPlugin.so" name="populate_kit_tray_1">
+      <activation_topic>~/conveyor/control</activation_topic>
+      <loop_forever>false</loop_forever>
+      <frame>agv1::kit_tray::tray</frame>
+      <object_sequence>
+        <object>
+          <time>0.0</time>
+          <type>part1</type>
+          <pose>0.1 -0.15 0 0 0 0</pose>
+        </object>
+        <object>
+          <time>0.5</time>
+          <type>part2</type>
+          <pose>0. 0.25 0 0 0 0</pose>
+        </object>
+        <object>
+          <time>1.0</time>
+          <type>part3</type>
+          <pose>-0.1 0.15 0 0 0 0</pose>
+        </object>
+      </object_sequence>
+    </plugin>
+@[end if]@
 
   </world>
 </sdf>
