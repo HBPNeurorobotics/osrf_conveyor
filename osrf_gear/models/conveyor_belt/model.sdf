@@ -4,6 +4,7 @@
     <model name="conveyor_belt">
         <static>true</static>
         <plugin name="conveyor_belt_plugin" filename="libROSConveyorBeltPlugin.so">
+            <robot_namespace>/ariac</robot_namespace>
             <belt_velocity>1.</belt_velocity>
             <velocity_axis>0 1 0</velocity_axis>
             <contact_sensor_name>conveyor_belt_contact</contact_sensor_name>

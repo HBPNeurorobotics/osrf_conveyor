@@ -80,7 +80,7 @@ class ROSConveyorController : public WorldPlugin
         &ROSConveyorController::OnLogicalCameraImage, this);
 
     // Create a client for the conveyor control commands
-    std::string conveyorControlTopic = "/sim/conveyor_control";
+    std::string conveyorControlTopic = "/conveyor/control";
     this->controlClient = this->rosnode->serviceClient<osrf_gear::ConveyorBeltControl>(
       conveyorControlTopic);
 

@@ -192,7 +192,7 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
   if (_sdf->HasElement("conveyor_activation_topic"))
     conveyorActivationTopic = _sdf->Get<std::string>("conveyor_activation_topic");
 
-  std::string goalsTopic = "goals";
+  std::string goalsTopic = "orders";
   if (_sdf->HasElement("goals_topic"))
     goalsTopic = _sdf->Get<std::string>("goals_topic");
 
@@ -340,7 +340,7 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
   this->dataPtr->trayInfoSub = this->dataPtr->rosnode->subscribe(
     "/ariac/trays", 10, &AriacScorer::OnTrayInfoReceived, &this->dataPtr->ariacScorer);
   this->dataPtr->gripperStateSub = this->dataPtr->rosnode->subscribe(
-    "/ariac/vacuum_gripper_state", 10, &AriacScorer::OnGripperStateReceived,
+    "/ariac/gripper/state", 10, &AriacScorer::OnGripperStateReceived,
     &this->dataPtr->ariacScorer);
 
   this->dataPtr->gameStartTime = this->dataPtr->world->GetSimTime();
@@ -388,7 +388,7 @@ void ROSAriacTaskManagerPlugin::OnUpdate()
       bool goalCompleted = this->dataPtr->ariacScorer.IsCurrentGoalComplete();
       if (goalCompleted)
       {
-        ROS_INFO_STREAM("Goal complete: " << goalID);
+        ROS_INFO_STREAM("Order complete: " << goalID);
         this->StopCurrentGoal();
       }
       else
@@ -396,7 +396,7 @@ void ROSAriacTaskManagerPlugin::OnUpdate()
         // Check if the time limit for the current goal has been exceeded.
         if (this->dataPtr->timeSpentOnCurrentGoal > this->dataPtr->goalsInProgress.top().allowedTime)
         {
-          ROS_INFO_STREAM("Goal timed out: " << goalID);
+          ROS_INFO_STREAM("Order timed out: " << goalID);
           this->StopCurrentGoal();
         }
       }
@@ -411,7 +411,7 @@ void ROSAriacTaskManagerPlugin::OnUpdate()
   }
   else if (this->dataPtr->currentState == "end_game")
   {
-    ROS_INFO_STREAM("No more goals to process. Final score: " << this->dataPtr->currentGameScore.total());
+    ROS_INFO_STREAM("No more orders to process. Final score: " << this->dataPtr->currentGameScore.total());
     ROS_INFO_STREAM("Score breakdown:\n" << this->dataPtr->currentGameScore);
     this->dataPtr->currentState = "done";
   }
@@ -480,13 +480,13 @@ void ROSAriacTaskManagerPlugin::PopulateConveyorBelt()
 void ROSAriacTaskManagerPlugin::AssignGoal(const ariac::Goal & goal)
 {
     // Publish the goal to ROS topic
-    ROS_INFO_STREAM("Announcing goal: " << goal.goalID);
+    ROS_INFO_STREAM("Announcing order: " << goal.goalID);
     osrf_gear::Goal goalMsg;
     fillGoalMsg(goal, goalMsg);
     this->dataPtr->goalPub.publish(goalMsg);
 
     // Assign the scorer the goal to monitor
-    gzdbg << "Assigning goal: " << goal << std::endl;
+    gzdbg << "Assigning order: " << goal << std::endl;
     this->dataPtr->ariacScorer.AssignGoal(goal);
 }
 
@@ -495,7 +495,7 @@ void ROSAriacTaskManagerPlugin::StopCurrentGoal()
 {
   if (this->dataPtr->goalsInProgress.size())
   {
-    ROS_INFO_STREAM("Stopping goal: " << this->dataPtr->goalsInProgress.top().goalID);
+    ROS_INFO_STREAM("Stopping order: " << this->dataPtr->goalsInProgress.top().goalID);
     this->dataPtr->goalsInProgress.pop();
     this->dataPtr->ariacScorer.UnassignCurrentGoal(this->dataPtr->timeSpentOnCurrentGoal);
   }
@@ -504,7 +504,7 @@ void ROSAriacTaskManagerPlugin::StopCurrentGoal()
   {
     // Assign the previous goal to the scorer
     auto goal = this->dataPtr->goalsInProgress.top();
-    ROS_INFO_STREAM("Restoring goal: " << goal.goalID);
+    ROS_INFO_STREAM("Restoring order: " << goal.goalID);
     this->AssignGoal(goal);
   }
 }

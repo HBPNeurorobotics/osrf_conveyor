@@ -24,7 +24,7 @@ int main(int argc, char ** argv) {
   AriacScorer ariac_scorer;
 
   ros::Subscriber goal_subscriber = node.subscribe(
-    "/ariac/goals", 10, &AriacScorer::OnGoalReceived, &ariac_scorer);
+    "/ariac/orders", 10, &AriacScorer::OnGoalReceived, &ariac_scorer);
   ros::Subscriber tray_subscriber = node.subscribe(
     "/ariac/trays", 10, &AriacScorer::OnTrayInfoReceived, &ariac_scorer);
 

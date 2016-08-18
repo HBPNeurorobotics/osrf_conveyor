@@ -75,7 +75,7 @@ public:
     }
     competition_state_ = msg->data;
   }
-  /// Called when a new Goal message is received on the '/ariac/goals' topic.
+  /// Called when a new Goal message is received on the '/ariac/orders' topic.
   void goal_callback(const osrf_gear::Goal::ConstPtr & goal_msg) {
     ROS_INFO_STREAM("Received goal:\n" << *goal_msg);
     received_goals_.push_back(*goal_msg);
@@ -158,9 +158,9 @@ int main(int argc, char ** argv) {
   ros::Subscriber competition_state_subscriber = node.subscribe(
     "/ariac/competition_state", 10, &MyCompetitionClass::competition_state_callback, &comp_class);
 
-  // "Connect" new data on the '/ariac/goals' topic to the callback in the custom class.
+  // "Connect" new data on the '/ariac/orders' topic to the callback in the custom class.
   ros::Subscriber goals_subscriber = node.subscribe(
-    "/ariac/goals", 10, &MyCompetitionClass::goal_callback, &comp_class);
+    "/ariac/orders", 10, &MyCompetitionClass::goal_callback, &comp_class);
 
   // "Connect" new data on the '/ariac/arm/joint_states' topic to the callback in the custom class.
   ros::Subscriber joint_state_subscriber = node.subscribe(

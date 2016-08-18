@@ -27,13 +27,13 @@ from trajectory_msgs.msg import JointTrajectoryPoint
 
 
 def start_competition():
-    rospy.loginfo("Waiting for competition to tbe ready...")
-    rospy.wait_for_service('/ariac_task_manager/start')
+    rospy.loginfo("Waiting for competition to be ready...")
+    rospy.wait_for_service('/ariac/start_competition')
     rospy.loginfo("Competition is now ready.")
     rospy.loginfo("Requesting competition start...")
 
     try:
-        start = rospy.ServiceProxy('/ariac_task_manager/start', Trigger)
+        start = rospy.ServiceProxy('/ariac/start_competition', Trigger)
         response = start()
     except rospy.ServiceException as exc:
         rospy.logerr("Failed to start the competition: %s" % exc)
@@ -47,7 +47,7 @@ def start_competition():
 class MyCompetitionClass:
     def __init__(self):
         self.joint_trajectory_publisher = \
-            rospy.Publisher("/arm_controller/command", JointTrajectory, queue_size=10)
+            rospy.Publisher("/ariac/arm/command", JointTrajectory, queue_size=10)
         self.received_goals = []
         self.current_joint_state = None
         self.last_joint_state_print = time.time()
@@ -81,10 +81,10 @@ def main():
     rospy.init_node("gear_example_node")
 
     comp_class = MyCompetitionClass()
-    goal_sub = rospy.Subscriber("/ariac_task_manager/goals", Goal, comp_class.goal_callback)
+    goal_sub = rospy.Subscriber("/ariac/orders", Goal, comp_class.goal_callback)
     joint_state_sub = rospy.Subscriber("/joint_states", JointState, comp_class.joint_state_callback)
 
-    rospy.loginfo("Setup compelte.")
+    rospy.loginfo("Setup complete.")
     start_competition()
     rospy.spin()
 

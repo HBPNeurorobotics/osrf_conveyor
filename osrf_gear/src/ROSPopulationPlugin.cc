@@ -80,11 +80,11 @@ void ROSPopulationPlugin::Load(physics::WorldPtr _world, sdf::ElementPtr _sdf)
       "robot_namespace")->Get<std::string>() + "/";
   }
 
-  std::string controlTopic = "population_control";
+  std::string controlTopic = "population/control";
   if (_sdf->HasElement("control_topic"))
     controlTopic = _sdf->Get<std::string>("control_topic");
 
-  std::string stateTopic = "population_state";
+  std::string stateTopic = "population/state";
   if (_sdf->HasElement("state_topic"))
     stateTopic = _sdf->Get<std::string>("state_topic");
 

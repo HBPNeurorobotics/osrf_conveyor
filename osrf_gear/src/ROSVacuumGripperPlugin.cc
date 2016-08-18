@@ -78,11 +78,11 @@ void ROSVacuumGripperPlugin::Load(physics::ModelPtr _parent,
       "robot_namespace")->Get<std::string>() + "/";
   }
 
-  std::string controlTopic = "vacuum_gripper_control";
+  std::string controlTopic = "gripper/control";
   if (_sdf->HasElement("control_topic"))
     controlTopic = _sdf->Get<std::string>("control_topic");
 
-  std::string stateTopic = "vacuum_gripper_state";
+  std::string stateTopic = "gripper/state";
   if (_sdf->HasElement("state_topic"))
     stateTopic = _sdf->Get<std::string>("state_topic");
 
