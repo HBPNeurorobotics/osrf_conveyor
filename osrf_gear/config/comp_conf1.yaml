@@ -2,6 +2,8 @@
 # options:
 #   insert_models_over_bins: true     # Whether or not to insert the models that are specified in models_over_bins
 #   spawn_extra_models: true          # Whether or not to spawn the models that are specified in models_to_spawn
+#   fill_demo_tray: true              # If true, AGV1's tray will have parts from the first order spawned
+                                      # directly ontop of it once the competition starts (for testing purposes)
 #
 # Models to be inserted above the bins
 # models_over_bins:
@@ -28,6 +30,7 @@
 options:
   insert_models_over_bins: true
   spawn_extra_models: false
+  fill_demo_tray: true
 
 models_over_bins:
   bin4:
@@ -98,4 +101,4 @@ models_to_spawn:
         type: part1
         pose:
           xyz: [0.1, -0.15, 0]
-        rpy: [0, 0, 0]
+          rpy: [0, 0, 0]

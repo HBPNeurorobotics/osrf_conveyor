@@ -214,6 +214,7 @@
       </goal>
     </plugin>
 
+@[if options['fill_demo_tray']]@
     <!-- Populate kit tray 1 -->
     <plugin filename="libPopulationPlugin.so" name="populate_kit_tray_1">
       <activation_topic>~/conveyor/control</activation_topic>
@@ -237,5 +238,7 @@
         </object>
       </object_sequence>
     </plugin>
+@[end if]@
+
   </world>
 </sdf>
