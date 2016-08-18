@@ -64,15 +64,7 @@ def prepare_arguments(parser):
         help='yaml string that is the configuration')
     add('-f', '--file', nargs='+', help='list of paths to yaml files that contain the '
     'configuration (contents will be concatenated)')
-    '''
-    add(
-        '-c', '--comp-config-file',
-        help='path to yaml file that contains the competition configuration')
-    add(
-        '-e', '--entry-config-file',
-        help='path to yaml file that contains the configuration of the '
-       m 'entry of a participant')
-       '''
+
 
 eval_local_vars = {n: getattr(math, n) for n in dir(math) if not n.startswith('__')}
 
@@ -197,7 +189,9 @@ def create_model_to_spawn_info(model_name, model_to_spawn_data):
 
 def create_models_to_spawn_infos(models_to_spawn_dict):
     models_to_spawn_infos = {}
-    for reference_frame, reference_frame_data in models_to_spawn_dict.items():
+    reference_frames_data = get_required_field(
+        'models_to_spawn', models_to_spawn_dict, 'reference_frames')
+    for reference_frame, reference_frame_data in reference_frames_data.items():
         models = get_required_field(reference_frame, reference_frame_data, 'models')
         model_count = 0
         for model_name, model_to_spawn_data in models.items():
@@ -210,19 +204,64 @@ def create_models_to_spawn_infos(models_to_spawn_dict):
     return models_to_spawn_infos
 
 
+def create_models_over_bins_infos(models_over_bins_dict):
+    models_to_spawn_infos = {}
+    reference_frames_dict = get_required_field(
+        'models_over_bins', models_over_bins_dict, 'reference_frames')
+    for reference_frame, reference_frame_dict in reference_frames_dict.items():
+        models = get_required_field(
+            reference_frame, reference_frame_dict, 'models')
+        for model_type, model_to_spawn_dict in models.items():
+            model_count = 0
+            model_to_spawn_data = {}
+            model_to_spawn_data['type'] = model_type
+            model_to_spawn_data['reference_frame'] = reference_frame
+            xyz_start = get_required_field(
+                model_type, model_to_spawn_dict, 'xyz_start')
+            xyz_end = get_required_field(
+                model_type, model_to_spawn_dict, 'xyz_end')
+            rpy = get_required_field(model_type, model_to_spawn_dict, 'rpy')
+            num_models_x = get_required_field(
+                model_type, model_to_spawn_dict, 'num_models_x')
+            num_models_y = get_required_field(
+                model_type, model_to_spawn_dict, 'num_models_y')
+            step_size = [
+                (xyz_end[0] - xyz_start[0]) / max(1, num_models_x - 1),
+                (xyz_end[1] - xyz_start[1]) / max(1, num_models_y - 1)]    
+
+            # Create a grid of models
+            for idx_x in range(num_models_x):
+                for idx_y in range(num_models_y):
+                    xyz = [
+                        xyz_start[0] + idx_x * step_size[0],
+                        xyz_start[1] + idx_y * step_size[1],
+                        xyz_start[2]] 
+                    model_to_spawn_data['pose'] = {'xyz': xyz, 'rpy': rpy}
+                    # assign each model a unique name
+                    model_name = reference_frame + "::" + model_type + '_' + str(model_count)
+                    models_to_spawn_infos[model_name] = create_model_to_spawn_info(
+                        model_name, model_to_spawn_data)
+                    model_count += 1
+    return models_to_spawn_infos
+
+
 def create_options_object():
     return Options()
 
 
 def prepare_template_data(config_dict):
-    template_data = {'arm': None, 'sensors': None, 'models_to_spawn': None}
+    template_data = {'arm': None, 'sensors': None, 'models_to_spawn': {}}
     for key, value in config_dict.items():
         if key == 'arm':
             template_data['arm'] = create_arm_info(value)
         elif key == 'sensors':
             template_data['sensors'] = create_sensor_infos(value)
+        elif key == 'models_over_bins':
+            template_data['models_to_spawn'].update(
+                create_models_over_bins_infos(value))
         elif key == 'models_to_spawn':
-            template_data['models_to_spawn'] = create_models_to_spawn_infos(value)
+            template_data['models_to_spawn'].update(
+                create_models_to_spawn_infos(value))
         else:
             print("Error: unknown top level entry '{0}'".format(key), file=sys.stderr)
             sys.exit(1)
