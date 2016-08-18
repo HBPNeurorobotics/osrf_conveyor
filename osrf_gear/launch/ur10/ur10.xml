@@ -23,7 +23,8 @@
           -param robot_description
           -model robot
           $(arg extra_spawn_model_args)
-          -z 0.1
+          -x 0.1
+          -z -0.1
           -unpause"
         respawn="false" output="screen">
   </node>
