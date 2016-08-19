@@ -22,7 +22,7 @@
 #   reference_frame_name:             # Name of the reference frame (e.g. workcell::bin8::link)
 #     models:                         # List of models to spawn
 #       model_name:                   # Name of the model
-#         type: piston_rod_part                 # Type of model
+#         type: part1                 # Type of model
 #         pose:
 #           xyz: [0.1, 0.1, 0.725]    # Co-ordinates of the model origin in the specified reference frame
 #           rpy: [0, 0, '-pi/2']      # Roll, pitch, yaw of the model in the specified reference frame
@@ -31,6 +31,37 @@ options:
   insert_models_over_bins: true
   spawn_extra_models: false
   fill_demo_tray: true
+
+  model_type_aliases:
+    belt_model_type1: piston_rod_part
+    belt_model_type2: gear_part
+
+belt_parts:
+  1.0:
+    type: belt_model_type1
+    pose:
+      xyz: [0.0, 0.0, 0.0]
+      rpy: [0, 0, 0]
+  2.0:
+    type: belt_model_type2
+    pose:
+      xyz: [0.0, 0.0, 0.0]
+      rpy: [0, 0, 0]
+
+orders:
+  order_0:
+    announcement_time: 0.0
+    parts:
+      part_0:
+        type: belt_model_type1
+        pose:
+          xyz: [0.1, -0.15, 0]
+          rpy: [0, 0, 0]
+      part_1:
+        type: belt_model_type2
+        pose:
+          xyz: [0.1, 0.15, 0]
+          rpy: [0, 0, 0]
 
 models_over_bins:
   bin4:
@@ -78,7 +109,7 @@ models_over_bins:
 
   bin2:
     models:
-      #  gasket_part:
+      #gasket_part:
       gear_part:
         xyz_start: [0.1, 0.1, 0.0]
         xyz_end: [0.5, 0.5, 0.0]

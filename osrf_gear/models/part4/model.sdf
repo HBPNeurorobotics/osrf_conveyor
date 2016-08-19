@@ -528,56 +528,11 @@
       <collision name='collision'>
         <laser_retro>0</laser_retro>
         <max_contacts>10</max_contacts>
-        <pose frame=''>0 0 0 0 -0 0</pose>
+        <pose frame=''>0 0 0 0.005 -0 0</pose>
         <geometry>
-          <polyline>
-            <height>0.01</height>
-            <point>-0.0401113 -0.0289381</point>
-            <point>-0.0415435 -0.0255336</point>
-            <point>-0.0428285 -0.0221291</point>
-            <point>-0.04396 -0.0187246</point>
-            <point>-0.0449316 -0.0153202</point>
-            <point>-0.0457369 -0.0119157</point>
-            <point>-0.0463696 -0.0085112</point>
-            <point>-0.0468233 -0.00510672</point>
-            <point>-0.0470916 -0.00170224</point>
-            <point>-0.0471681 0.00170224</point>
-            <point>-0.0470464 0.00510672</point>
-            <point>-0.0467203 0.0085112</point>
-            <point>-0.0461832 0.0119157</point>
-            <point>-0.0454289 0.0153202</point>
-            <point>-0.0444509 0.0187246</point>
-            <point>-0.0432429 0.0221291</point>
-            <point>-0.0417985 0.0255336</point>
-            <point>-0.04008 0.0289982</point>
-            <point>-0.03996 0.0292327</point>
-            <point>-0.0398979 0.02934</point>
-            <point>-0.0397537 0.0295169</point>
-            <point>-0.0394415 0.0296334</point>
-            <point>0.0395722 0.0296195</point>
-            <point>0.0399752 0.0292357</point>
-            <point>0.0401206 0.0289381</point>
-            <point>0.0417478 0.0253476</point>
-            <point>0.0431552 0.0217823</point>
-            <point>0.0443462 0.0182417</point>
-            <point>0.0453239 0.0147255</point>
-            <point>0.0460917 0.0112333</point>
-            <point>0.0466528 0.00776466</point>
-            <point>0.0470105 0.0043193</point>
-            <point>0.0471288 -0.00250318</point>
-            <point>0.0468959 -0.00588105</point>
-            <point>0.0464728 -0.00923716</point>
-            <point>0.0458626 -0.0125719</point>
-            <point>0.0440942 -0.0191788</point>
-            <point>0.0429425 -0.0224516</point>
-            <point>0.0416169 -0.0257046</point>
-            <point>0.0401206 -0.0289381</point>
-            <point>0.0400039 -0.0291782</point>
-            <point>0.0395722 -0.0296195</point>
-            <point>-0.0395047 -0.0296299</point>
-            <point>-0.039839 -0.0294403</point>
-            <point>-0.0401113 -0.0289381</point>
-          </polyline>
+          <box>
+            <size>0.09 0.06 0.01</size>
+          </box>
         </geometry>
         <surface>
           <friction>
@@ -611,8 +566,8 @@
               <soft_erp>0.2</soft_erp>
               <kp>1e+13</kp>
               <kd>1</kd>
-              <max_vel>0.01</max_vel>
-              <min_depth>0</min_depth>
+              <max_vel>0.1</max_vel>
+              <min_depth>0.001</min_depth>
             </ode>
             <bullet>
               <split_impulse>1</split_impulse>
