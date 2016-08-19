@@ -53,6 +53,46 @@
       <uri>model://workcell</uri>
       <pose>0 0 0 0 0 1.57</pose>
     </include>
+    <include>
+      <name>bin1</name>
+      <uri>model://workcell_bin</uri>
+      <pose>0.96768 1.38385 0 0 0 0</pose>
+    </include>
+    <include>
+      <name>bin2</name>
+      <uri>model://workcell_bin</uri>
+      <pose>0.20268 1.38385 0 0 0 0</pose>
+    </include>
+    <include>
+      <name>bin3</name>
+      <uri>model://workcell_bin</uri>
+      <pose>-0.56232 1.38385 0 0 0 0</pose>
+    </include>
+    <include>
+      <name>bin4</name>
+      <uri>model://workcell_bin</uri>
+      <pose>-1.32732 1.38385 0 0 0 0</pose>
+    </include>
+    <include>
+      <name>bin5</name>
+      <uri>model://workcell_bin</uri>
+      <pose>-1.32732 0.61434 0 0 0 0</pose>
+    </include>
+    <include>
+      <name>bin6</name>
+      <uri>model://workcell_bin</uri>
+      <pose>-0.56232 0.61434 0 0 0 0</pose>
+    </include>
+    <include>
+      <name>bin7</name>
+      <uri>model://workcell_bin</uri>
+      <pose>0.20268 0.61434 0 0 0 0</pose>
+    </include>
+    <include>
+      <name>bin8</name>
+      <uri>model://workcell_bin</uri>
+      <pose>0.96768 0.61434 0 0 0 0</pose>
+    </include>
 
     <!-- a break beam sensor -->
     <include>
