@@ -1,12 +1,12 @@
 <?xml version="1.0" ?>
 <sdf version="1.6">
-    <model name="logical_camera">
-      <plugin name="ros_logical_camera" filename="libROSLogicalCameraPlugin.so">
-        <image_topic_ros>/ariac/logical_camera</image_topic_ros>
-      </plugin>
-      <link name="link">
-        <gravity>false</gravity>
-     <inertial>
+  <model name="logical_camera">
+    <plugin name="ros_logical_camera" filename="libROSLogicalCameraPlugin.so">
+      <image_topic_ros>/ariac/logical_camera</image_topic_ros>
+    </plugin>
+    <link name="link">
+      <gravity>false</gravity>
+      <inertial>
         <mass>0.1</mass>
         <inertia>
           <ixx>0.000166667</ixx>
@@ -14,34 +14,67 @@
           <izz>0.000166667</izz>
         </inertia>
       </inertial>
-      <collision name="collision">
+
+      <collision name="box_collision">
+        <pose>0 -0.0191 -0.00203 0 0 0</pose>
         <geometry>
           <box>
-            <size>0.1 0.1 0.1</size>
+            <size>0.0549 0.0382 0.1</size>
           </box>
         </geometry>
       </collision>
+
+      <collision name="cylinder_collision">
+        <pose>0 0.00983 0.02059 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.03969</radius>
+            <length>0.01974</length>
+          </cylinder>
+        </geometry>
+      </collision>
+
+      <collision name="lens1_collision">
+        <pose>-0.01026 -0.02113 -0.05993 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.00674</radius>
+            <length>0.01576</length>
+          </cylinder>
+        </geometry>
+      </collision>
+
+      <collision name="lens2_collision">
+        <pose>0.01046 -0.02113 -0.05831 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.01515</radius>
+            <length>0.01252</length>
+          </cylinder>
+        </geometry>
+      </collision>
+
       <visual name="visual">
         <geometry>
-          <box>
-            <size>0.1 0.1 0.1</size>
-          </box>
+          <mesh>
+            <uri>model://logical_camera/meshes/camera.dae</uri>
+          </mesh>
         </geometry>
       </visual>
 
-        <sensor name="logical_camera" type="logical_camera">
+      <sensor name="logical_camera" type="logical_camera">
 
-          <logical_camera>
-            <near>0.55</near>
-            <far>5</far>
-            <horizontal_fov>1.04719755</horizontal_fov>
-            <aspect_ratio>1.778</aspect_ratio>
-          </logical_camera>
+        <logical_camera>
+          <near>0.55</near>
+          <far>5</far>
+          <horizontal_fov>1.04719755</horizontal_fov>
+          <aspect_ratio>1.778</aspect_ratio>
+        </logical_camera>
 
-          <visualize>true</visualize>
-          <always_on>true</always_on>
-          <update_rate>10</update_rate>
-        </sensor>
-      </link>
-    </model>
+        <visualize>true</visualize>
+        <always_on>true</always_on>
+        <update_rate>10</update_rate>
+      </sensor>
+    </link>
+  </model>
 </sdf>
