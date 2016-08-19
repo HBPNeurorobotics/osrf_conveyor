@@ -295,7 +295,7 @@ void PopulationPlugin::OnUpdate()
       ignition::math::Matrix4d pose_local(obj.pose.Ign());
       obj.pose = (transMat * pose_local).Pose();
     }
-    std::string modelName = this->GetHandle() + "::" + obj.type;
+    std::string modelName = this->GetHandle() + "|" + obj.type;
 
     std::ostringstream newModelStr;
     newModelStr <<

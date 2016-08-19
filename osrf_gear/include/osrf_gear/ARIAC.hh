@@ -223,7 +223,7 @@ namespace ariac
     TrayID_t modelType(modelName);
 
     // Trim namespaces
-    size_t index = modelType.find_last_of(':');
+    size_t index = modelType.find_last_of('|');
     modelType = modelType.substr(index + 1);
 
     // Trim trailing underscore and number caused by inserting multiple of the same model

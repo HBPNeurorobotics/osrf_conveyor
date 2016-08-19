@@ -260,7 +260,7 @@ def create_models_over_bins_infos(models_over_bins_dict):
                     model_info = create_model_info(model_type, model_to_spawn_data)
                     # assign each model a unique name because gazebo can't do this
                     # if the models all spawn at the same time
-                    scoped_model_name = bin_name + '::' + \
+                    scoped_model_name = bin_name + '|' + \
                         model_info.type + '_' + str(model_count)
                     models_to_spawn_infos[scoped_model_name] = model_info
                     model_count += 1
