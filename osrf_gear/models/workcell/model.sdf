@@ -93,7 +93,7 @@
       </collision>
 
       <collision name="large_pallet1">
-        <pose>-3.33609 5.70937 1.04257 0 0 0</pose>
+        <pose>-3.33609 6.31883 1.04257 0 0 0</pose>
         <geometry>
           <box>
             <size>2.14726 1.79349 2.08514</size>
@@ -102,7 +102,7 @@
       </collision>
 
       <collision name="large_pallet2">
-        <pose>-5.74492 5.70937 1.04257 0 0 0</pose>
+        <pose>-5.74492 6.31883 1.04257 0 0 0</pose>
         <geometry>
           <box>
             <size>2.14726 1.79349 2.08514</size>
@@ -111,16 +111,16 @@
       </collision>
 
       <collision name="large_pallet3">
-        <pose>-7.39561 2.53882 1.04257 0 0 0</pose>
+        <pose>-7.55868 1.91644 1.04257 0 0 0</pose>
         <geometry>
           <box>
-            <size>2.14726 1.79349 2.08514</size>
+            <size>2.14726 1.79432 2.08514</size>
           </box>
         </geometry>
       </collision>
 
       <collision name="empty_pallet1">
-        <pose>-5.13359 2.53882 0.1636 0 0 0</pose>
+        <pose>-5.29667 1.91644 0.1636 0 0 0</pose>
         <geometry>
           <box>
             <size>2.14726 1.79349 0.32720</size>
@@ -129,7 +129,7 @@
       </collision>
 
       <collision name="box_pallet1">
-        <pose>-1.09806 5.70937 0.61958 0 0 0</pose>
+        <pose>-1.09806 6.31883 0.61958 0 0 0</pose>
         <geometry>
           <box>
             <size>2.14726 1.79349 1.23916</size>

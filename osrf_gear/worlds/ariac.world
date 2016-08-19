@@ -73,6 +73,7 @@
       <uri>model://workcell_bin</uri>
       <pose>-1.32732 1.38385 0 0 0 0</pose>
     </include>
+
     <include>
       <name>bin5</name>
       <uri>model://workcell_bin</uri>
@@ -91,7 +92,7 @@
     <include>
       <name>bin8</name>
       <uri>model://workcell_bin</uri>
-      <pose>0.96768 0.61434 0 0 0 0</pose>
+      <pose>1.0 0.5 0 0 0 0</pose>
     </include>
 
     <!-- a break beam sensor -->
