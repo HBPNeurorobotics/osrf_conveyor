@@ -27,7 +27,7 @@
 #           xyz: [0.1, -0.15, 0]      # Position required in the kit tray frame
 #           rpy: [0, 0, 0]            # Orientation required in the kit tray frame
 #
-# Models to be inserted above the bins
+# Models to be inserted above the bins (templated into the world file)
 # models_over_bins:
 #   bin1:                             # Name of the bin (bin1-bin8, as named in the model)
 #     xyz: [1.5, 1.7, 0.75]           # (optional) Origin of the bin, if you want to over-write the default
@@ -39,7 +39,7 @@
 #         num_models_x: 4             # How many models to insert along the x dimension
 #         num_models_y: 6             # How many models to insert along the y dimension
 #
-# Models to be spawned in particular reference frames
+# Models to be spawned in particular reference frames (templated into the launch file)
 # models_to_spawn:
 #   reference_frame_name:             # Name of the reference frame (e.g. workcell::bin8::link)
 #     models:                         # List of models to spawn

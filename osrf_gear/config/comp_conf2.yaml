@@ -3,26 +3,48 @@
 #   insert_models_over_bins: true     # Whether or not to insert the models that are specified in models_over_bins
 #   spawn_extra_models: true          # Whether or not to spawn the models that are specified in models_to_spawn
 #   fill_demo_tray: true              # If true, AGV1's tray will have parts from the first order spawned
-                                      # directly ontop of it once the competition starts (for testing purposes)
+#                                     # directly ontop of it once the competition starts (for testing purposes)
+#   model_type_aliases:               # Aliases for model types which can be used in the configuration file
+#     belt_model_type1: gear_part     # Wherever 'belt_model_type1' is used in the configuration file, use 'gear_part'
 #
-# Models to be inserted above the bins
+# Parts to be spawned on the conveyor belt
+# belt_parts:
+#   1.0:                              # Time in seconds to wait before spawning models
+#     type: model_type_1              # Type of model to insert
+#     pose:
+#       xyz: [0.0, 0.0, 0.0]          # Position of the model from the belt origin
+#                                     # y = 0 is in the center of the belt; y > 0 is towards the robot
+#       rpy: [0, 0, 'pi/2']           # Orientation of the model in the belt frame
+#
+# Orders to announce during the game
+# orders:
+#   order_0:
+#     announcement_time: 0.0          # Time in seconds to wait before announcing the order
+#     parts:                          # List of parts required to be in the kit
+#       part_0:
+#         type: model_type_1          # Type of model required
+#         pose:
+#           xyz: [0.1, -0.15, 0]      # Position required in the kit tray frame
+#           rpy: [0, 0, 0]            # Orientation required in the kit tray frame
+#
+# Models to be inserted above the bins (templated into the world file)
 # models_over_bins:
 #   bin1:                             # Name of the bin (bin1-bin8, as named in the model)
 #     xyz: [1.5, 1.7, 0.75]           # (optional) Origin of the bin, if you want to over-write the default
 #     models:                         # List of models to insert
-#       model_type_1:                 # Type of model to insert (e.g. gear_part) from local or gazebo database
+#       model_type_1:                 # Type of model to insert
 #         xyz_start: [0.1, 0.2, 0.0]  # Origin of the first model to insert
 #         xyz_end: [0.4, 0.6, 0.0]    # Origin of the last model to insert
 #         rpy: [0, 0, 0]              # Orientation of all models to insert
 #         num_models_x: 4             # How many models to insert along the x dimension
 #         num_models_y: 6             # How many models to insert along the y dimension
 #
-# Models to be spawned in particular reference frames
+# Models to be spawned in particular reference frames (templated into the launch file)
 # models_to_spawn:
 #   reference_frame_name:             # Name of the reference frame (e.g. workcell::bin8::link)
 #     models:                         # List of models to spawn
 #       model_name:                   # Name of the model
-#         type: part1                 # Type of model
+#         type: part2                 # Type of model (note that only local models are supported)
 #         pose:
 #           xyz: [0.1, 0.1, 0.725]    # Co-ordinates of the model origin in the specified reference frame
 #           rpy: [0, 0, '-pi/2']      # Roll, pitch, yaw of the model in the specified reference frame
