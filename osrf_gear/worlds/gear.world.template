@@ -156,9 +156,9 @@
 
 @[if options['insert_models_over_bins']]@
     <!-- Populate the bins -->
-@[for model in models_to_insert]@
+@[for model_name, model in models_to_insert.items()]@
     <include>
-      <name>@(model.name)</name>
+      <name>@(model_name)</name>
       <uri>model://@(model.type)</uri>
       <pose>@(' '.join(model.pose.xyz)) @(' '.join(model.pose.rpy))</pose>
     </include>
@@ -171,21 +171,13 @@
       <loop_forever>true</loop_forever>
       <frame>conveyor_belt</frame>
       <object_sequence>
+@[for spawn_time, part in belt_parts.items()]@
         <object>
-          <time>8.0</time>
-          <type>part1</type>
-          <pose>0 0 0 0 0 0</pose>
+          <time>@(spawn_time)</time>
+          <type>@(part.type)</type>
+          <pose>@(' '.join(part.pose.xyz)) @(' '.join(part.pose.rpy))</pose>
         </object>
-        <object>
-          <time>4.0</time>
-          <type>part2</type>
-          <pose>0 0.1 0 0 0 0</pose>
-        </object>
-        <object>
-          <time>12.0</time>
-          <type>part3</type>
-          <pose>0 -0.1 0 0 0 0</pose>
-        </object>
+@[end for]@
       </object_sequence>
     </plugin>
 
@@ -195,49 +187,39 @@
       <team_start_service_name>/ariac/start_competition</team_start_service_name>
       <conveyor_activation_topic>~/conveyor/control</conveyor_activation_topic>
       <goals_topic>/ariac/orders</goals_topic>
+@[for order_name, order in orders.items()]@
       <goal>
-        <start_time>0.0</start_time>
+        <start_time>@(order['announcement_time'])</start_time>
         <kit>
           <tray>agv1::kit_tray::tray</tray>
+@[for part in order['parts']]@
           <object>
-            <type>part1</type>
-            <pose>0.1 -0.15 0.0 0 0 0</pose>
+            <type>@(part.type)</type>
+            <pose>@(' '.join(part.pose.xyz)) @(' '.join(part.pose.rpy))</pose>
           </object>
-          <object>
-            <type>part2</type>
-            <pose>0 0.25 0.0 0 0 0</pose>
-          </object>
-          <object>
-            <type>part3</type>
-            <pose>-0.1 0.15 0.0 0 0 0</pose>
-          </object>
+@[end for]@
         </kit>
       </goal>
+@[end for]@
     </plugin>
 
 @[if options['fill_demo_tray']]@
-    <!-- Populate kit tray 1 -->
+    <!-- Populate kit tray with order parts -->
     <plugin filename="libPopulationPlugin.so" name="populate_kit_tray_1">
       <activation_topic>~/conveyor/control</activation_topic>
       <loop_forever>false</loop_forever>
       <frame>agv1::kit_tray::tray</frame>
+@[for order_name, order in orders.items()]@
       <object_sequence>
+@[for part in order['parts']]@
         <object>
-          <time>0.0</time>
-          <type>part1</type>
-          <pose>0.1 -0.15 0 0 0 0</pose>
+          <time>@(order['announcement_time'])</time>
+          <type>@(part.type)</type>
+          <pose>@(' '.join(part.pose.xyz)) @(' '.join(part.pose.rpy))</pose>
         </object>
-        <object>
-          <time>0.5</time>
-          <type>part2</type>
-          <pose>0. 0.25 0 0 0 0</pose>
-        </object>
-        <object>
-          <time>1.0</time>
-          <type>part3</type>
-          <pose>-0.1 0.15 0 0 0 0</pose>
-        </object>
+@[end for]@
       </object_sequence>
+@[end for]@
     </plugin>
 @[end if]@
 

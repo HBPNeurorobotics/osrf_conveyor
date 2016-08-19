@@ -63,6 +63,10 @@ default_bin_origins = {
 configurable_options = {
     'insert_models_over_bins': True,
     'disable_shadows': False,
+    'model_type_aliases': {
+        'belt_model_type1': 'part1',
+        'belt_model_type2': 'part2',
+    },
 }
 
 
@@ -106,9 +110,8 @@ class ArmInfo:
         self.initial_joint_states = initial_joint_states
 
 
-class ModelToSpawnInfo:
-    def __init__(self, name, model_type, pose, reference_frame):
-        self.name = name
+class ModelInfo:
+    def __init__(self, model_type, pose, reference_frame):
         self.type = model_type
         self.pose = pose
         self.reference_frame = reference_frame
@@ -184,36 +187,40 @@ def create_sensor_infos(sensors_dict):
     return sensor_infos
 
 
-def create_model_to_spawn_info(model_name, model_to_spawn_data):
-    model_type = get_required_field(model_name, model_to_spawn_data, 'type')
-    pose_dict = get_required_field(model_name, model_to_spawn_data, 'pose')
-    reference_frame = get_required_field(model_name, model_to_spawn_data, 'reference_frame')
-    for key in model_to_spawn_data:
+def create_model_info(model_name, model_data):
+    model_type = get_required_field(model_name, model_data, 'type')
+    if model_type in configurable_options['model_type_aliases']:
+        model_type = configurable_options['model_type_aliases'][model_type]
+    pose_dict = get_required_field(model_name, model_data, 'pose')
+    reference_frame = ''
+    if 'reference_frame' in model_data:
+        reference_frame = model_data['reference_frame']
+    for key in model_data:
         if key not in ['type', 'pose', 'reference_frame']:
             print("Warning: ignoring unknown entry in '{0}': {1}"
                   .format(model_name, key), file=sys.stderr)
     pose_info = create_pose_info(pose_dict)
-    return ModelToSpawnInfo(model_name, model_type, pose_info, reference_frame)
+    return ModelInfo(model_type, pose_info, reference_frame)
 
 
 def create_models_to_spawn_infos(models_to_spawn_dict):
-    models_to_spawn_infos = []
+    models_to_spawn_infos = {}
     for reference_frame, reference_frame_data in models_to_spawn_dict.items():
         models = get_required_field(reference_frame, reference_frame_data, 'models')
         model_count = 0
         for model_name, model_to_spawn_data in models.items():
             model_to_spawn_data['reference_frame'] = reference_frame
+            model_info = create_model_info(model_name, model_to_spawn_data)
             # assign each model a unique name because gazebo can't do this
             # if the models all spawn at the same time
-            model_name = reference_frame + '::' + model_name + '_' + str(model_count)
-            models_to_spawn_infos.append(create_model_to_spawn_info(
-                model_name, model_to_spawn_data))
+            scoped_model_name = reference_frame + '::' + model_info.type + '_' + str(model_count)
+            models_to_spawn_infos[scoped_model_name] = model_info
             model_count += 1
     return models_to_spawn_infos
 
 
 def create_models_over_bins_infos(models_over_bins_dict):
-    models_to_spawn_infos = []
+    models_to_spawn_infos = {}
     for bin_name, bin_dict in models_over_bins_dict.items():
         if bin_name in default_bin_origins:
             offset_xyz = default_bin_origins[bin_name]
@@ -250,14 +257,38 @@ def create_models_over_bins_infos(models_over_bins_dict):
                         offset_xyz[1] + xyz_start[1] + idx_y * step_size[1],
                         offset_xyz[2] + xyz_start[2]] 
                     model_to_spawn_data['pose'] = {'xyz': xyz, 'rpy': rpy}
+                    model_info = create_model_info(model_type, model_to_spawn_data)
                     # assign each model a unique name because gazebo can't do this
                     # if the models all spawn at the same time
-                    model_name = bin_name + '::' + model_type + '_' + str(model_count)
-                    models_to_spawn_infos.append(create_model_to_spawn_info(
-                        model_name, model_to_spawn_data))
+                    scoped_model_name = bin_name + '::' + \
+                        model_info.type + '_' + str(model_count)
+                    models_to_spawn_infos[scoped_model_name] = model_info
                     model_count += 1
     return models_to_spawn_infos
 
+
+def create_belt_part_infos(belt_parts_dict):
+    belt_part_infos = {}
+    for spawn_time, belt_part_dict in belt_parts_dict.items():
+      belt_part_infos[spawn_time] = create_model_info('belt_part', belt_part_dict)
+    return belt_part_infos
+
+
+def create_order_info(name, order_dict):
+    announcement_time = get_required_field(name, order_dict, 'announcement_time')
+    parts_dict = get_required_field(name, order_dict, 'parts')
+    parts = []
+    for part_name, part_dict in parts_dict.items():
+        parts.append(create_model_info(part_name, part_dict))
+    return {'announcement_time': announcement_time, 'parts': parts}
+
+
+def create_order_infos(orders_dict):
+    order_infos = {}
+    for order_name, order_dict in orders_dict.items():
+      order_infos[order_name] = create_order_info(order_name, order_dict)
+    return order_infos
+    
 
 def create_options_info(options_dict):
     options = configurable_options 
@@ -270,9 +301,16 @@ def prepare_template_data(config_dict):
     template_data = {
         'arm': None,
         'sensors': {},
-        'models_to_insert': [],
-        'models_to_spawn': [],
-        'options': {}}
+        'models_to_insert': {},
+        'models_to_spawn': {},
+        'belt_parts': {},
+        'orders': {},
+        'options': {},
+    }
+    # Process the options first as they may affect the processing of the rest
+    if 'options' in config_dict:
+        template_data['options'].update(create_options_info(config_dict['options']))
+
     for key, value in config_dict.items():
         if key == 'arm':
             template_data['arm'] = create_arm_info(value)
@@ -280,12 +318,16 @@ def prepare_template_data(config_dict):
             template_data['sensors'].update(
                 create_sensor_infos(value))
         elif key == 'models_over_bins':
-            template_data['models_to_insert'].extend(
+            template_data['models_to_insert'].update(
                 create_models_over_bins_infos(value))
+        elif key == 'belt_parts':
+            template_data['belt_parts'].update(create_belt_part_infos(value))
+        elif key == 'orders':
+            template_data['orders'].update(create_order_infos(value))
         elif key == 'options':
-            template_data['options'].update(create_options_info(value))
+            pass
         elif key == 'models_to_spawn':
-            template_data['models_to_spawn'].extend(
+            template_data['models_to_spawn'].update(
                 create_models_to_spawn_infos(value))
         else:
             print("Error: unknown top level entry '{0}'".format(key), file=sys.stderr)
