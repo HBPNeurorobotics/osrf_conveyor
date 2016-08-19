@@ -131,6 +131,8 @@ TrayScore KitTray::ScoreTray(const ScoringParameters & scoringParameters)
         continue;
 
       // Check the position of the object (ignoring orientation)
+      ROS_DEBUG_STREAM("[" << this->trayID << "] Comparing pose '" << currentObject.pose <<
+        "' with the assigned pose '" << assignedObject.pose << "'");
       math::Vector3 posnDiff = assignedObject.pose.CoordPositionSub(currentObject.pose);
       posnDiff.z = 0;
       if (posnDiff.GetLength() > scoringParameters.distanceThresh)

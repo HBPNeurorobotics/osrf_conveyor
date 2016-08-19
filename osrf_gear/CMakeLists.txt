@@ -341,22 +341,6 @@ install(TARGETS ${target_name}
   RUNTIME DESTINATION bin
 )
 
-# Create the ARIAC scorer node
-set(target_name ariac_scorer_node)
-add_executable(${target_name} src/ariac_scorer_node.cpp)
-target_link_libraries(${target_name}
-  ${GAZEBO_LIBRARIES}
-  ${roscpp_LIBRARIES}
-  AriacScorer
-)
-add_dependencies(${target_name}
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-)
-install(TARGETS ${target_name}
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
 
 #############
 ## Install ##

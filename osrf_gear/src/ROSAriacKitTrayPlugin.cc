@@ -40,7 +40,7 @@ void KitTrayPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 {
 
   SideContactPlugin::Load(_model, _sdf);
-  this->trayID = this->model->GetName();
+  this->trayID = this->parentLink->GetScopedName();
 
   // Make sure the ROS node for Gazebo has already been initialized
   if (!ros::isInitialized())
@@ -66,7 +66,7 @@ void KitTrayPlugin::OnUpdate(const common::UpdateInfo &/*_info*/)
   auto prevNumberContactingModels = this->contactingModels.size();
   this->CalculateContactingModels();
   if (prevNumberContactingModels != this->contactingModels.size()) {
-    gzdbg << this->parentSensor->Name() << ": number of contacting models: " \
+    gzdbg << this->parentLink->GetScopedName() << ": number of contacting models: " \
       << this->contactingModels.size() << "\n";
   }
   this->ProcessContactingModels();
@@ -77,7 +77,7 @@ void KitTrayPlugin::OnUpdate(const common::UpdateInfo &/*_info*/)
 void KitTrayPlugin::ProcessContactingModels()
 {
   this->currentKit.objects.clear();
-  auto trayPose = this->model->GetWorldPose().Ign();
+  auto trayPose = this->parentLink->GetWorldPose().Ign();
   for (auto model : this->contactingModels) {
     if (model) {
       ariac::KitObject object;
