@@ -381,6 +381,7 @@
       </collision>
     </link>
 
+    <!--
     <model name="bin1">
       <static>true</static>
       <pose>0.96768 1.38385 0 0 0 0</pose>
@@ -1243,5 +1244,6 @@
 
       </link>
     </model>
+-->
   </model>
 </sdf>
