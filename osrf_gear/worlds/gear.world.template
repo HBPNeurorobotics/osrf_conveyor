@@ -46,6 +46,14 @@
       <pose>0 0 0 0 0 1.57</pose>
     </include>
 
+@[for bin_name, bin_pose in bins.items()]@
+    <include>
+      <name>@(bin_name)</name>
+      <uri>model://workcell_bin</uri>
+      <pose>@(' '.join(bin_pose.xyz)) @(' '.join(bin_pose.rpy))</pose>
+    </include>
+@[end for]@
+
 @[for name, sensor in sensors.items()]@
 @[if sensor.type == "break_beam"]@
     <!-- a break beam sensor called @(name) -->

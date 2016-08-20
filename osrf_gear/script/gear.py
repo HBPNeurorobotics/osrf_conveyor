@@ -51,14 +51,14 @@ sensor_configs = {
     'laser_profiler': None,
 }
 default_bin_origins = {
-    'bin1': [-1.67, 0.66, 0.75],
-    'bin2': [-1.67, -0.1, 0.75],
-    'bin3': [-1.67, -0.86, 0.75],
-    'bin4': [-1.67, -1.62, 0.75],
-    'bin5': [-0.91, -1.62, 0.75],
-    'bin6': [-0.91, -0.86, 0.75],
-    'bin7': [-0.91, -0.1, 0.75],
-    'bin8': [-0.91, 0.66, 0.75],
+    'bin1': [-1.0, -1.33, 0],
+    'bin2': [-1.0, -0.535, 0],
+    'bin3': [-1.0, 0.23, 0],
+    'bin4': [-1.0, 0.995, 0],
+    'bin5': [-0.3, -1.33, 0],
+    'bin6': [-0.3, -0.535, 0],
+    'bin7': [-0.3, 0.23, 0],
+    'bin8': [-0.3, 0.995, 0],
 }
 configurable_options = {
     'insert_models_over_bins': True,
@@ -221,9 +221,14 @@ def create_models_to_spawn_infos(models_to_spawn_dict):
 
 def create_models_over_bins_infos(models_over_bins_dict):
     models_to_spawn_infos = {}
+    bin_width = 0.6
+    bin_height = 0.75
     for bin_name, bin_dict in models_over_bins_dict.items():
         if bin_name in default_bin_origins:
-            offset_xyz = default_bin_origins[bin_name]
+            offset_xyz = [
+                default_bin_origins[bin_name][0] - bin_width / 2,
+                default_bin_origins[bin_name][1] - bin_width / 2,
+                bin_height]
             # Allow the origin of the bin to be over-written
             if 'xyz' in bin_dict:
                 offset_xyz = bin_dict['xyz']
@@ -286,9 +291,16 @@ def create_order_info(name, order_dict):
 def create_order_infos(orders_dict):
     order_infos = {}
     for order_name, order_dict in orders_dict.items():
-      order_infos[order_name] = create_order_info(order_name, order_dict)
+        order_infos[order_name] = create_order_info(order_name, order_dict)
     return order_infos
-    
+ 
+
+def create_bin_infos():
+    bin_infos = {}
+    for bin_name, xyz in default_bin_origins.items():
+        bin_infos[bin_name] = PoseInfo(xyz, [0, 0, 1.5705])
+    return bin_infos
+
 
 def create_options_info(options_dict):
     options = configurable_options 
@@ -332,6 +344,7 @@ def prepare_template_data(config_dict):
         else:
             print("Error: unknown top level entry '{0}'".format(key), file=sys.stderr)
             sys.exit(1)
+    template_data['bins'] = create_bin_infos()
     return template_data
 
 
