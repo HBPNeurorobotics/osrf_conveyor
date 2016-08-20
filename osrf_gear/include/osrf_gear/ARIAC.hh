@@ -307,7 +307,6 @@ namespace ariac
       _out << "Kits:" << std::endl;
       for (const auto & item : _goal.kits)
       {
-        _out << "<tray>" << item.first << "</tray>" << std::endl;
         _out << item.second << std::endl;
       }
       _out << "</goal>" << std::endl;
