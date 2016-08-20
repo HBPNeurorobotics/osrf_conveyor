@@ -16,7 +16,7 @@
       </inertial>
 
       <collision name="box_collision">
-        <pose>-0.052 0.0009 -0.00203 0 -1.5707 0</pose>
+        <pose>0 0.0009 -0.00203 0 0 -1.5708</pose>
         <geometry>
           <box>
             <size>0.0549 0.0382 0.1</size>
@@ -25,7 +25,7 @@
       </collision>
 
       <visual name="visual">
-        <pose>-0.052 0.02 0 0 -1.5707 0</pose>
+        <pose>0 0.02 0 0 0 -1.5708</pose>
         <geometry>
           <mesh>
             <uri>model://logical_camera/meshes/camera.dae</uri>
