@@ -99,7 +99,7 @@
       <pose>1.2 -4.1 1.4 0 0 1.5708</pose>
     </include>
 
-    <!-- the AGV -->
+    <!-- AGV1 -->
     <model name ="agv1">
       <pose>0.3 3.3 0 0 0 3.1415</pose>
       <include>
@@ -107,6 +107,29 @@
       </include>
       <plugin name="agv_plugin" filename="libROSAGVPlugin.so">
         <index>1</index>
+      </plugin>
+
+      <!-- a tray for building kits -->
+      <include>
+        <uri>model://kit_tray</uri>
+        <pose>0.0 0.15 0.75 0 0 0</pose>
+      </include>
+  
+      <!-- join the tray and agv -->
+      <joint name="agv_tray" type="fixed">
+          <parent>warehouse_robot::link</parent>
+          <child>kit_tray::tray</child>
+      </joint>
+    </model>
+
+    <!-- AGV2 -->
+    <model name ="agv2">
+      <pose>0.3 -3.3 0 0 0 0</pose>
+      <include>
+        <uri>model://warehouse_robot</uri>
+      </include>
+      <plugin name="agv_plugin" filename="libROSAGVPlugin.so">
+        <index>2</index>
       </plugin>
 
       <!-- a tray for building kits -->

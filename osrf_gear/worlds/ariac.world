@@ -37,7 +37,7 @@
       </spot>
     </light>
 
-    <!-- the AGV -->
+    <!-- AGV1 -->
     <model name ="agv1">
       <pose>0.3 3.3 0 0 0 3.1415</pose>
       <include>
@@ -45,6 +45,17 @@
       </include>
       <plugin name="agv_plugin" filename="libROSAGVPlugin.so">
         <index>1</index>
+      </plugin>
+    </model>
+
+    <!-- AGV2 -->
+    <model name ="agv2">
+      <pose>0.3 -3.3 0 0 0 0</pose>
+      <include>
+        <uri>model://warehouse_robot</uri>
+      </include>
+      <plugin name="agv_plugin" filename="libROSAGVPlugin.so">
+        <index>2</index>
       </plugin>
     </model>
 
