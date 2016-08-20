@@ -213,7 +213,8 @@ def create_models_to_spawn_infos(models_to_spawn_dict):
             model_info = create_model_info(model_name, model_to_spawn_data)
             # assign each model a unique name because gazebo can't do this
             # if the models all spawn at the same time
-            scoped_model_name = reference_frame + '::' + model_info.type + '_' + str(model_count)
+            scoped_model_name = reference_frame.replace('::', '|') + '|' + \
+              model_info.type + '_' + str(model_count)
             models_to_spawn_infos[scoped_model_name] = model_info
             model_count += 1
     return models_to_spawn_infos
@@ -298,7 +299,7 @@ def create_order_infos(orders_dict):
 def create_bin_infos():
     bin_infos = {}
     for bin_name, xyz in default_bin_origins.items():
-        bin_infos[bin_name] = PoseInfo(xyz, [0, 0, 1.5705])
+        bin_infos[bin_name] = PoseInfo(xyz, [0, 0, 1.5708])
     return bin_infos
 
 

@@ -38,7 +38,7 @@ initial_pose_string = \
   ' '.join([val for pair in zip(['-R', '-P', '-Y'], model.pose.rpy) for val in pair])
 }@
 
-  <node name="osrf_gear_spawn_@(model_name.replace('::', '_'))" pkg="gazebo_ros" type="spawn_model"
+  <node name="osrf_gear_spawn_@(model_name.replace('|', '_'))" pkg="gazebo_ros" type="spawn_model"
     args="
       -file $(find osrf_gear)/models/@(model.type)/model.sdf
       -sdf

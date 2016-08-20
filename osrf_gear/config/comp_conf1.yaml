@@ -51,8 +51,8 @@
 
 options:
   insert_models_over_bins: true
-  spawn_extra_models: false
-  fill_demo_tray: true
+  spawn_extra_models: true
+  fill_demo_tray: false
 
   model_type_aliases:
     belt_model_type1: piston_rod_part
@@ -68,7 +68,7 @@ belt_parts:
     type: belt_model_type2
     pose:
       xyz: [0.0, 0.0, 0.0]
-      rpy: [0, 0, 0]
+      rpy: [0, 0, 'pi/2']
 
 orders:
   order_0:
@@ -83,6 +83,21 @@ orders:
         type: belt_model_type2
         pose:
           xyz: [0.1, 0.15, 0]
+          rpy: [0, 0, 0]
+
+models_to_spawn:
+  # Spawn some models close to the arm
+  conveyor_belt::belt:
+    models:
+      part1:
+        type: belt_model_type1
+        pose:
+          xyz: [1.5, 0, 0.1]
+          rpy: [0, 0, 0]
+      part2:
+        type: belt_model_type2
+        pose:
+          xyz: [1.7, 0, 0.1]
           rpy: [0, 0, 0]
 
 models_over_bins:
@@ -157,12 +172,3 @@ models_over_bins:
         rpy: [0, 0, 0]
         num_models_x: 4
         num_models_y: 5
-
-models_to_spawn:
-  agv1::kit_tray::tray:
-    models:
-      part1:
-        type: part1
-        pose:
-          xyz: [0.1, -0.15, 0]
-          rpy: [0, 0, 0]
