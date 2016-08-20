@@ -39,6 +39,8 @@
 #include "osrf_gear/ARIAC.hh"
 #include "osrf_gear/ROSAriacTaskManagerPlugin.hh"
 #include "osrf_gear/AriacScorer.h"
+#include <osrf_gear/ConveyorBeltControl.h>
+#include <osrf_gear/ConveyorBeltState.h>
 #include "osrf_gear/Goal.h"
 #include "osrf_gear/Kit.h"
 #include "osrf_gear/KitObject.h"
@@ -95,6 +97,9 @@ namespace gazebo
 
     /// \brief Publisher for enabling the object population on the conveyor.
     public: transport::PublisherPtr populatePub;
+
+    /// \brief Client for controlling the conveyor.
+    public: ros::ServiceClient conveyorControlClient;
 
     /// \brief Connection event.
     public: event::ConnectionPtr connection;
@@ -188,9 +193,13 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
   if (_sdf->HasElement("gazebo_task_score_topic"))
     gazeboTaskScoreTopic = _sdf->Get<std::string>("gazebo_task_score_topic");
 
-  std::string conveyorActivationTopic = "activation_topic";
-  if (_sdf->HasElement("conveyor_activation_topic"))
-    conveyorActivationTopic = _sdf->Get<std::string>("conveyor_activation_topic");
+  std::string conveyorControlTopic = "conveyor/control";
+  if (_sdf->HasElement("conveyor_control_topic"))
+    conveyorControlTopic = _sdf->Get<std::string>("conveyor_control_topic");
+
+  std::string populationActivateTopic = "populate_belt";
+  if (_sdf->HasElement("population_activate_topic"))
+    populationActivateTopic = _sdf->Get<std::string>("population_activate_topic");
 
   std::string goalsTopic = "orders";
   if (_sdf->HasElement("goals_topic"))
@@ -330,11 +339,16 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
     this->dataPtr->rosnode->advertiseService(teamStartServiceName,
       &ROSAriacTaskManagerPlugin::HandleStartService, this);
 
+  // Client for the conveyor control commands.
+  this->dataPtr->conveyorControlClient =
+    this->dataPtr->rosnode->serviceClient<osrf_gear::ConveyorBeltControl>(
+      conveyorControlTopic);
+
   // Initialize Gazebo transport.
   this->dataPtr->node = transport::NodePtr(new transport::Node());
   this->dataPtr->node->Init();
   this->dataPtr->populatePub =
-    this->dataPtr->node->Advertise<msgs::GzString>(conveyorActivationTopic);
+    this->dataPtr->node->Advertise<msgs::GzString>(populationActivateTopic);
 
   // Initialize the game scorer.
   this->dataPtr->trayInfoSub = this->dataPtr->rosnode->subscribe(
@@ -361,6 +375,7 @@ void ROSAriacTaskManagerPlugin::OnUpdate()
     this->dataPtr->gameStartTime = currentSimTime;
     this->dataPtr->currentState = "go";
 
+    this->ControlConveyorBelt(0.2);
     this->PopulateConveyorBelt();
   }
   else if (this->dataPtr->currentState == "go")
@@ -465,6 +480,26 @@ bool ROSAriacTaskManagerPlugin::HandleStartService(
   res.success = false;
   res.message = "cannot start if not in 'init' state";
   return true;
+}
+
+/////////////////////////////////////////////////
+void ROSAriacTaskManagerPlugin::ControlConveyorBelt(double velocity)
+{
+
+  if (!this->dataPtr->conveyorControlClient.exists())
+  {
+    this->dataPtr->conveyorControlClient.waitForExistence();
+  }
+
+  // Make a service call to set the velocity of the belt
+  osrf_gear::ConveyorBeltState controlMsg;
+  controlMsg.velocity = velocity;
+  osrf_gear::ConveyorBeltControl srv;
+  srv.request.state = controlMsg;
+  this->dataPtr->conveyorControlClient.call(srv);
+  if (!srv.response.success) {
+    ROS_ERROR_STREAM("Failed to control conveyor");
+  }
 }
 
 /////////////////////////////////////////////////

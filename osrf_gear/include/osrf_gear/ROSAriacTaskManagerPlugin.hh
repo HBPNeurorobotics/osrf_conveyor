@@ -122,6 +122,9 @@ namespace gazebo
     /// \brief Decide whether to announce a new goal.
     protected: void ProcessGoalsToAnnounce();
 
+    /// \brief Set the velocity of the conveyor belt.
+    protected: void ControlConveyorBelt(double velocity);
+
     /// \brief Start populating the conveyor belt.
     protected: void PopulateConveyorBelt();
 

@@ -59,22 +59,22 @@ void ConveyorBeltPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
     this->node->Init(this->world->GetName());
   }
 
-  if (_sdf->HasElement("belt_velocity"))
+  if (_sdf->HasElement("belt_start_velocity"))
   {
-    this->beltVelocity = _sdf->Get<double>("belt_velocity");
+    this->beltVelocity = _sdf->Get<double>("belt_start_velocity");
   }
   else {
     this->beltVelocity = 0.5;
   }
-  gzdbg << "Using belt velocity of: " << this->beltVelocity << " m/s\n";
+  gzdbg << "Using belt start velocity of: " << this->beltVelocity << " m/s\n";
 
   std::string controlCommandTopic;
   if (_sdf->HasElement("control_command_topic"))
   {
-      controlCommandTopic = _sdf->Get<std::string>("control_command_topic");
+    controlCommandTopic = _sdf->Get<std::string>("control_command_topic");
   }
   else {
-      controlCommandTopic = this->Topic("control_command");
+    controlCommandTopic = this->Topic("control_command");
   }
   this->controlCommandSub = this->node->Subscribe(controlCommandTopic,
       &ConveyorBeltPlugin::OnControlCommand, this);
