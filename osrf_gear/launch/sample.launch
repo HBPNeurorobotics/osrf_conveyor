@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<launch>
+  <remap from="joint_states" to="ariac/joint_states" />
+
+  <arg name="limited" default="false"/>
+  <arg name="gui" default="true"/>
+  <arg name="debug" default="false"/>
+  <arg name="world_path" />
+
+  <!-- startup simulated world -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" default="$(find osrf_gear)/worlds/sample.world"/>
+    <!-- Always start paused because the arm spawn needs it that way. -->
+    <arg name="paused" value="true"/>
+    <arg name="gui" value="$(arg gui)"/>
+    <arg name="extra_gazebo_args" value="--verbose" />
+    <arg name="debug" value="$(arg debug)" />
+  </include>
+
+  <!-- load ur10 -->
+  <include file="$(find osrf_gear)/launch/ur10/ur10.xml">
+    <arg name="limited" value="$(arg limited)" />
+    <arg name="extra_spawn_model_args" value="-J wrist_3_joint 0 -J elbow_joint 1.51 -J wrist_1_joint 3.77 -J linear_arm_actuator_joint 1.0 -J shoulder_pan_joint 0 -J shoulder_lift_joint -1.13 -J wrist_2_joint -1.51" />
+  </include>
+
+</launch>
