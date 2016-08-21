@@ -62,12 +62,12 @@ belt_parts:
   1.0:
     type: belt_model_type1
     pose:
-      xyz: [0.0, 0.0, 0.0]
+      xyz: [0.0, 0.0, 0.1]
       rpy: [0, 0, 0]
   2.0:
     type: belt_model_type2
     pose:
-      xyz: [0.0, 0.0, 0.0]
+      xyz: [0.0, 0.0, 0.1]
       rpy: [0, 0, 0]
 
 orders:

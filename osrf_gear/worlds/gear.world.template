@@ -198,7 +198,7 @@
 
     <!-- Populate the conveyor belt -->
     <plugin filename="libPopulationPlugin.so" name="populate_conveyor">
-        <activation_topic>/ariac/populate_belt</activation_topic>
+      <activation_topic>/ariac/populate_belt</activation_topic>
       <loop_forever>true</loop_forever>
       <frame>conveyor_belt</frame>
       <object_sequence>
@@ -222,8 +222,9 @@
 @[for order_name, order in orders.items()]@
       <goal>
         <start_time>@(order['announcement_time'])</start_time>
+@[for specified_tray in ['agv1::kit_tray::tray', 'agv2::kit_tray::tray']]@
         <kit>
-          <tray>agv1::kit_tray::tray</tray>
+          <tray>@(specified_tray)</tray>
 @[for part in order['parts']]@
           <object>
             <type>@(part.type)</type>
@@ -231,6 +232,7 @@
           </object>
 @[end for]@
         </kit>
+@[end for]@
       </goal>
 @[end for]@
     </plugin>
@@ -238,7 +240,7 @@
 @[if options['fill_demo_tray']]@
     <!-- Populate kit tray with order parts -->
     <plugin filename="libPopulationPlugin.so" name="populate_kit_tray_1">
-      <activation_topic>/ariac/populate_belt/</activation_topic>
+      <activation_topic>/ariac/populate_belt</activation_topic>
       <loop_forever>false</loop_forever>
       <frame>agv1::kit_tray::tray</frame>
 @[for order_name, order in orders.items()]@
@@ -247,7 +249,7 @@
         <object>
           <time>@(order['announcement_time'])</time>
           <type>@(part.type)</type>
-          <pose>@(' '.join(part.pose.xyz)) @(' '.join(part.pose.rpy))</pose>
+          <pose>@(' '.join(part.pose.xyz[0:-1])) 0.1 @(' '.join(part.pose.rpy))</pose>
         </object>
 @[end for]@
       </object_sequence>

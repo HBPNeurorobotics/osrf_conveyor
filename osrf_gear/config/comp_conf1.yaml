@@ -56,18 +56,18 @@ options:
 
   model_type_aliases:
     belt_model_type1: piston_rod_part
-    belt_model_type2: part3
+    belt_model_type2: part4
 
 belt_parts:
   1.0:
     type: belt_model_type1
     pose:
-      xyz: [0.0, 0.0, 0.0]
+      xyz: [0.0, 0.0, 0.1]
       rpy: [0, 0, 'pi/2']
   2.0:
     type: belt_model_type2
     pose:
-      xyz: [0.0, 0.0, 0.0]
+      xyz: [0.0, 0.0, 0.1]
       rpy: [0, 0, 'pi/2']
 
 orders:

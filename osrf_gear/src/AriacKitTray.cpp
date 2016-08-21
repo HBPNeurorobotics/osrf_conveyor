@@ -181,6 +181,7 @@ TrayScore KitTray::ScoreTray(const ScoringParameters & scoringParameters)
     }
   }
 
+  ROS_INFO_STREAM("[" << this->trayID << "] Current score: \n" << score);
   this->currentScore = score;
   this->currentScoringParameters = scoringParameters;
   this->kitStateChanged = false;
