@@ -197,8 +197,10 @@
 @[end if]@
 
     <!-- Populate the conveyor belt -->
-    <plugin filename="libPopulationPlugin.so" name="populate_conveyor">
+    <plugin filename="libROSPopulationPlugin.so" name="populate_conveyor">
       <activation_topic>/ariac/populate_belt</activation_topic>
+      <control_topic>/ariac/population/control</control_topic>
+      <state_topic>/ariac/population/state</state_topic>
       <loop_forever>true</loop_forever>
       <frame>conveyor_belt</frame>
       <object_sequence>
