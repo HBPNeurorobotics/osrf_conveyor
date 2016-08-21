@@ -54,7 +54,9 @@ void start_competition(ros::NodeHandle & node) {
 class MyCompetitionClass
 {
 public:
-  explicit MyCompetitionClass(ros::NodeHandle & node) : has_been_zeroed_(false) {
+  explicit MyCompetitionClass(ros::NodeHandle & node)
+  : current_score_(0), has_been_zeroed_(false)
+  {
     joint_trajectory_publisher_ = node.advertise<trajectory_msgs::JointTrajectory>(
       "/ariac/arm/command", 10);
   }
@@ -84,8 +86,8 @@ public:
 
   /// Called when a new JointState message is received on the '/ariac/arm/joint_states' topic.
   void joint_state_callback(const sensor_msgs::JointState::ConstPtr & joint_state_msg) {
-    ROS_INFO_STREAM_THROTTLE(10, "Current Joint States (throttled to 0.1 Hz):\n" << *joint_state_msg);
-    // ROS_INFO_STREAM("Current Joint States:\n" << *joint_state_msg);
+    ROS_INFO_STREAM_THROTTLE(10, "Joint States (throttled to 0.1 Hz):\n" << *joint_state_msg);
+    // ROS_INFO_STREAM("Joint States:\n" << *joint_state_msg);
     current_joint_states_ = *joint_state_msg;
     if (!has_been_zeroed_) {
       has_been_zeroed_ = true;
@@ -112,7 +114,7 @@ public:
 
   /// Called when a new LogicalCameraImage message is received on the '/ariac/logical_camera' topic.
   void logical_camera_callback(const osrf_gear::LogicalCameraImage::ConstPtr & image_msg) {
-    ROS_INFO_STREAM_THROTTLE(10, "Logical camera sees '" << image_msg->models.size() << "' objects.");
+    ROS_INFO_STREAM_THROTTLE(10, "Logical camera: '" << image_msg->models.size() << "' objects.");
   }
 
   /// Called when a new Proximity message is received on the '/ariac/break_beam_changed' topic.
@@ -138,7 +140,8 @@ void proximity_sensor_callback(const osrf_gear::Proximity::ConstPtr & msg) {
 }
 
 void laser_profiler_callback(const sensor_msgs::LaserScan::ConstPtr & msg) {
-  size_t number_of_valid_ranges = std::count_if(msg->ranges.begin(), msg->ranges.end(), std::isfinite<float>);
+  size_t number_of_valid_ranges = std::count_if(
+    msg->ranges.begin(), msg->ranges.end(), std::isfinite<float>);
   if (number_of_valid_ranges > 0) {
     ROS_INFO_THROTTLE(1, "Laser profiler sees something.");
   }
