@@ -44,7 +44,7 @@
 #   reference_frame_name:             # Name of the reference frame (e.g. workcell::bin8::link)
 #     models:                         # List of models to spawn
 #       model_name:                   # Name of the model
-#         type: part2                 # Type of model (note that only local models are supported)
+#         type: gear_part             # Type of model (note that only local models are supported)
 #         pose:
 #           xyz: [0.1, 0.1, 0.725]    # Co-ordinates of the model origin in the specified reference frame
 #           rpy: [0, 0, '-pi/2']      # Roll, pitch, yaw of the model in the specified reference frame
@@ -52,7 +52,7 @@
 options:
   insert_models_over_bins: true
   spawn_extra_models: false
-  fill_demo_tray: true
+  fill_demo_tray: false
 
   model_type_aliases:
     belt_model_type1: piston_rod_part
@@ -86,7 +86,7 @@ orders:
           rpy: [0, 0, 0]
 
 models_over_bins:
-  bin4:
+  bin8:
     models:
       gear_part:
         xyz_start: [0.2, 0.1, 0.0]
@@ -95,14 +95,14 @@ models_over_bins:
         num_models_x: 1
         num_models_y: 4
 
-      piston_rod_part:
+      gear_part:
         xyz_start: [0.5, 0.05, 0.0]
         xyz_end: [0.5, 0.45, 0.0]
         rpy: [0, 0, 'pi/4']
         num_models_x: 1
         num_models_y: 4
 
-  bin5:
+  bin1:
     models:
       gear_part:
         xyz_start: [0.3, 0.1, 0.0]
@@ -111,7 +111,7 @@ models_over_bins:
         num_models_x: 1
         num_models_y: 4
 
-  bin6:
+  bin2:
     models:
       gear_part:
         xyz_start: [0.3, 0.1, 0.0]
@@ -120,16 +120,16 @@ models_over_bins:
         num_models_x: 1
         num_models_y: 4
 
-  bin3:
+  bin7:
     models:
-       piston_rod_part:
+       gear_part:
         xyz_start: [0.1, 0.1, 0.0]
         xyz_end: [0.5, 0.5, 0.0]
         rpy: [0, 0, 'pi/4']
         num_models_x: 3
         num_models_y: 3
 
-  bin2:
+  bin6:
     models:
       #gasket_part:
       gear_part:
@@ -139,10 +139,10 @@ models_over_bins:
         num_models_x: 3
         num_models_y: 3
 
-  bin1:
+  bin5:
     models:
       #  disk_part:
-      piston_rod_part:
+      gear_part:
         xyz_start: [0.1, 0.1, 0.0]
         xyz_end: [0.5, 0.5, 0.0]
         rpy: [0, 0, 'pi/4']
