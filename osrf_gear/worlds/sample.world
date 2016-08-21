@@ -262,6 +262,97 @@
       </goal>
     </plugin>
 
+    <!-- Populate the bins -->
+    <include>
+      <name>bin7|part3_1</name>
+      <uri>model://part3</uri>
+      <pose>-0.5 0.23 0.75 0.0 0.0 0.0</pose>
+    </include>
+    <include>
+      <name>bin7|part3_0</name>
+      <uri>model://part3</uri>
+      <pose>-0.5 0.03 0.75 0.0 0.0 0.0</pose>
+    </include>
+    <include>
+      <name>bin7|part3_3</name>
+      <uri>model://part3</uri>
+      <pose>-0.3 0.03 0.75 0.0 0.0 0.0</pose>
+    </include>
+    <include>
+      <name>bin7|part3_2</name>
+      <uri>model://part3</uri>
+      <pose>-0.5 0.43 0.75 0.0 0.0 0.0</pose>
+    </include>
+    <include>
+      <name>bin7|part3_5</name>
+      <uri>model://part3</uri>
+      <pose>-0.3 0.43 0.75 0.0 0.0 0.0</pose>
+    </include>
+    <include>
+      <name>bin7|part3_4</name>
+      <uri>model://part3</uri>
+      <pose>-0.3 0.23 0.75 0.0 0.0 0.0</pose>
+    </include>
+    <include>
+      <name>bin7|part3_7</name>
+      <uri>model://part3</uri>
+      <pose>-0.1 0.23 0.75 0.0 0.0 0.0</pose>
+    </include>
+    <include>
+      <name>bin7|part3_6</name>
+      <uri>model://part3</uri>
+      <pose>-0.1 0.03 0.75 0.0 0.0 0.0</pose>
+    </include>
+    <include>
+      <name>bin7|part3_8</name>
+      <uri>model://part3</uri>
+      <pose>-0.1 0.43 0.75 0.0 0.0 0.0</pose>
+    </include>
+    <include>
+      <name>bin8|part4_8</name>
+      <uri>model://part4</uri>
+      <pose>-0.15 1.145 0.75 0.0 0.0 0.0</pose>
+    </include>
+    <include>
+      <name>bin8|part4_1</name>
+      <uri>model://part4</uri>
+      <pose>-0.45 0.995 0.75 0.0 0.0 0.0</pose>
+    </include>
+    <include>
+      <name>bin8|part4_0</name>
+      <uri>model://part4</uri>
+      <pose>-0.45 0.845 0.75 0.0 0.0 0.0</pose>
+    </include>
+    <include>
+      <name>bin8|part4_3</name>
+      <uri>model://part4</uri>
+      <pose>-0.3 0.845 0.75 0.0 0.0 0.0</pose>
+    </include>
+    <include>
+      <name>bin8|part4_2</name>
+      <uri>model://part4</uri>
+      <pose>-0.45 1.145 0.75 0.0 0.0 0.0</pose>
+    </include>
+    <include>
+      <name>bin8|part4_5</name>
+      <uri>model://part4</uri>
+      <pose>-0.3 1.145 0.75 0.0 0.0 0.0</pose>
+    </include>
+    <include>
+      <name>bin8|part4_4</name>
+      <uri>model://part4</uri>
+      <pose>-0.3 0.995 0.75 0.0 0.0 0.0</pose>
+    </include>
+    <include>
+      <name>bin8|part4_7</name>
+      <uri>model://part4</uri>
+      <pose>-0.15 0.995 0.75 0.0 0.0 0.0</pose>
+    </include>
+    <include>
+      <name>bin8|part4_6</name>
+      <uri>model://part4</uri>
+      <pose>-0.15 0.845 0.75 0.0 0.0 0.0</pose>
+    </include>
 
   </world>
 </sdf>
