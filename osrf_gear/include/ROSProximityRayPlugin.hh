@@ -16,7 +16,7 @@
 */
 /*
  * Desc: ROS wrapper for Proximity Ray Plugin
- * Author: Deanna Hood 
+ * Author: Deanna Hood
  * Date: 18 July 2016
  */
 
