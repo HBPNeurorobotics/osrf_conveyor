@@ -68,6 +68,9 @@ namespace gazebo
     /// \brief for setting ROS namespace
     protected: std::string robotNamespace;
 
+    /// \brief for setting ROS frame id
+    protected: std::string frameId;
+
   };
 }
 

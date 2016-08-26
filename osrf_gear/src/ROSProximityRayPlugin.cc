@@ -68,6 +68,13 @@ void ROSProximityRayPlugin::Load(sensors::SensorPtr _parent, sdf::ElementPtr _sd
     this->stateChangeTopic = _sdf->Get<std::string>("output_change_topic");
   }
 
+  this->frameId = _sdf->GetName() + "_frame";
+  if (_sdf->HasElement("frame_id"))
+  {
+    this->frameId = _sdf->Get<std::string>("frame_id");
+  }
+  this->state_msg.header.frame_id = this->frameId;
+
   this->rosnode = new ros::NodeHandle(this->robotNamespace);
 
   // Initialize the publishers
