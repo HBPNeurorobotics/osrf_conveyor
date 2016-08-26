@@ -4,8 +4,7 @@
     <link name="link">
       <sensor name="break_beam" type="ray">
         <plugin name="proximity_ray_plugin" filename="libROSProximityRayPlugin.so" >
-          <output_state_topic>/ariac/break_beam</output_state_topic>
-          <output_change_topic>/ariac/break_beam_changed</output_change_topic>
+          <robotNamespace>ariac</robotNamespace>
           <time_delay>0.05</time_delay><!-- this modifies the update rate of the ray sensor -->
         </plugin>
         <ray>

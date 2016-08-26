@@ -75,9 +75,10 @@ void ROSLogicalCameraPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sd
     return;
   }
 
-  std::string imageTopic_ros = "image";
-  if (_sdf->HasElement("image_topic_ros"))
+  std::string imageTopic_ros = _sdf->GetName();
+  if (_sdf->HasElement("image_topic_ros")) {
     imageTopic_ros = _sdf->Get<std::string>("image_topic_ros");
+  }
 
   this->imageSub = this->node->Subscribe(this->sensor->Topic(),
           &ROSLogicalCameraPlugin::OnImage, this);

@@ -56,13 +56,13 @@ void ROSProximityRayPlugin::Load(sensors::SensorPtr _parent, sdf::ElementPtr _sd
   }
 
   // Over-ride topics from the ProximityRayPlugin which may contain ~s
-  this->stateTopic = "sensor_output";
+  this->stateTopic = _sdf->GetName();
   if (_sdf->HasElement("output_state_topic"))
   {
     this->stateTopic = _sdf->Get<std::string>("output_state_topic");
   }
 
-  this->stateChangeTopic = "sensor_output_change";
+  this->stateChangeTopic = _sdf->GetName() + "_change";
   if (_sdf->HasElement("output_change_topic"))
   {
     this->stateChangeTopic = _sdf->Get<std::string>("output_change_topic");
