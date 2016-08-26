@@ -16,7 +16,7 @@
 */
 /*
  * Desc: ROS wrapper for Proximity Ray Plugin
- * Author: Deanna Hood 
+ * Author: Deanna Hood
  * Date: 18 July 2016
  */
 
@@ -67,6 +67,9 @@ namespace gazebo
 
     /// \brief for setting ROS namespace
     protected: std::string robotNamespace;
+
+    /// \brief for setting ROS frame id
+    protected: std::string frameId;
 
   };
 }

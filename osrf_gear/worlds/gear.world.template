@@ -84,11 +84,56 @@
 @[end if]@
 @[if sensor.type == "laser_profiler"]@
     <!-- a laser profiler called @(name) -->
-    <include>
-      <uri>model://laser_profiler</uri>
-      <name>@(name)</name>
+    <model name="@(name)">
       <pose>@(' '.join(sensor.pose.xyz)) @(' '.join(sensor.pose.rpy))</pose>
-    </include>
+      <link name="link">
+        <visual name="body">
+          <geometry>
+            <box>
+              <size>0.093 0.05 0.167</size>
+            </box>
+          </geometry>
+        </visual>
+        <sensor name="laser_profiler" type="ray">
+          <pose>0 0 0.06 0 0 0</pose>
+          <plugin name="proximity_ray_plugin" filename="libgazebo_ros_laser.so" >
+            <robotNamespace>ariac</robotNamespace>
+            <frameName>@(name)_frame</frameName>
+            <topicName>@(name)</topicName>
+          </plugin>
+          <ray>
+            <range>
+              <min>0.135</min>
+              <max>0.355</max>
+              <resolution>0.001</resolution>
+            </range>
+            <scan>
+              <horizontal>
+                <samples>100</samples>
+                <resolution>1</resolution>
+                <min_angle>-0.235</min_angle>
+                <max_angle>0.235</max_angle>
+              </horizontal>
+            </scan>
+
+            <!-- nothing below this line really needs to be modified upon change of sensor model -->
+
+            <noise>
+              <type>gaussian</type>
+              <mean>0.0</mean>
+              <stddev>0.01</stddev>
+            </noise>
+          </ray>
+
+          <always_on>1</always_on>
+          <visualize>true</visualize>
+        </sensor>
+        <gravity>false</gravity>
+        <inertial>
+          <mass>0.1</mass>
+        </inertial>
+      </link>
+    </model>
 
 @[end if]@
 @[end for]@

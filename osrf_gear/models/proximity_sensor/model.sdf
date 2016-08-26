@@ -13,8 +13,7 @@
       </visual>
       <sensor name="proximity_sensor" type="ray">
         <plugin name="proximity_ray_plugin" filename="libROSProximityRayPlugin.so" >
-          <output_state_topic>/ariac/proximity_sensor</output_state_topic>
-          <output_change_topic>/ariac/proximity_sensor_changed</output_change_topic>
+          <robotNamespace>ariac</robotNamespace>
           <time_delay>0.02</time_delay><!-- this modifies the update rate of the ray sensor -->
           <!-- the ray sensor doesn't have setters for these yet unfortunately so they have to be set in the ray tags -->
           <!--
