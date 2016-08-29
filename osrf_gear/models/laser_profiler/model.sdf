@@ -43,6 +43,14 @@
         <always_on>1</always_on>
         <visualize>true</visualize>
       </sensor>
+      <collision name='collision'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.093 0.05 0.167</size>
+          </box>
+        </geometry>
+      </collision>
       <gravity>false</gravity>
       <inertial>
         <mass>0.1</mass>

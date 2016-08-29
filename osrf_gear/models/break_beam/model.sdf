@@ -3,6 +3,7 @@
   <model name="proximity_sick_wl9l-3">
     <link name="link">
       <sensor name="break_beam" type="ray">
+        <pose>0.025 0 0 0 0 0</pose>
         <plugin name="proximity_ray_plugin" filename="libROSProximityRayPlugin.so" >
           <robotNamespace>ariac</robotNamespace>
           <time_delay>0.05</time_delay><!-- this modifies the update rate of the ray sensor -->
@@ -45,6 +46,13 @@
           </mesh>
         </geometry>
       </visual>
+      <collision name="collision">
+        <geometry>
+          <mesh>
+            <uri>model://hokuyo/meshes/hokuyo.dae</uri>
+          </mesh>
+        </geometry>
+      </collision>
     </link>
   </model>
 </sdf>
