@@ -1,11 +1,16 @@
 <?xml version="1.0"?>
 <launch>
+  <!-- run a relay to make joint_states available on ariac/joint_states -->
+  <node name="relay_joint_states" pkg="topic_tools" type="relay"
+        args="/joint_states /ariac/joint_states" required="true" output="screen" />
+
   <remap from="joint_states" to="ariac/joint_states" />
 
   <arg name="limited" default="false"/>
   <arg name="gui" default="true"/>
   <arg name="debug" default="false"/>
   <arg name="world_path" />
+  <arg name="gear_urdf_xacro" />
 
   <!-- startup simulated world -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
@@ -16,6 +21,11 @@
     <arg name="extra_gazebo_args" value="--verbose" />
     <arg name="debug" value="$(arg debug)" />
   </include>
+
+  <!-- load the URDF (it will include the robot arm model) -->
+  <param name="robot_description"
+         command="$(find xacro)/xacro.py '$(arg gear_urdf_xacro)' use_effort_interface:=true" />
+
 @{
 initial_joint_states_string = \
   ' '.join(['-J {0} {1}'.format(k, v) for k, v in arm.initial_joint_states.items()])
@@ -26,6 +36,7 @@ initial_joint_states_string = \
   <include file="$(find osrf_gear)/launch/ur10/ur10.xml">
     <arg name="limited" value="$(arg limited)" />
     <arg name="extra_spawn_model_args" value="@(initial_joint_states_string)" />
+    <arg name="set_robot_description" value="false" />
   </include>
 @[end if]@
 

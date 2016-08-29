@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro"
+       name="@(arm.type)" >
+
+  <!-- include the arm xacro -->
+@[if arm.type == 'ur10']@
+  <xacro:include filename="$(find osrf_gear)/launch/ur10/ur10_with_vacuum_gripper.urdf.xacro" />
+@[end if]@
+
+  <!-- linear arm actuator -->
+  <xacro:include filename="$(find osrf_gear)/launch/linear_arm_actuator/linear_arm_actuator.urdf.xacro" />
+
+  <xacro:create_linear_arm_actuator base_link="base_link" />
+
+  <!-- world link -->
+  <link name="world" />
+
+  <joint name="world_joint" type="fixed">
+    <parent link="world" />
+    <child link="linear_arm_actuator" />
+    <origin xyz="0.0 0.0 1" rpy="0.0 0.0 0.0" />
+  </joint>
+
+  <!-- sensor links and fixed joints -->
+@[for name, sensor in sensors.items()]@
+
+  <!-- a @(sensor.type) type sensor in the frame @(name)_frame -->
+  <link name="@(name)_frame" />
+  <joint name="@(name)_joint" type="fixed">
+    <parent link="world" />
+    <child link="@(name)_frame" />
+    <origin xyz="@(' '.join(sensor.pose.xyz))" rpy="@(' '.join(sensor.pose.rpy))" />
+  </joint>
+@[end for]@
+
+  <!-- plugin to spawn gazebo scene data into the moveit scene -->
+  <!--
+  <gazebo>
+    <plugin filename="libgazebo_ros_moveit_planning_scene.so" name="gazebo_ros_moveit_planning_scene">
+      <topicName>/planning_scene</topicName>
+      <sceneName>workcell</sceneName>
+      <robotName>robot</robotName>
+      <updatePeriod>0.5</updatePeriod>
+    </plugin>
+  </gazebo>
+  -->
+
+</robot>

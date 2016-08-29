@@ -61,6 +61,7 @@
       <uri>model://break_beam</uri>
       <name>@(name)</name>
       <pose>@(' '.join(sensor.pose.xyz)) @(' '.join(sensor.pose.rpy))</pose>
+      <static>true</static>
     </include>
 
 @[end if]@
@@ -70,6 +71,7 @@
       <uri>model://proximity_sensor</uri>
       <name>@(name)</name>
       <pose>@(' '.join(sensor.pose.xyz)) @(' '.join(sensor.pose.rpy))</pose>
+      <static>true</static>
     </include>
 
 @[end if]@
@@ -79,6 +81,7 @@
       <uri>model://logical_camera</uri>
       <name>@(name)</name>
       <pose>@(' '.join(sensor.pose.xyz)) @(' '.join(sensor.pose.rpy))</pose>
+      <static>true</static>
     </include>
 
 @[end if]@
@@ -86,6 +89,7 @@
     <!-- a laser profiler called @(name) -->
     <model name="@(name)">
       <pose>@(' '.join(sensor.pose.xyz)) @(' '.join(sensor.pose.rpy))</pose>
+      <static>true</static>
       <link name="link">
         <visual name="body">
           <geometry>

@@ -30,6 +30,7 @@ this_dir = os.path.abspath(os.path.dirname(__file__))
 template_files = [
     os.path.join(this_dir, '..', '..', 'share', 'osrf_gear', 'worlds', 'gear.world.template'),
     os.path.join(this_dir, '..', '..', 'share', 'osrf_gear', 'launch', 'gear.launch.template'),
+    os.path.join(this_dir, '..', '..', 'share', 'osrf_gear', 'launch', 'gear.urdf.xacro.template'),
 ]
 arm_configs = {
     'ur10': {
@@ -253,7 +254,7 @@ def create_models_over_bins_infos(models_over_bins_dict):
                 model_type, model_to_spawn_dict, 'num_models_y')
             step_size = [
                 (xyz_end[0] - xyz_start[0]) / max(1, num_models_x - 1),
-                (xyz_end[1] - xyz_start[1]) / max(1, num_models_y - 1)]    
+                (xyz_end[1] - xyz_start[1]) / max(1, num_models_y - 1)]
 
             # Create a grid of models
             for idx_x in range(num_models_x):
@@ -261,7 +262,7 @@ def create_models_over_bins_infos(models_over_bins_dict):
                     xyz = [
                         offset_xyz[0] + xyz_start[0] + idx_x * step_size[0],
                         offset_xyz[1] + xyz_start[1] + idx_y * step_size[1],
-                        offset_xyz[2] + xyz_start[2]] 
+                        offset_xyz[2] + xyz_start[2]]
                     model_to_spawn_data['pose'] = {'xyz': xyz, 'rpy': rpy}
                     model_info = create_model_info(model_type, model_to_spawn_data)
                     # assign each model a unique name because gazebo can't do this
@@ -294,7 +295,7 @@ def create_order_infos(orders_dict):
     for order_name, order_dict in orders_dict.items():
         order_infos[order_name] = create_order_info(order_name, order_dict)
     return order_infos
- 
+
 
 def create_bin_infos():
     bin_infos = {}
@@ -304,7 +305,7 @@ def create_bin_infos():
 
 
 def create_options_info(options_dict):
-    options = configurable_options 
+    options = configurable_options
     for option, val in options_dict.items():
         options[option] = val
     return options
@@ -395,7 +396,8 @@ def main(sysargv=None):
     cmd = [
         'roslaunch',
         os.path.join(args.output, 'gear.launch'),
-        'world_path:=' + os.path.join(args.output, 'gear.world')
+        'world_path:=' + os.path.join(args.output, 'gear.world'),
+        'gear_urdf_xacro:=' + os.path.join(args.output, 'gear.urdf.xacro'),
     ]
     print("Running command: " + ' '.join(cmd))
     if not args.dry_run:
