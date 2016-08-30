@@ -143,20 +143,21 @@ def get_required_field(entry_name, data_dict, required_entry):
 
 def create_arm_info(arm_dict):
     arm_type = get_required_field('arm', arm_dict, 'type')
-    initial_joint_states = get_required_field('arm', arm_dict, 'initial_joint_states')
     if arm_type not in arm_configs:
         print("Error: arm type '{0}' is not one of the valid arm entries: {1}"
               .format(arm_type, arm_configs), file=sys.stderr)
         sys.exit(1)
     default_joint_states = arm_configs[arm_type]['default_initial_joint_states']
     merged_initial_joint_states = dict(default_joint_states)
-    for k, v in initial_joint_states.items():
-        if k not in merged_initial_joint_states:
-            print("Error: given joint name '{0}' is not one of the known joint "
-                  "states for the '{1}' type arm: {2}".format(k, arm_type, default_joint_states),
-                  file=sys.stderr)
-            sys.exit(1)
-        merged_initial_joint_states[k] = v
+    if 'initial_joint_states' in arm_dict:
+        initial_joint_states = arm_dict['initial_joint_states']
+        for k, v in initial_joint_states.items():
+            if k not in merged_initial_joint_states:
+                print("Error: given joint name '{0}' is not one of the known joint "
+                    "states for the '{1}' type arm: {2}".format(k, arm_type, default_joint_states),
+                    file=sys.stderr)
+                sys.exit(1)
+            merged_initial_joint_states[k] = v
     return ArmInfo(arm_type, merged_initial_joint_states)
 
 
