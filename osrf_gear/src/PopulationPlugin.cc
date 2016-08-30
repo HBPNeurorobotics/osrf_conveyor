@@ -170,7 +170,7 @@ void PopulationPlugin::Load(physics::WorldPtr _world, sdf::ElementPtr _sdf)
   sdf::ElementPtr sequence = _sdf->GetElement("object_sequence");
 
   sdf::ElementPtr objectElem = NULL;
-  if (_sdf->HasElement("object"))
+  if (sequence->HasElement("object"))
   {
     objectElem = sequence->GetElement("object");
   }
