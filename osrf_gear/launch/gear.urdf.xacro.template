@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro"
-       name="@(arm.type)" >
+       name="gear" >
 
   <!-- include the arm xacro -->
 @[if arm.type == 'ur10']@
