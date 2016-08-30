@@ -2,6 +2,7 @@
 <launch>
   <arg name="limited" default="false"/>
   <arg name="gazebo_namespace" default="/gazebo" />
+  <arg name="set_robot_description" default="true" />
   <!-- This is typically used to pass initial joint states for the arm into this file. -->
   <arg name="extra_spawn_model_args" default="
         -J shoulder_pan_joint 0
@@ -12,7 +13,7 @@
         -J wrist_3_joint 0" />
 
   <!-- send robot urdf to param server -->
-  <param name="robot_description"
+  <param if="$(arg set_robot_description)" name="robot_description"
          command="$(find xacro)/xacro.py '$(find osrf_gear)/launch/ur10/ur10_with_vacuum_gripper.urdf.xacro' use_effort_interface:=true" />
 
   <!-- push robot_description to factory and spawn robot in gazebo -->

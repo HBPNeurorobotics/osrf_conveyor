@@ -5,6 +5,9 @@
 <xacro:property name="actuator_len" value="4.6" />
 <xacro:property name="actuator_height" value="0.1" />
 
+<xacro:arg name="use_velocity_interface" default="false" />
+<xacro:arg name="use_effort_interface" default="false" />
+
 <xacro:macro name="create_linear_arm_actuator" params="base_link">
 
   <link name="linear_arm_actuator">
