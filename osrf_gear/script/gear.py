@@ -61,8 +61,10 @@ default_bin_origins = {
     'bin8': [-0.3, 0.995, 0],
 }
 configurable_options = {
-    'insert_models_over_bins': True,
+    'insert_models_over_bins': False,
     'disable_shadows': False,
+    'fill_demo_tray': False,
+    'spawn_extra_models': False,
     'model_type_aliases': {
         'belt_model_type1': 'part1',
         'belt_model_type2': 'part2',
@@ -76,7 +78,7 @@ def prepare_arguments(parser):
         help='print generated files to stdout, but do not write them to disk')
     add('-o', '--output', default=os.getcwd(),
         help='directory in which to output the generated files')
-    mex_group = parser.add_mutually_exclusive_group(required=True)
+    mex_group = parser.add_mutually_exclusive_group(required=False)
     add = mex_group.add_argument
     add('config', nargs="?", metavar="CONFIG",
         help='yaml string that is the configuration')
@@ -312,7 +314,7 @@ def create_options_info(options_dict):
 
 def prepare_template_data(config_dict):
     template_data = {
-        'arm': None,
+        'arm': ArmInfo('arm', {}),
         'sensors': {},
         'models_to_insert': {},
         'models_to_spawn': {},
@@ -321,8 +323,10 @@ def prepare_template_data(config_dict):
         'options': {},
     }
     # Process the options first as they may affect the processing of the rest
+    options_dict = {}
     if 'options' in config_dict:
-        template_data['options'].update(create_options_info(config_dict['options']))
+        options_dict = config_dict['options']
+    template_data['options'].update(create_options_info(options_dict))
 
     for key, value in config_dict.items():
         if key == 'arm':
@@ -369,7 +373,7 @@ def main(sysargv=None):
             with open(file, 'r') as f:
                 comp_config_data = f.read()
                 config_data += comp_config_data
-    dict_config = yaml.load(config_data)
+    dict_config = yaml.load(config_data) or {}
     expanded_dict_config = expand_yaml_substitutions(dict_config)
     print(yaml.dump({'Using configuration': expanded_dict_config}))
     template_data = prepare_template_data(expanded_dict_config)

@@ -142,19 +142,13 @@
       <pose>1.2 -4.1 1.4 0 0 1.5708</pose>
     </include>
 
-    <!-- a beer for testing drops -->
-    <!--<include>
-      <uri>model://beer</uri>
-      <pose>0.7677 0.7813 0 0 0 0</pose>
-    </include>-->
-
     <!-- an invisible conveyor belt -->
     <model name="conveyor_belt">
       <static>true</static>
       <pose>1.21 5 0.81 0 0 1.57</pose>
       <plugin name="conveyor_belt_plugin" filename="libROSConveyorBeltPlugin.so">
         <robot_namespace>/ariac</robot_namespace>
-        <belt_velocity>0.2</belt_velocity>
+        <belt_start_velocity>0.0</belt_start_velocity>
         <velocity_axis>-1 0 0</velocity_axis>
         <contact_sensor_name>conveyor_belt_contact</contact_sensor_name>
       </plugin>

@@ -205,15 +205,14 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
   if (_sdf->HasElement("goals_topic"))
     goalsTopic = _sdf->Get<std::string>("goals_topic");
 
-  // Parse the time.
-  if (!_sdf->HasElement("goal"))
+  // Parse the goals.
+  sdf::ElementPtr goalElem = NULL;
+  if (_sdf->HasElement("goal"))
   {
-    gzerr << "Unable to find a <goal> element" << std::endl;
-    return;
+    sdf::ElementPtr goalElem = _sdf->GetElement("goal");
   }
 
   unsigned int goalCount = 0;
-  sdf::ElementPtr goalElem = _sdf->GetElement("goal");
   while (goalElem)
   {
     // Parse the start time.
@@ -350,6 +349,9 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
   this->dataPtr->populatePub =
     this->dataPtr->node->Advertise<msgs::GzString>(populationActivateTopic);
 
+  if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Info) ) {
+   ros::console::notifyLoggerLevelsChanged();
+}
   // Initialize the game scorer.
   this->dataPtr->trayInfoSub = this->dataPtr->rosnode->subscribe(
     "/ariac/trays", 10, &AriacScorer::OnTrayInfoReceived, &this->dataPtr->ariacScorer);
