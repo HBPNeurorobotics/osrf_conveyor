@@ -209,7 +209,7 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
   sdf::ElementPtr goalElem = NULL;
   if (_sdf->HasElement("goal"))
   {
-    sdf::ElementPtr goalElem = _sdf->GetElement("goal");
+    goalElem = _sdf->GetElement("goal");
   }
 
   unsigned int goalCount = 0;
