@@ -29,7 +29,7 @@
 #include "osrf_gear/ARIAC.hh"
 #include "osrf_gear/AriacKitTray.h"
 #include <osrf_gear/Goal.h>
-#include <osrf_gear/Kit.h>
+#include <osrf_gear/KitTray.h>
 #include "osrf_gear/VacuumGripperState.h"
 
 /// \brief A scorer for the ARIAC game.
@@ -79,7 +79,7 @@ class AriacScorer
   public: void OnGoalReceived(const osrf_gear::Goal::ConstPtr & goalMsg);
 
   /// \brief Callback for receiving tray state message.
-  public: void OnTrayInfoReceived(const osrf_gear::Kit::ConstPtr & trayMsg);
+  public: void OnTrayInfoReceived(const osrf_gear::KitTray::ConstPtr & trayMsg);
 
   /// \brief Callback for receiving gripper state message.
   public: void OnGripperStateReceived(const osrf_gear::VacuumGripperState &stateMsg);

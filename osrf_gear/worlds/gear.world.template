@@ -280,9 +280,8 @@
 @[for order_name, order in orders.items()]@
       <goal>
         <start_time>@(order['announcement_time'])</start_time>
-@[for specified_tray in ['agv1::kit_tray::tray', 'agv2::kit_tray::tray']]@
         <kit>
-          <tray>@(specified_tray)</tray>
+          <kit_type>@(order_name)</kit_type>
 @[for part in order['parts']]@
           <object>
             <type>@(part.type)</type>
@@ -290,7 +289,6 @@
           </object>
 @[end for]@
         </kit>
-@[end for]@
       </goal>
 @[end for]@
     </plugin>

@@ -79,14 +79,18 @@ void AriacScorer::ScoreCurrentGoal()
 {
   for (const auto & item : this->currentGoal.kits)
   {
-    auto trayID = item.first;
-    // Only count the trays that are part of this goal.
-    if (this->kitTrays.find(trayID) != this->kitTrays.end())
+    auto kitType = item.first;
+    ROS_INFO_STREAM("Scoring kit type: " << kitType);
+
+    for (const auto & item : this->kitTrays)
     {
-      auto tray = this->kitTrays[trayID];
-      auto trayScore = ScoreTray(tray.currentKit, trayID);
-      ROS_DEBUG_STREAM("Score from tray '" << trayID << "': " << trayScore.total());
-      this->goalScore->trayScores[trayID] = trayScore;
+      auto trayID = item.first;
+      auto tray = item.second;
+      auto trayScore = ScoreTray(tray.currentKit, kitType);
+      ROS_INFO_STREAM("Score from tray '" << trayID << "': " << trayScore.total());
+
+      // TODO: only add to goal score once requested
+      // this->goalScore->trayScores[trayID] = trayScore;
     }
   }
 }
@@ -201,17 +205,16 @@ ariac::TrayScore AriacScorer::ScoreTray(const ariac::Kit & tray, const ariac::Ki
     score.isComplete = true;
   }
 
-  ROS_INFO_STREAM("Current score: \n" << score);
   return score;
 }
 
 /////////////////////////////////////////////////
-void AriacScorer::OnTrayInfoReceived(const osrf_gear::Kit::ConstPtr & kitMsg)
+void AriacScorer::OnTrayInfoReceived(const osrf_gear::KitTray::ConstPtr & trayMsg)
 {
   boost::mutex::scoped_lock kitTraysLock(this->kitTraysMutex);
 
   // Get the ID of the tray that the message is from.
-  std::string trayID = kitMsg->tray.data;
+  std::string trayID = trayMsg->tray.data;
 
   if (this->kitTrays.find(trayID) == this->kitTrays.end())
   {
@@ -225,7 +228,7 @@ void AriacScorer::OnTrayInfoReceived(const osrf_gear::Kit::ConstPtr & kitMsg)
   // will be part of future goals.
   this->newTrayInfoReceived = true;
   ariac::Kit kitState;
-  FillKitFromMsg(*kitMsg, kitState);
+  FillKitFromMsg(trayMsg->kit, kitState);
   this->kitTrays[trayID].UpdateKitState(kitState);
 }
 
@@ -239,10 +242,10 @@ void AriacScorer::OnGoalReceived(const osrf_gear::Goal::ConstPtr & goalMsg)
   goal.goalID = goalMsg->goal_id.data;
   for (const auto & kitMsg : goalMsg->kits)
   {
-    std::string trayID = kitMsg.tray.data;
+    ariac::KitType_t kitType = kitMsg.kit_type.data;
     ariac::Kit assignedKit;
     FillKitFromMsg(kitMsg, assignedKit);
-    goal.kits[trayID] = assignedKit;
+    goal.kits[kitType] = assignedKit;
   }
   this->newGoal = goal;
 }

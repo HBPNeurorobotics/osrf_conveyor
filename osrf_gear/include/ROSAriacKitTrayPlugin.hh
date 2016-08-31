@@ -30,7 +30,6 @@
 #include <gazebo/sensors/sensors.hh>
 #include <gazebo/util/system.hh>
 #include <osrf_gear/ARIAC.hh>
-#include <osrf_gear/Goal.h>
 #include "SideContactPlugin.hh"
 
 namespace gazebo

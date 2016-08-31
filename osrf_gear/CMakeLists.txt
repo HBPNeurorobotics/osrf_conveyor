@@ -27,6 +27,7 @@ add_message_files(DIRECTORY msg
   Goal.msg
   Kit.msg
   KitObject.msg
+  KitTray.msg
   LogicalCameraImage.msg
   Model.msg
   PopulationState.msg

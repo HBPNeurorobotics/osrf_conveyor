@@ -133,7 +133,7 @@ static void fillGoalMsg(const ariac::Goal &_goal,
   for (const auto item : _goal.kits)
   {
     osrf_gear::Kit msgKit;
-    msgKit.tray.data = item.first;
+    msgKit.kit_type.data = item.first;
     for (const auto &obj : item.second.objects)
     {
       osrf_gear::KitObject msgObj;
@@ -258,11 +258,11 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
 
       ariac::Kit kit;
 
-      // Parse the tray the kit is assigned to.
-      std::string trayID;
-      if (kitElem->HasElement("tray"))
+      // Parse the kit type.
+      ariac::KitType_t kitType;
+      if (kitElem->HasElement("kit_type"))
       {
-        trayID = kitElem->Get<std::string>("tray");
+        kitType = kitElem->Get<std::string>("kit_type");
       }
 
       // Parse the objects inside the kit.
@@ -297,7 +297,7 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
       }
 
       // Add a new kit to the collection of kits.
-      kits[trayID] = kit;
+      kits[kitType] = kit;
 
       kitElem = kitElem->GetNextElement("kit");
     }

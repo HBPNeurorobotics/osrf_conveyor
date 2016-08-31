@@ -17,6 +17,8 @@
 
 #include <string>
 
+#include <osrf_gear/KitTray.h>
+
 #include "ROSAriacKitTrayPlugin.hh"
 
 using namespace gazebo;
@@ -51,7 +53,7 @@ void KitTrayPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   }
 
   this->rosNode = new ros::NodeHandle("");
-  this->currentKitPub = this->rosNode->advertise<osrf_gear::Kit>(
+  this->currentKitPub = this->rosNode->advertise<osrf_gear::KitTray>(
     "/ariac/trays", 1000);
 }
 
@@ -100,8 +102,8 @@ void KitTrayPlugin::ProcessContactingModels()
 void KitTrayPlugin::PublishKitMsg()
 {
   // Publish current kit
-  osrf_gear::Kit msgKit;
-  msgKit.tray.data = this->trayID;
+  osrf_gear::KitTray kitTrayMsg;
+  kitTrayMsg.tray.data = this->trayID;
   for (const auto &obj : this->currentKit.objects)
   {
     osrf_gear::KitObject msgObj;
@@ -115,7 +117,7 @@ void KitTrayPlugin::PublishKitMsg()
     msgObj.pose.orientation.w = obj.pose.rot.w;
 
     // Add the object to the kit.
-    msgKit.objects.push_back(msgObj);
+    kitTrayMsg.kit.objects.push_back(msgObj);
   }
-  this->currentKitPub.publish(msgKit);
+  this->currentKitPub.publish(kitTrayMsg);
 }
