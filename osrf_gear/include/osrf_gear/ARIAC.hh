@@ -28,6 +28,7 @@ namespace ariac
 {
   using namespace gazebo;
 
+  typedef std::string KitType_t;
   typedef std::string TrayID_t;
   typedef std::string GoalID_t;
 
@@ -279,7 +280,10 @@ namespace ariac
       return _out;
     }
 
-    /// \brief A kit is composed by multiple objects.
+    /// \brief The type of the kit.
+    public: KitType_t kitType;
+
+    /// \brief A kit is composed of multiple objects.
     public: std::vector<KitObject> objects;
   };
 

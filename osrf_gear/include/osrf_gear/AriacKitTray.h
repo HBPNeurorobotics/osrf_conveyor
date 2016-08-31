@@ -15,7 +15,6 @@
  *
 */
 
-#include <map>
 #include <string>
 
 #include <osrf_gear/ARIAC.hh>
@@ -31,47 +30,21 @@ namespace ariac
     /// \brief Constructor.
     /// \param[in] _trayID ID of the tray.
     /// \param[in] _assignedKit Kit assigned to the tray.
-    public: KitTray(std::string _trayID, const Kit & _assignedKit = Kit());
+    public: KitTray(std::string _trayID);
 
     /// \brief Destructor.
     public: ~KitTray();
 
-    /// \brief Assign a kit to the tray.
-    public: void AssignKit(const Kit & kit);
-
-    /// \brief Stop monitoring the assigned kit.
-    public: void UnassignCurrentKit();
-
     /// \brief Update the current state of the kit on the tray.
     public: void UpdateKitState(const Kit & kit);
 
-    /// \brief Calculate the score of a single tray given the objects.
-    /// \param[in] scoringParameters Scoring parameters to use.
-    /// \return The total score of the tray.
-    public: TrayScore ScoreTray(const ScoringParameters & scoringParameters);
-
     /// \brief The ID of the tray.
     public: std::string trayID;
-
-    /// \brief The goal state of the kit on the tray.
-    public: Kit assignedKit;
 
     /// \brief The current state of the kit on the tray.
     public: Kit currentKit;
 
     /// \brief Flag for signalling the state of the tray has changed.
     protected: bool kitStateChanged;
-
-    /// \brief Flag for signalling new assigned kit to process.
-    protected: bool assignedKitChanged;
-
-    /// \brief Score of the tray given the current state.
-    protected: TrayScore currentScore;
-
-    /// \brief Scoring parameters used to calculate the current score.
-    protected: ScoringParameters currentScoringParameters;
-
-    /// \brief The number of each type of object in the assigned kit.
-    protected: std::map<std::string, unsigned int> assignedObjectTypeCount;
   };
 }

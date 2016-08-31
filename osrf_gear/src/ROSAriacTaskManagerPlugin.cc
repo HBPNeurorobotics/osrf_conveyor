@@ -321,6 +321,11 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
   // Initialize ROS
   this->dataPtr->rosnode.reset(new ros::NodeHandle(robotNamespace));
 
+  if(ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Info))
+  {
+    ros::console::notifyLoggerLevelsChanged();
+  }
+
   // Publisher for announcing new goals.
   this->dataPtr->goalPub = this->dataPtr->rosnode->advertise<
     osrf_gear::Goal>(goalsTopic, 1000, true);  // latched=true
@@ -349,9 +354,6 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
   this->dataPtr->populatePub =
     this->dataPtr->node->Advertise<msgs::GzString>(populationActivateTopic);
 
-  if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Info) ) {
-   ros::console::notifyLoggerLevelsChanged();
-}
   // Initialize the game scorer.
   this->dataPtr->trayInfoSub = this->dataPtr->rosnode->subscribe(
     "/ariac/trays", 10, &AriacScorer::OnTrayInfoReceived, &this->dataPtr->ariacScorer);

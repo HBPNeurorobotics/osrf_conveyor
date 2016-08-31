@@ -17,11 +17,6 @@
 
 #include "osrf_gear/AriacKitTray.h"
 
-#include <iostream>
-#include <vector>
-
-#include <ros/console.h>
-
 using namespace ariac;
 
 /////////////////////////////////////////////////
@@ -35,35 +30,9 @@ KitTray::~KitTray()
 }
 
 /////////////////////////////////////////////////
-KitTray::KitTray(std::string _trayID, const Kit & _assignedKit)
+KitTray::KitTray(std::string _trayID)
   : trayID(_trayID)
 {
-  this->AssignKit(_assignedKit);
-}
-
-/////////////////////////////////////////////////
-void KitTray::AssignKit(const Kit & kit)
-{
-  ROS_DEBUG_STREAM("Assigned new kit.");
-  this->assignedKit = kit;
-  this->assignedKitChanged = true;
-
-  // Count the number of each type of object
-  this->assignedObjectTypeCount.clear();
-  for (const auto & obj : kit.objects)
-  {
-    if (this->assignedObjectTypeCount.find(obj.type) == this->assignedObjectTypeCount.end())
-    {
-      this->assignedObjectTypeCount[obj.type] = 0;
-    }
-    this->assignedObjectTypeCount[obj.type] += 1;
-  }
-}
-
-/////////////////////////////////////////////////
-void KitTray::UnassignCurrentKit()
-{
-  this->assignedKit.objects.clear();
 }
 
 /////////////////////////////////////////////////
@@ -71,120 +40,4 @@ void KitTray::UpdateKitState(const Kit & kit)
 {
   this->currentKit = kit;
   this->kitStateChanged = true;
-}
-
-/////////////////////////////////////////////////
-TrayScore KitTray::ScoreTray(const ScoringParameters & scoringParameters)
-{
-  bool scoringParametersChanged = this->currentScoringParameters != scoringParameters;
-
-  // If nothing has changed, return the previously calculated score
-  if (!(this->kitStateChanged || this->assignedKitChanged || scoringParametersChanged))
-  {
-    return this->currentScore;
-  }
-
-  TrayScore score;
-  score.trayID = this->trayID;
-  auto numAssignedObjects = this->assignedKit.objects.size();
-  ROS_DEBUG_STREAM("[" << this->trayID << "] Comparing the " << numAssignedObjects <<
-    " assigned objects with the current " <<
-    this->currentKit.objects.size() << " objects");
-
-  // Keep track of which assigned objects have already been 'matched' to one on the tray.
-  // This is to prevent multiple objects being close to a single target pose both scoring points.
-  std::vector<ariac::KitObject> remainingAssignedObjects(assignedKit.objects);
-
-  ROS_DEBUG_STREAM("[" << this->trayID << "] Checking object counts");
-  std::map<std::string, unsigned int> currentObjectTypeCount;
-  bool assignedObjectsMissing = false;
-  for (auto & value : this->assignedObjectTypeCount)
-  {
-    auto assignedObjectType = value.first;
-    auto assignedObjectCount = value.second;
-    auto currentObjectCount =
-      std::count_if(this->currentKit.objects.begin(), currentKit.objects.end(),
-        [assignedObjectType](ariac::KitObject k) {return k.type == assignedObjectType;});
-    ROS_DEBUG_STREAM("[" << this->trayID << "] Found " << currentObjectCount <<
-      " objects of type '" << assignedObjectType << "'");
-    score.partPresence +=
-      std::min(long(assignedObjectCount), currentObjectCount) * scoringParameters.objectPresence;
-    if (currentObjectCount < assignedObjectCount)
-    {
-      assignedObjectsMissing = true;
-    }
-  }
-  if (!assignedObjectsMissing)
-  {
-    ROS_DEBUG_STREAM("[" << this->trayID << "] All objects on tray");
-    score.allPartsBonus += scoringParameters.allObjectsBonusFactor * numAssignedObjects;
-  }
-
-  ROS_DEBUG_STREAM("[" << this->trayID << "] Checking object poses");
-  for (const auto & currentObject : this->currentKit.objects)
-  {
-    for (auto it = remainingAssignedObjects.begin(); it != remainingAssignedObjects.end(); ++it)
-    {
-      // Only check poses of parts of the same type
-      auto assignedObject = *it;
-      if (assignedObject.type != currentObject.type)
-        continue;
-
-      // Check the position of the object (ignoring orientation)
-      ROS_DEBUG_STREAM("[" << this->trayID << "] Comparing pose '" << currentObject.pose <<
-        "' with the assigned pose '" << assignedObject.pose << "'");
-      math::Vector3 posnDiff = assignedObject.pose.CoordPositionSub(currentObject.pose);
-      posnDiff.z = 0;
-      if (posnDiff.GetLength() > scoringParameters.distanceThresh)
-        continue;
-      ROS_DEBUG_STREAM("[" << this->trayID << "] Object of type '" << currentObject.type <<
-        "' in the correct position");
-      score.partPose += scoringParameters.objectPosition;
-
-      // Check the orientation of the object.
-      math::Quaternion objOrientation = currentObject.pose.rot;
-      math::Quaternion goalOrientation = assignedObject.pose.rot;
-
-      // Filter objects that aren't in the appropriate orientation (loosely).
-      // If the quaternions represent the same orientation, q1 = +-q2 => q1.dot(q2) = +-1
-      double orientationDiff = objOrientation.Dot(goalOrientation);
-      // TODO: this value can probably be derived using relationships between
-      // euler angles and quaternions.
-      double quaternionDiffThresh = 0.05;
-      if (std::abs(orientationDiff) < (1.0 - quaternionDiffThresh))
-        continue;
-
-      // Now filter the poses based on a threshold set in radians (more user-friendly).
-      double yawDiff = objOrientation.GetYaw() - goalOrientation.GetYaw();
-      if (std::abs(yawDiff) > scoringParameters.orientationThresh)
-        continue;
-
-      ROS_DEBUG_STREAM("[" << this->trayID << "] Object of type '" << currentObject.type <<
-        "' in the correct orientation");
-      score.partPose += scoringParameters.objectOrientation;
-
-      // Once a match is found, don't permit it to be matched again
-      remainingAssignedObjects.erase(it);
-      break;
-    }
-  }
-
-  // Check if all assigned objects have been matched to one on the tray
-  if (remainingAssignedObjects.empty())
-  {
-    score.isComplete = true;
-    if (this->currentScore.isComplete != score.isComplete)
-    {
-      //FIXME: there's a bug here. it's not maintaining its state.
-      //       only happens if there are multiple trays in the goal.
-      //ROS_INFO_STREAM("Tray complete: " << this->trayID);
-    }
-  }
-
-  ROS_INFO_STREAM("[" << this->trayID << "] Current score: \n" << score);
-  this->currentScore = score;
-  this->currentScoringParameters = scoringParameters;
-  this->kitStateChanged = false;
-  this->assignedKitChanged = false;
-  return score;
 }

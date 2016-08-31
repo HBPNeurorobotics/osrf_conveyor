@@ -66,6 +66,9 @@ class AriacScorer
   /// \return The score for the goal.
   public: ariac::GoalScore UnassignCurrentGoal(double timeTaken = 0.0);
 
+  /// \brief Calculate the score for a tray given the type of kit being built.
+  public: ariac::TrayScore ScoreTray(const ariac::Kit & tray, const ariac::KitType_t kitType);
+
   /// \brief Calculate the score for the trays given the objects in them.
   protected: void ScoreCurrentGoal();
 

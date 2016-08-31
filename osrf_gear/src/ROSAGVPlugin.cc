@@ -105,7 +105,7 @@ bool ROSAGVPlugin::OnCommand(
   osrf_gear::AGVControl::Request &_req,
   osrf_gear::AGVControl::Response &_res)
 {
-  _res.success = _req.trayComplete &&
+  _res.success = _req.tray_complete &&
       (anim->GetTime() <= 0.0 || anim->GetTime() >= anim->GetLength());
 
   if (_res.success)

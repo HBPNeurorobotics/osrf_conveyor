@@ -1,6 +1,7 @@
 # AGV Control
 
-bool trayComplete
+bool tray_complete
+std_msgs/String kit_type
 
 ---
 bool success
