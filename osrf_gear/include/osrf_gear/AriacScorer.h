@@ -79,7 +79,7 @@ class AriacScorer
   protected: ariac::TrayScore ScoreTray(const ariac::KitTray & tray);
 
   /// \brief Calculate the score for the trays given the objects in them.
-  protected: void ScoreCurrentGoal();
+  protected: void ScoreCurrentState();
 
   /// \brief Helper function for filling a Kit from a kit ROS message.
   public: static void FillKitFromMsg(const osrf_gear::Kit & kitMsg, ariac::Kit & kit);

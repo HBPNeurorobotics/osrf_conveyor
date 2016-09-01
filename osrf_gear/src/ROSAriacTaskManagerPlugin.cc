@@ -272,6 +272,7 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
       {
         kitType = kitElem->Get<std::string>("kit_type");
       }
+      kit.kitType = kitType;
 
       // Parse the objects inside the kit.
       sdf::ElementPtr objectElem = kitElem->GetElement("object");

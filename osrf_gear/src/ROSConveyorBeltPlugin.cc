@@ -62,7 +62,7 @@ void ROSConveyorBeltPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf
   this->rosnode_ = new ros::NodeHandle(this->robotNamespace_);
 
   // During competition, this environment variable will be set and the
-  // population control service won't be available.
+  // service won't be available.
   auto v = std::getenv("ARIAC_COMPETITION");
   if (!v)
   {

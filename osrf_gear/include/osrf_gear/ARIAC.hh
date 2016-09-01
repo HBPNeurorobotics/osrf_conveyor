@@ -272,7 +272,7 @@ namespace ariac
     public: friend std::ostream &operator<<(std::ostream &_out,
                                             const Kit &_kit)
     {
-      _out << "<kit>";
+      _out << "<kit type='" << _kit.kitType << "'>";
       for (const auto & obj : _kit.objects)
         _out << std::endl << obj;
       _out << std::endl << "</kit>" << std::endl;
@@ -328,8 +328,8 @@ namespace ariac
     /// completed before cancelling it. Infinite by default.
     public: double allowedTime;
 
-    /// \brief A goal is composed of multiple kits assigned to specific trays.
-    public: std::map<TrayID_t, Kit> kits;
+    /// \brief A goal is composed of multiple kits of different types.
+    public: std::map<KitType_t, Kit> kits;
 
     /// \brief Simulation time in seconds spent on this goal.
     public: double timeTaken;

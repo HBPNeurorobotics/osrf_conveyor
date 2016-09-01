@@ -84,6 +84,19 @@ orders:
         pose:
           xyz: [0.1, 0.15, 0]
           rpy: [0, 0, 0]
+  order_1:
+    announcement_time: 1.0
+    parts:
+      part_0:
+        type: belt_model_type1
+        pose:
+          xyz: [0.1, -0.15, 0]
+          rpy: [0, 0, 0]
+      part_1:
+        type: belt_model_type2
+        pose:
+          xyz: [0.1, 0.15, 0]
+          rpy: [0, 0, 0]
 
 models_to_spawn:
   # Spawn some models close to the arm

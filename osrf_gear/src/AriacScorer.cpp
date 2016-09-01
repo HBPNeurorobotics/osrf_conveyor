@@ -60,10 +60,17 @@ void AriacScorer::Update(double timeStep)
     this->AssignGoal(this->newGoal);
   }
 
-  if (this->newGoalReceived || this->newTrayInfoReceived)
+  // During the competition, this environment variable will be set.
+  auto v = std::getenv("ARIAC_COMPETITION");
+  if (!v)
   {
-    this->ScoreCurrentGoal();
+    // Check score of trays in progress.
+    if (this->newGoalReceived || this->newTrayInfoReceived)
+    {
+      this->ScoreCurrentState();
+    }
   }
+
   this->newGoalReceived = false;
   this->newTrayInfoReceived = false;
 }
@@ -75,14 +82,31 @@ bool AriacScorer::IsCurrentGoalComplete()
 }
 
 /////////////////////////////////////////////////
-void AriacScorer::ScoreCurrentGoal()
+void AriacScorer::ScoreCurrentState()
 {
   for (const auto & item : this->kitTrays)
   {
-      auto trayID = item.first;
-      auto tray = item.second;
+    auto trayID = item.first;
+    auto tray = item.second;
+    if (tray.currentKit.kitType != "")
+    {
       auto trayScore = ScoreTray(tray);
-      ROS_INFO_STREAM("Score from tray '" << trayID << "': " << trayScore.total());
+      ROS_INFO_STREAM("Score from tray '" << trayID <<
+        "' with kit type '" << tray.currentKit.kitType << "': " << trayScore.total());
+    }
+    else
+    {
+      for (const auto & item : this->currentGoal.kits)
+      {
+        auto kit = item.second;
+        auto goalKitType = kit.kitType;
+        tray.currentKit.kitType = goalKitType;
+        auto trayScore = ScoreTray(tray);
+        ROS_INFO_STREAM("Score from tray '" << trayID
+          << "' if it were to have kit type '" << goalKitType << "': "
+          << trayScore.total());
+      }
+    }
   }
 }
 
