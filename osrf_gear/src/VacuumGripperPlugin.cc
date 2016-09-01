@@ -102,7 +102,7 @@ namespace gazebo
     public: std::mutex mutex;
 
     /// \brief True if the gripper has an object.
-    public: bool attached;
+    public: bool attached = false;
 
     /// \brief Rate at which to update the gripper.
     public: common::Time updateRate;
@@ -137,10 +137,10 @@ namespace gazebo
     public: transport::SubscriberPtr contactSub;
 
     /// \brief Whether the suction is enabled or not.
-    public: bool enabled;
+    public: bool enabled = false;
 
     /// \brief Whether there's an ongoing drop.
-    public: bool dropPending;
+    public: bool dropPending = false;
 
     /// \brief Attached model to be dropped.
     public: physics::ModelPtr dropAttachedModel;
