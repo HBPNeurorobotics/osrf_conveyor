@@ -73,7 +73,7 @@ class AriacScorer
   public: bool GetTrayById(const ariac::TrayID_t & trayID, ariac::KitTray & kitTray);
 
   /// \brief Calculate the score for a tray given the type of kit being built.
-  public: ariac::TrayScore ScoreTray(const ariac::KitTray & tray, const ariac::KitType_t kitType);
+  public: ariac::TrayScore ScoreTray(const ariac::KitTray & tray);
 
   /// \brief Calculate the score for the trays given the objects in them.
   protected: void ScoreCurrentGoal();

@@ -77,21 +77,12 @@ bool AriacScorer::IsCurrentGoalComplete()
 /////////////////////////////////////////////////
 void AriacScorer::ScoreCurrentGoal()
 {
-  for (const auto & item : this->currentGoal.kits)
+  for (const auto & item : this->kitTrays)
   {
-    auto kitType = item.first;
-    ROS_INFO_STREAM("Scoring kit type: " << kitType);
-
-    for (const auto & item : this->kitTrays)
-    {
       auto trayID = item.first;
       auto tray = item.second;
-      auto trayScore = ScoreTray(tray, kitType);
+      auto trayScore = ScoreTray(tray);
       ROS_INFO_STREAM("Score from tray '" << trayID << "': " << trayScore.total());
-
-      // TODO: only add to goal score once requested
-      // this->goalScore->trayScores[trayID] = trayScore;
-    }
   }
 }
 
@@ -109,9 +100,10 @@ bool AriacScorer::GetTrayById(const ariac::TrayID_t & trayID, ariac::KitTray & k
 }
 
 /////////////////////////////////////////////////
-ariac::TrayScore AriacScorer::ScoreTray(const ariac::KitTray & tray, const ariac::KitType_t kitType)
+ariac::TrayScore AriacScorer::ScoreTray(const ariac::KitTray & tray)
 {
   ariac::Kit kit = tray.currentKit;
+  ariac::KitType_t kitType = tray.currentKit.kitType;
   ariac::TrayScore score;
   if (this->currentGoal.kits.find(kitType) == this->currentGoal.kits.end())
   {

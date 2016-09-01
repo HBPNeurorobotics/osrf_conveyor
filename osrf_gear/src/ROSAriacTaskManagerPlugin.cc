@@ -512,8 +512,9 @@ bool ROSAriacTaskManagerPlugin::HandleSubmitTrayService(
     res.success = false;
     return true;
   }
+  kitTray.currentKit.kitType = req.kit_type.data;
   res.success = true;
-  res.inspection_result = this->dataPtr->ariacScorer.ScoreTray(kitTray, req.kit_type.data).total();
+  res.inspection_result = this->dataPtr->ariacScorer.ScoreTray(kitTray).total();
   return true;
 }
 
