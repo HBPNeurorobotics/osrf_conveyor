@@ -92,6 +92,9 @@ namespace gazebo
     /// \brief Service that allows the user to start the competition.
     public: ros::ServiceServer teamStartServiceServer;
 
+    /// \brief Service that allows a tray to be submitted for inspection.
+    public: ros::ServiceServer submitTrayServiceServer;
+
     /// \brief Transportation node.
     public: transport::NodePtr node;
 
@@ -204,6 +207,11 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
   std::string goalsTopic = "orders";
   if (_sdf->HasElement("goals_topic"))
     goalsTopic = _sdf->Get<std::string>("goals_topic");
+
+  std::string submitTrayServiceName = "submit_tray";
+  if (_sdf->HasElement("submit_tray_service_name"))
+    submitTrayServiceName = _sdf->Get<std::string>("submit_tray_service_name");
+
 
   // Parse the goals.
   sdf::ElementPtr goalElem = NULL;
@@ -338,10 +346,15 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
   this->dataPtr->gazeboTaskScorePub = this->dataPtr->rosnode->advertise<
     std_msgs::Float32>(gazeboTaskScoreTopic, 1000);
 
-  // Subscribe to the topic for receiving the state of the team's task.
+  // Service for starting the competition.
   this->dataPtr->teamStartServiceServer =
     this->dataPtr->rosnode->advertiseService(teamStartServiceName,
       &ROSAriacTaskManagerPlugin::HandleStartService, this);
+
+  // Service for submitting trays for inspection.
+  this->dataPtr->submitTrayServiceServer =
+    this->dataPtr->rosnode->advertiseService(submitTrayServiceName,
+      &ROSAriacTaskManagerPlugin::HandleSubmitTrayService, this);
 
   // Client for the conveyor control commands.
   this->dataPtr->conveyorControlClient =
@@ -483,6 +496,24 @@ bool ROSAriacTaskManagerPlugin::HandleStartService(
   }
   res.success = false;
   res.message = "cannot start if not in 'init' state";
+  return true;
+}
+
+/////////////////////////////////////////////////
+bool ROSAriacTaskManagerPlugin::HandleSubmitTrayService(
+  osrf_gear::SubmitTray::Request & req,
+  osrf_gear::SubmitTray::Response & res)
+{
+  std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
+
+  ariac::KitTray kitTray;
+  if (!this->dataPtr->ariacScorer.GetTrayById(req.tray_id.data, kitTray))
+  {
+    res.success = false;
+    return true;
+  }
+  res.success = true;
+  res.inspection_result = this->dataPtr->ariacScorer.ScoreTray(kitTray, req.kit_type.data).total();
   return true;
 }
 

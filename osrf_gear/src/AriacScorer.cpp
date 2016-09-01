@@ -86,7 +86,7 @@ void AriacScorer::ScoreCurrentGoal()
     {
       auto trayID = item.first;
       auto tray = item.second;
-      auto trayScore = ScoreTray(tray.currentKit, kitType);
+      auto trayScore = ScoreTray(tray, kitType);
       ROS_INFO_STREAM("Score from tray '" << trayID << "': " << trayScore.total());
 
       // TODO: only add to goal score once requested
@@ -96,8 +96,22 @@ void AriacScorer::ScoreCurrentGoal()
 }
 
 /////////////////////////////////////////////////
-ariac::TrayScore AriacScorer::ScoreTray(const ariac::Kit & tray, const ariac::KitType_t kitType)
+bool AriacScorer::GetTrayById(const ariac::TrayID_t & trayID, ariac::KitTray & kitTray)
 {
+  auto it = this->kitTrays.find(trayID);
+  if (it == this->kitTrays.end())
+  {
+    ROS_DEBUG_STREAM("No known tray with ID: " << trayID);
+    return false;
+  }
+  kitTray = it->second;
+  return true;
+}
+
+/////////////////////////////////////////////////
+ariac::TrayScore AriacScorer::ScoreTray(const ariac::KitTray & tray, const ariac::KitType_t kitType)
+{
+  ariac::Kit kit = tray.currentKit;
   ariac::TrayScore score;
   if (this->currentGoal.kits.find(kitType) == this->currentGoal.kits.end())
   {
@@ -108,7 +122,7 @@ ariac::TrayScore AriacScorer::ScoreTray(const ariac::Kit & tray, const ariac::Ki
   auto numAssignedObjects = assignedKit.objects.size();
   ROS_DEBUG_STREAM("Comparing the " << numAssignedObjects <<
     " assigned objects with the current " <<
-    tray.objects.size() << " objects");
+    kit.objects.size() << " objects");
 
   // Count the number of each type of assigned object
   std::map<std::string, unsigned int> assignedObjectTypeCount, currentObjectTypeCount;
@@ -129,7 +143,7 @@ ariac::TrayScore AriacScorer::ScoreTray(const ariac::Kit & tray, const ariac::Ki
     auto assignedObjectType = value.first;
     auto assignedObjectCount = value.second;
     auto currentObjectCount =
-      std::count_if(tray.objects.begin(), tray.objects.end(),
+      std::count_if(kit.objects.begin(), kit.objects.end(),
         [assignedObjectType](ariac::KitObject k) {return k.type == assignedObjectType;});
     ROS_DEBUG_STREAM("Found " << currentObjectCount <<
       " objects of type '" << assignedObjectType << "'");
@@ -151,7 +165,7 @@ ariac::TrayScore AriacScorer::ScoreTray(const ariac::Kit & tray, const ariac::Ki
   // This is to prevent multiple objects being close to a single target pose both scoring points.
   std::vector<ariac::KitObject> remainingAssignedObjects(assignedKit.objects);
 
-  for (const auto & currentObject : tray.objects)
+  for (const auto & currentObject : kit.objects)
   {
     for (auto it = remainingAssignedObjects.begin(); it != remainingAssignedObjects.end(); ++it)
     {

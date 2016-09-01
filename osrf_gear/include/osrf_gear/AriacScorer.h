@@ -58,16 +58,22 @@ class AriacScorer
   public: ariac::GoalScore GetCurrentGoalScore();
 
   /// \brief Assign a goal to process.
-  /// \param[in] The goal.
+  /// \param[in] goal The goal.
   public: void AssignGoal(const ariac::Goal & goal);
 
   /// \brief Stop processing the current goal.
-  /// \param[in] The time spent on the goal.
+  /// \param[in] timeTaken The time spent on the goal.
   /// \return The score for the goal.
   public: ariac::GoalScore UnassignCurrentGoal(double timeTaken = 0.0);
 
+  /// \brief Get the kit tray with the specified ID.
+  /// \param[in] trayID The ID of the tray to get.
+  /// \param[in] kitTray The kitTray found.
+  /// \return True if the tray was found, false otherwise.
+  public: bool GetTrayById(const ariac::TrayID_t & trayID, ariac::KitTray & kitTray);
+
   /// \brief Calculate the score for a tray given the type of kit being built.
-  public: ariac::TrayScore ScoreTray(const ariac::Kit & tray, const ariac::KitType_t kitType);
+  public: ariac::TrayScore ScoreTray(const ariac::KitTray & tray, const ariac::KitType_t kitType);
 
   /// \brief Calculate the score for the trays given the objects in them.
   protected: void ScoreCurrentGoal();

@@ -40,6 +40,7 @@ add_service_files(DIRECTORY srv
   AGVControl.srv
   ConveyorBeltControl.srv
   PopulationControl.srv
+  SubmitTray.srv
   VacuumGripperControl.srv
 )
 

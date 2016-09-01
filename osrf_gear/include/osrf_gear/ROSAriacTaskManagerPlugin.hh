@@ -21,6 +21,7 @@
 #include <memory>
 #include <gazebo/common/Plugin.hh>
 #include <gazebo/physics/PhysicsTypes.hh>
+#include <osrf_gear/SubmitTray.h>
 #include <sdf/sdf.hh>
 #include <std_msgs/String.h>
 #include <std_srvs/Trigger.h>
@@ -131,6 +132,10 @@ namespace gazebo
     /// \brief Callback received when the team requests the competition start.
     public: bool HandleStartService(
       std_srvs::Trigger::Request & req, std_srvs::Trigger::Response & res);
+
+    /// \brief Callback for when a tray is submitted for inspection.
+    public: bool HandleSubmitTrayService(
+      osrf_gear::SubmitTray::Request & req, osrf_gear::SubmitTray::Response & res);
 
     /// \brief Assign a goal to be monitored by the scorer.
     protected: void AssignGoal(const ariac::Goal & goal);
