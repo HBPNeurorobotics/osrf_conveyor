@@ -48,14 +48,20 @@ namespace gazebo
       osrf_gear::AGVControl::Request &_req,
       osrf_gear::AGVControl::Response &_res);
 
+    /// \brief Name of the AGV
+    private: std::string agvName;
+
     /// \brief for setting ROS name space
     private: std::string robotNamespace;
 
     /// \brief ros node handle
     private: ros::NodeHandle *rosnode;
 
-    /// \brief Receives service calls.
+    /// \brief Receives service calls for controlling the AGV
     private: ros::ServiceServer rosService;
+
+    /// \brief Client for submitting trays for inspection
+    private: ros::ServiceClient rosSubmitTrayClient;
 
     /// \brief Robot animation
     private: gazebo::common::PoseAnimationPtr anim;

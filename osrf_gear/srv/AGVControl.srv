@@ -1,6 +1,5 @@
 # AGV Control
 
-bool tray_complete
 std_msgs/String kit_type
 
 ---

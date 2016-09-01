@@ -16,6 +16,7 @@
 */
 #include <gazebo/common/common.hh>
 #include <ignition/math.hh>
+#include <osrf_gear/SubmitTray.h>
 #include "ROSAGVPlugin.hh"
 
 #include <string>
@@ -66,13 +67,19 @@ void ROSAGVPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf)
     return;
   }
 
-  std::string name = std::string("agv") + index;
+  this->agvName = std::string("agv") + index;
 
-  std::string topic = "/ariac/" + name;
+  std::string agvControlTopic = "/ariac/" + this->agvName;
+  ROS_DEBUG_STREAM("Using AGV control service topic: " << agvControlTopic);
+
+  std::string submitTrayTopic = "submit_tray";
+  if (_sdf->HasElement("submit_tray_service_name"))
+    submitTrayTopic = _sdf->Get<std::string>("submit_tray_service_name");
+  ROS_DEBUG_STREAM("Using submit tray service topic: " << submitTrayTopic);
 
   this->rosnode = new ros::NodeHandle(this->robotNamespace);
 
-  this->anim.reset(new gazebo::common::PoseAnimation(name, 22, false));
+  this->anim.reset(new gazebo::common::PoseAnimation(this->agvName, 22, false));
 
   gazebo::common::PoseKeyFrame *key = anim->CreateKeyFrame(0);
   key->Translation(ignition::math::Vector3d(0.3, 3.3, 0));
@@ -96,8 +103,12 @@ void ROSAGVPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf)
 
   this->model = _parent;
 
-  this->rosService = this->rosnode->advertiseService(topic,
+  this->rosService = this->rosnode->advertiseService(agvControlTopic,
       &ROSAGVPlugin::OnCommand, this);
+
+  // Client for submitting trays for inspection.
+  this->rosSubmitTrayClient =
+    this->rosnode->serviceClient<osrf_gear::SubmitTray>(submitTrayTopic);
 }
 
 /////////////////////////////////////////////////
@@ -105,14 +116,32 @@ bool ROSAGVPlugin::OnCommand(
   osrf_gear::AGVControl::Request &_req,
   osrf_gear::AGVControl::Response &_res)
 {
-  _res.success = _req.tray_complete &&
-      (anim->GetTime() <= 0.0 || anim->GetTime() >= anim->GetLength());
+  bool triggerAnim = this->agvName == "agv1" &&
+    (anim->GetTime() <= 0.0 || anim->GetTime() >= anim->GetLength());
 
-  if (_res.success)
+  if (triggerAnim)
   {
     anim->SetTime(0);
     this->model->SetAnimation(anim);
   }
 
-  return _res.success;
+  if (!this->rosSubmitTrayClient.exists())
+  {
+    this->rosSubmitTrayClient.waitForExistence();
+  }
+
+  // Make a service call to submit the tray for inspection.
+  osrf_gear::SubmitTray srv;
+  srv.request.tray_id.data = this->agvName + "::kit_tray::tray";
+  srv.request.kit_type.data = _req.kit_type.data;
+  this->rosSubmitTrayClient.call(srv);
+  if (!srv.response.success) {
+    ROS_ERROR_STREAM("Failed to submit tray for inspection.");
+    _res.success = false;
+    return false;
+  }
+  ROS_INFO_STREAM("Result of inspection: " << srv.response.inspection_result);
+  _res.success = true;
+
+  return true;
 }

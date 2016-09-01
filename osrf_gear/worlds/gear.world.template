@@ -162,6 +162,7 @@
         <uri>model://warehouse_robot</uri>
       </include>
       <plugin name="agv_plugin" filename="libROSAGVPlugin.so">
+        <submit_tray_service_name>/ariac/submit_tray</submit_tray_service_name>
         <index>1</index>
       </plugin>
 
@@ -186,6 +187,7 @@
       </include>
       <plugin name="agv_plugin" filename="libROSAGVPlugin.so">
         <index>2</index>
+        <submit_tray_service_name>/ariac/submit_tray</submit_tray_service_name>
       </plugin>
 
       <!-- a tray for building kits -->
@@ -276,6 +278,7 @@
       <team_start_service_name>/ariac/start_competition</team_start_service_name>
       <population_activate_topic>/ariac/populate_belt</population_activate_topic>
       <conveyor_control_topic>/ariac/conveyor/control</conveyor_control_topic>
+      <submit_tray_service_name>/ariac/submit_tray</submit_tray_service_name>
       <goals_topic>/ariac/orders</goals_topic>
 @[for order_name, order in orders.items()]@
       <goal>

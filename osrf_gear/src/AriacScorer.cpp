@@ -100,6 +100,15 @@ bool AriacScorer::GetTrayById(const ariac::TrayID_t & trayID, ariac::KitTray & k
 }
 
 /////////////////////////////////////////////////
+ariac::TrayScore AriacScorer::SubmitTray(const ariac::KitTray & tray)
+{
+  auto trayScore = ScoreTray(tray);
+  ROS_DEBUG_STREAM("Score from tray '" << tray.trayID << "': " << trayScore.total());
+  this->goalScore->trayScores[tray.trayID] = trayScore;
+  return trayScore;
+}
+
+/////////////////////////////////////////////////
 ariac::TrayScore AriacScorer::ScoreTray(const ariac::KitTray & tray)
 {
   ariac::Kit kit = tray.currentKit;

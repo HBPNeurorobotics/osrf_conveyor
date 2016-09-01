@@ -72,8 +72,11 @@ class AriacScorer
   /// \return True if the tray was found, false otherwise.
   public: bool GetTrayById(const ariac::TrayID_t & trayID, ariac::KitTray & kitTray);
 
+  /// \brief Submit tray for scoring and store the result in the goal score.
+  public: ariac::TrayScore SubmitTray(const ariac::KitTray & tray);
+
   /// \brief Calculate the score for a tray given the type of kit being built.
-  public: ariac::TrayScore ScoreTray(const ariac::KitTray & tray);
+  protected: ariac::TrayScore ScoreTray(const ariac::KitTray & tray);
 
   /// \brief Calculate the score for the trays given the objects in them.
   protected: void ScoreCurrentGoal();
