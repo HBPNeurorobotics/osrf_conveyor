@@ -61,14 +61,8 @@ void ROSConveyorBeltPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf
 
   this->rosnode_ = new ros::NodeHandle(this->robotNamespace_);
 
-  // During competition, this environment variable will be set and the
-  // service won't be available.
-  auto v = std::getenv("ARIAC_COMPETITION");
-  if (!v)
-  {
-    this->controlService_ = this->rosnode_->advertiseService(topic,
-      &ROSConveyorBeltPlugin::OnControlCommand, this);
-  }
+  this->controlService_ = this->rosnode_->advertiseService(topic,
+    &ROSConveyorBeltPlugin::OnControlCommand, this);
 }
 
 /////////////////////////////////////////////////
