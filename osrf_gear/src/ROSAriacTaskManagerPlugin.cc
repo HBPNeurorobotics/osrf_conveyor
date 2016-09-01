@@ -507,6 +507,11 @@ bool ROSAriacTaskManagerPlugin::HandleSubmitTrayService(
 {
   std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
 
+  if (this->dataPtr->currentState != "go") {
+    ROS_ERROR("Competition is not running so trays cannot be submitted.");
+    return false;
+  }
+
   ariac::KitTray kitTray;
   if (!this->dataPtr->ariacScorer.GetTrayById(req.tray_id.data, kitTray))
   {
