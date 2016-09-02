@@ -26,6 +26,7 @@
   <param name="robot_description"
          command="$(find xacro)/xacro.py '$(arg gear_urdf_xacro)' use_effort_interface:=true" />
 
+@[if arm]@
 @{
 initial_joint_states_string = \
   ' '.join(['-J {0} {1}'.format(k, v) for k, v in arm.initial_joint_states.items()])
@@ -38,6 +39,7 @@ initial_joint_states_string = \
     <arg name="extra_spawn_model_args" value="@(initial_joint_states_string)" />
     <arg name="set_robot_description" value="false" />
   </include>
+@[end if]@
 @[end if]@
 
 @[if options['spawn_extra_models']]@

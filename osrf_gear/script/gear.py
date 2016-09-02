@@ -316,7 +316,7 @@ def create_options_info(options_dict):
 
 def prepare_template_data(config_dict):
     template_data = {
-        'arm': ArmInfo('arm', {}),
+        'arm': None,
         'sensors': {},
         'models_to_insert': {},
         'models_to_spawn': {},
