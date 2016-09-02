@@ -37,6 +37,7 @@
 #include <gazebo/transport/Node.hh>
 #include <gazebo/transport/Subscriber.hh>
 #include "osrf_gear/VacuumGripperPlugin.hh"
+#include "osrf_gear/ARIAC.hh"
 
 namespace gazebo
 {
@@ -489,7 +490,8 @@ void VacuumGripperPlugin::HandleAttach()
         this->dataPtr->fixedJoint->Init();
 
         // Check if the object should drop.
-        auto type = cc[iter->first]->GetLink()->GetModel()->GetName();
+        auto name = cc[iter->first]->GetLink()->GetModel()->GetName();
+        auto type = ariac::DetermineModelType(name);
         math::Pose dst;
         VacuumGripperPluginPrivate::Object attachedObj = {type, dst};
         auto found = std::find(std::begin(this->dataPtr->drops),
