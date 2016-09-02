@@ -253,6 +253,7 @@
     </include>
 @[end for]@
 @[end if]@
+@[if belt_parts]@
 
     <!-- Populate the conveyor belt -->
     <plugin filename="libROSPopulationPlugin.so" name="populate_conveyor">
@@ -271,6 +272,7 @@
 @[end for]@
       </object_sequence>
     </plugin>
+@[end if]@
 
     <!-- The NIST-ARIAC task manager -->
     <plugin filename="libROSAriacTaskManagerPlugin.so" name="task_manager">
