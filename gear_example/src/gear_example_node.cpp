@@ -13,6 +13,7 @@
 // limitations under the License.
 
 // %Tag(FULLTEXT)%
+// %Tag(INCLUDE_STATEMENTS)%
 #include <algorithm>
 #include <vector>
 
@@ -27,7 +28,9 @@
 #include <std_msgs/String.h>
 #include <std_srvs/Trigger.h>
 #include <trajectory_msgs/JointTrajectory.h>
+// %EndTag(INCLUDE_STATEMENTS)%
 
+// %Tag(START_COMP)%
 /// Start the competition by waiting for and then calling the start ROS Service.
 void start_competition(ros::NodeHandle & node) {
   // Create a Service client for the correct service, i.e. '/ariac/start_competition'.
@@ -49,6 +52,7 @@ void start_competition(ros::NodeHandle & node) {
     ROS_INFO("Competition started!");
   }
 }
+// %EndTag(START_COMP)%
 
 /// Example class that can hold state and provide methods that handle incoming data.
 class MyCompetitionClass
@@ -57,11 +61,13 @@ public:
   explicit MyCompetitionClass(ros::NodeHandle & node)
   : current_score_(0), has_been_zeroed_(false)
   {
+    // %Tag(ADV_CMD)%
     joint_trajectory_publisher_ = node.advertise<trajectory_msgs::JointTrajectory>(
       "/ariac/arm/command", 10);
+    // %EndTag(ADV_CMD)%
   }
 
-  /// Called when a new message is received on the '/ariac/current_score' topic.
+  /// Called when a new message is received.
   void current_score_callback(const std_msgs::Float32::ConstPtr & msg) {
     if (msg->data != current_score_)
     {
@@ -70,7 +76,7 @@ public:
     current_score_ = msg->data;
   }
 
-  /// Called when a new message is received on the '/ariac/competition_state' topic.
+  /// Called when a new message is received.
   void competition_state_callback(const std_msgs::String::ConstPtr & msg) {
     if (msg->data == "done" && competition_state_ != "done")
     {
@@ -78,15 +84,20 @@ public:
     }
     competition_state_ = msg->data;
   }
-  /// Called when a new Goal message is received on the '/ariac/orders' topic.
+
+  /// Called when a new Goal message is received.
   void goal_callback(const osrf_gear::Goal::ConstPtr & goal_msg) {
     ROS_INFO_STREAM("Received goal:\n" << *goal_msg);
     received_goals_.push_back(*goal_msg);
   }
 
-  /// Called when a new JointState message is received on the '/ariac/arm/joint_states' topic.
-  void joint_state_callback(const sensor_msgs::JointState::ConstPtr & joint_state_msg) {
-    ROS_INFO_STREAM_THROTTLE(10, "Joint States (throttled to 0.1 Hz):\n" << *joint_state_msg);
+  // %Tag(CB_CLASS)%
+  /// Called when a new JointState message is received.
+  void joint_state_callback(
+    const sensor_msgs::JointState::ConstPtr & joint_state_msg)
+  {
+    ROS_INFO_STREAM_THROTTLE(10,
+      "Joint States (throttled to 0.1 Hz):\n" << *joint_state_msg);
     // ROS_INFO_STREAM("Joint States:\n" << *joint_state_msg);
     current_joint_states_ = *joint_state_msg;
     if (!has_been_zeroed_) {
@@ -95,29 +106,36 @@ public:
       send_arm_to_zero_state();
     }
   }
+  // %EndTag(CB_CLASS)%
 
+  // %Tag(ARM_ZERO)%
   /// Create a JointTrajectory with all positions set to zero, and command the arm.
   void send_arm_to_zero_state() {
     // Create a message to send.
     trajectory_msgs::JointTrajectory msg;
-    // Copy the joint names from the data received on the '/ariac/arm/joint_states' topic.
+    // Copy the joint names from the msg off the '/ariac/joint_states' topic.
     msg.joint_names = current_joint_states_.name;
     // Create one point in the trajectory.
     msg.points.resize(1);
-    // Resize the vector to the same length as the joint names, with all positions at 0.0.
+    // Resize the vector to the same length as the joint names.
+    // Values are initialized to 0.
     msg.points[0].positions.resize(current_joint_states_.name.size(), 0.0);
     // How long to take getting to the point (floating point seconds).
-    msg.points[0].time_from_start = ros::Duration(1.0);
+    msg.points[0].time_from_start = ros::Duration(0.001);
     ROS_INFO_STREAM("Sending command:\n" << msg);
     joint_trajectory_publisher_.publish(msg);
   }
+  // %EndTag(ARM_ZERO)%
 
-  /// Called when a new LogicalCameraImage message is received on the '/ariac/logical_camera' topic.
-  void logical_camera_callback(const osrf_gear::LogicalCameraImage::ConstPtr & image_msg) {
-    ROS_INFO_STREAM_THROTTLE(10, "Logical camera: '" << image_msg->models.size() << "' objects.");
+  /// Called when a new LogicalCameraImage message is received.
+  void logical_camera_callback(
+    const osrf_gear::LogicalCameraImage::ConstPtr & image_msg)
+  {
+    ROS_INFO_STREAM_THROTTLE(10,
+      "Logical camera: '" << image_msg->models.size() << "' objects.");
   }
 
-  /// Called when a new Proximity message is received on the '/ariac/break_beam_changed' topic.
+  /// Called when a new Proximity message is received.
   void break_beam_callback(const osrf_gear::Proximity::ConstPtr & msg) {
     if (msg->object_detected) {  // If there is an object in proximity.
       ROS_INFO("Break beam triggered.");
@@ -147,42 +165,55 @@ void laser_profiler_callback(const sensor_msgs::LaserScan::ConstPtr & msg) {
   }
 }
 
+// %Tag(MAIN)%
 int main(int argc, char ** argv) {
-  ros::init(argc, argv, "gear_example_node");  // Last argument is the default name of the node.
+  // Last argument is the default name of the node.
+  ros::init(argc, argv, "gear_example_node");
 
   ros::NodeHandle node;
 
-  MyCompetitionClass comp_class(node);  // Instance of custom class from above.
+  // Instance of custom class from above.
+  MyCompetitionClass comp_class(node);
 
-  // "Connect" new data on the '/ariac/current_score' topic to the callback in the custom class.
+  // Subscribe to the '/ariac/current_score' topic.
   ros::Subscriber current_score_subscriber = node.subscribe(
-    "/ariac/current_score", 10, &MyCompetitionClass::current_score_callback, &comp_class);
+    "/ariac/current_score", 10,
+    &MyCompetitionClass::current_score_callback, &comp_class);
 
-  // "Connect" new data on the '/ariac/competition_state' topic to callback in the custom class.
+  // Subscribe to the '/ariac/competition_state' topic.
   ros::Subscriber competition_state_subscriber = node.subscribe(
-    "/ariac/competition_state", 10, &MyCompetitionClass::competition_state_callback, &comp_class);
+    "/ariac/competition_state", 10,
+    &MyCompetitionClass::competition_state_callback, &comp_class);
 
-  // "Connect" new data on the '/ariac/orders' topic to the callback in the custom class.
+  // %Tag(SUB_CLASS)%
+  // Subscribe to the '/ariac/orders' topic.
   ros::Subscriber goals_subscriber = node.subscribe(
-    "/ariac/orders", 10, &MyCompetitionClass::goal_callback, &comp_class);
+    "/ariac/orders", 10,
+    &MyCompetitionClass::goal_callback, &comp_class);
+  // %EndTag(SUB_CLASS)%
 
-  // "Connect" new data on the '/ariac/arm/joint_states' topic to the callback in the custom class.
+  // Subscribe to the '/ariac/joint_states' topic.
   ros::Subscriber joint_state_subscriber = node.subscribe(
-    "/ariac/arm/joint_states", 10, &MyCompetitionClass::joint_state_callback, &comp_class);
+    "/ariac/joint_states", 10,
+    &MyCompetitionClass::joint_state_callback, &comp_class);
 
-  // "Connect" new data on the '/ariac/proximity_sensor_changed' topic to the free-function callback.
+  // %Tag(SUB_FUNC)%
+  // Subscribe to the '/ariac/proximity_sensor_1_changed' topic.
   ros::Subscriber proximity_sensor_subscriber = node.subscribe(
-    "/ariac/proximity_sensor_changed", 10, proximity_sensor_callback);
+    "/ariac/proximity_sensor_1_changed", 10, proximity_sensor_callback);
+  // %EndTag(SUB_FUNC)%
 
-  // "Connect" new data on the '/ariac/break_beam_changed' topic to the callback in the custom class.
+  // Subscribe to the '/ariac/break_beam_changed' topic.
   ros::Subscriber break_beam_subscriber = node.subscribe(
-    "/ariac/break_beam_changed", 10, &MyCompetitionClass::break_beam_callback, &comp_class);
+    "/ariac/break_beam_changed", 10,
+    &MyCompetitionClass::break_beam_callback, &comp_class);
 
-  // "Connect" new data on the '/ariac/logical_camera' topic to the callback in the custom class.
+  // Subscribe to the '/ariac/logical_camera' topic.
   ros::Subscriber logical_camera_subscriber = node.subscribe(
-    "/ariac/logical_camera", 10, &MyCompetitionClass::logical_camera_callback, &comp_class);
+    "/ariac/logical_camera", 10,
+    &MyCompetitionClass::logical_camera_callback, &comp_class);
 
-  // "Connect" new data on the '/ariac/laser_profiler' topic to the free-function callback.
+  // Subscribe to the '/ariac/laser_profiler' topic.
   ros::Subscriber laser_profiler_subscriber = node.subscribe(
     "/ariac/laser_profiler", 10, laser_profiler_callback);
 
@@ -192,4 +223,5 @@ int main(int argc, char ** argv) {
 
   return 0;
 }
+// %EndTag(MAIN)%
 // %EndTag(FULLTEXT)%
