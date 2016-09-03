@@ -1,0 +1,34 @@
+# Competition configuration options
+
+drops:
+  drop_region:
+    min:
+      xyz: [0, 1.25, 0]
+    max:
+      xyz: [10, 10, 10]
+  dropped_parts:
+    drop1:
+      part_type_to_drop: belt_part1
+      destination:
+        xyz: [0, 0, 2.0]
+
+options:
+  spawn_extra_models: true
+  model_type_aliases:
+    belt_part1: part4
+
+models_to_spawn:
+  world:
+    models:
+      part_to_drop:
+        type: belt_part1
+        pose:
+          xyz: [1, 0.17, 1.6]
+          rpy: [0, 0, 0]
+
+# Competitor trial configuration options
+
+arm:
+  type: ur10
+  initial_joint_states:
+    wrist_1_joint: 1.3

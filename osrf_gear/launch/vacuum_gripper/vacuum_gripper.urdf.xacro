@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-<xacro:macro name="create_vacuum_gripper" params="wrist_link">
+<xacro:macro name="create_vacuum_gripper" params="wrist_link *drops">
 
   <link name="vacuum_gripper_link">
     <inertial>
@@ -51,6 +51,8 @@
         <attach_steps>1</attach_steps>
         <min_contact_count>1</min_contact_count>
       </grasp_check>
+
+      <xacro:insert_block name="drops" />
 
       <suction_cup_link>vacuum_gripper_link</suction_cup_link>
 

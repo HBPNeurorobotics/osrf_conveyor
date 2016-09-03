@@ -284,6 +284,28 @@ def create_belt_part_infos(belt_parts_dict):
     return belt_part_infos
 
 
+def create_drops_info(drops_dict):
+    drops_info = {}
+    drop_region = get_required_field('drops', drops_dict, 'drop_region')
+    drop_region_min = get_required_field('drop_region', drop_region, 'min')
+    drop_region_min_xyz = get_required_field('min', drop_region_min, 'xyz')
+    drop_region_max = get_required_field('drop_region', drop_region, 'max')
+    drop_region_max_xyz = get_required_field('max', drop_region_max, 'xyz')
+    drops_info['drop_region_min'] = drop_region_min_xyz
+    drops_info['drop_region_max'] = drop_region_max_xyz
+
+    drops_dict = get_required_field('drops', drops_dict, 'dropped_parts')
+    dropped_part_infos = {}
+    for drop_name, dropped_part_dict in drops_dict.items():
+        part_type = get_required_field(drop_name, dropped_part_dict, 'part_type_to_drop')
+        destination = get_required_field(drop_name, dropped_part_dict, 'destination')
+        destination_xyz = get_required_field('destination', destination, 'xyz')
+        dropped_part_infos[drop_name] = {'part_type': part_type, 'destination': destination_xyz}
+    drops_info['dropped_parts'] = dropped_part_infos
+    print(drops_info)
+    return drops_info
+
+
 def create_order_info(name, order_dict):
     announcement_time = get_required_field(name, order_dict, 'announcement_time')
     parts_dict = get_required_field(name, order_dict, 'parts')
@@ -321,6 +343,7 @@ def prepare_template_data(config_dict):
         'models_to_insert': {},
         'models_to_spawn': {},
         'belt_parts': {},
+        'drops': {},
         'orders': {},
         'options': {},
     }
@@ -341,6 +364,8 @@ def prepare_template_data(config_dict):
                 create_models_over_bins_infos(value))
         elif key == 'belt_parts':
             template_data['belt_parts'].update(create_belt_part_infos(value))
+        elif key == 'drops':
+            template_data['drops'].update(create_drops_info(value))
         elif key == 'orders':
             template_data['orders'].update(create_order_infos(value))
         elif key == 'options':

@@ -2,6 +2,9 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro"
        name="gear" >
 
+  <xacro:property name="dropped_part_type" value="part4" />
+  <xacro:property name="dropped_part_destination" value="0 0 1.2 0 0 0" />
+
 @[if arm]@
   <!-- include the arm xacro -->
 @[if arm.type == 'ur10']@
@@ -12,7 +15,22 @@
   <!-- vacuum gripper -->
   <xacro:include filename="$(find osrf_gear)/launch/vacuum_gripper/vacuum_gripper.urdf.xacro" />
 
-  <xacro:create_vacuum_gripper wrist_link="${wrist_link}" />
+  <xacro:create_vacuum_gripper wrist_link="${wrist_link}">
+@[if drops]@
+    <drops>
+      <drop_region>
+        <min>@(' '.join(drops['drop_region_min']))</min>
+        <max>@(' '.join(drops['drop_region_max']))</max>
+      </drop_region>
+@[for name, dropped_part in drops['dropped_parts'].items()]@
+      <object>
+        <type>@(dropped_part['part_type'])</type>
+        <destination>@(' '.join(dropped_part['destination']))</destination>
+      </object>
+    </drops>
+@[end for]@
+@[end if]@
+  </xacro:create_vacuum_gripper>
 @[end if]@
 
   <!-- linear arm actuator -->
