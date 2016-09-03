@@ -203,19 +203,19 @@ int main(int argc, char ** argv) {
     "/ariac/proximity_sensor_1_changed", 10, proximity_sensor_callback);
   // %EndTag(SUB_FUNC)%
 
-  // Subscribe to the '/ariac/break_beam_changed' topic.
+  // Subscribe to the '/ariac/break_beam_1_changed' topic.
   ros::Subscriber break_beam_subscriber = node.subscribe(
-    "/ariac/break_beam_changed", 10,
+    "/ariac/break_beam_1_changed", 10,
     &MyCompetitionClass::break_beam_callback, &comp_class);
 
-  // Subscribe to the '/ariac/logical_camera' topic.
+  // Subscribe to the '/ariac/logical_camera_1' topic.
   ros::Subscriber logical_camera_subscriber = node.subscribe(
-    "/ariac/logical_camera", 10,
+    "/ariac/logical_camera_1", 10,
     &MyCompetitionClass::logical_camera_callback, &comp_class);
 
-  // Subscribe to the '/ariac/laser_profiler' topic.
+  // Subscribe to the '/ariac/laser_profiler_1' topic.
   ros::Subscriber laser_profiler_subscriber = node.subscribe(
-    "/ariac/laser_profiler", 10, laser_profiler_callback);
+    "/ariac/laser_profiler_1", 10, laser_profiler_callback);
 
   ROS_INFO("Setup complete.");
   start_competition(node);
