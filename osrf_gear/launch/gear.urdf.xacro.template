@@ -19,13 +19,13 @@
 @[if drops]@
     <drops>
       <drop_region>
-        <min>@(' '.join(drops['drop_region_min']))</min>
-        <max>@(' '.join(drops['drop_region_max']))</max>
+        <min>@(' '.join(drops['drop_region'].min))</min>
+        <max>@(' '.join(drops['drop_region'].max))</max>
       </drop_region>
 @[for name, dropped_part in drops['dropped_parts'].items()]@
       <object>
-        <type>@(dropped_part['part_type'])</type>
-        <destination>@(' '.join(dropped_part['destination']))</destination>
+        <type>@(dropped_part.type)</type>
+        <destination>@(' '.join(dropped_part.destination.xyz)) @(' '.join(dropped_part.destination.rpy))</destination>
       </object>
     </drops>
 @[end for]@

@@ -132,6 +132,25 @@ class PoseInfo:
         self.rpy = [str(f) for f in rpy]
 
 
+class DropRegionInfo:
+    def __init__(self, drop_region_min, drop_region_max):
+        self.min = [str(f) for f in drop_region_min]
+        self.max = [str(f) for f in drop_region_max]
+
+
+class DroppedPartInfo:
+    def __init__(self, model_type, destination):
+        self.type = model_type
+        self.destination = destination
+
+
+def get_field_with_default(data_dict, entry, default_value):
+    if entry in data_dict:
+        return data_dict[entry]
+    else:
+        return default_value
+
+
 def get_required_field(entry_name, data_dict, required_entry):
     if required_entry not in data_dict:
         print("Error: '{0}' entry does not contain a required '{1}' entry"
@@ -139,6 +158,12 @@ def get_required_field(entry_name, data_dict, required_entry):
               file=sys.stderr)
         sys.exit(1)
     return data_dict[required_entry]
+
+
+def replace_type_aliases(model_type):
+    if model_type in configurable_options['model_type_aliases']:
+        model_type = configurable_options['model_type_aliases'][model_type]
+    return model_type
 
 
 def create_arm_info(arm_dict):
@@ -162,8 +187,8 @@ def create_arm_info(arm_dict):
 
 
 def create_pose_info(pose_dict):
-    xyz = get_required_field('pose', pose_dict, 'xyz')
-    rpy = get_required_field('pose', pose_dict, 'rpy')
+    xyz = get_field_with_default(pose_dict, 'xyz', [0, 0, 0])
+    rpy = get_field_with_default(pose_dict, 'rpy', [0, 0, 0])
     for key in pose_dict:
         if key not in ['xyz', 'rpy']:
             print("Warning: ignoring unknown entry in 'pose': " + key, file=sys.stderr)
@@ -193,12 +218,9 @@ def create_sensor_infos(sensors_dict):
 
 def create_model_info(model_name, model_data):
     model_type = get_required_field(model_name, model_data, 'type')
-    if model_type in configurable_options['model_type_aliases']:
-        model_type = configurable_options['model_type_aliases'][model_type]
+    model_type = replace_type_aliases(model_type)
     pose_dict = get_required_field(model_name, model_data, 'pose')
-    reference_frame = ''
-    if 'reference_frame' in model_data:
-        reference_frame = model_data['reference_frame']
+    reference_frame = get_field_with_default(model_data, 'reference_frame', '')
     for key in model_data:
         if key not in ['type', 'pose', 'reference_frame']:
             print("Warning: ignoring unknown entry in '{0}': {1}"
@@ -291,16 +313,17 @@ def create_drops_info(drops_dict):
     drop_region_min_xyz = get_required_field('min', drop_region_min, 'xyz')
     drop_region_max = get_required_field('drop_region', drop_region, 'max')
     drop_region_max_xyz = get_required_field('max', drop_region_max, 'xyz')
-    drops_info['drop_region_min'] = drop_region_min_xyz
-    drops_info['drop_region_max'] = drop_region_max_xyz
+
+    drops_info['drop_region'] = DropRegionInfo(drop_region_min_xyz, drop_region_max_xyz)
 
     drops_dict = get_required_field('drops', drops_dict, 'dropped_parts')
     dropped_part_infos = {}
     for drop_name, dropped_part_dict in drops_dict.items():
         part_type = get_required_field(drop_name, dropped_part_dict, 'part_type_to_drop')
-        destination = get_required_field(drop_name, dropped_part_dict, 'destination')
-        destination_xyz = get_required_field('destination', destination, 'xyz')
-        dropped_part_infos[drop_name] = {'part_type': part_type, 'destination': destination_xyz}
+        part_type = replace_type_aliases(part_type)
+        destination_info = get_required_field(drop_name, dropped_part_dict, 'destination')
+        destination = create_pose_info(destination_info)
+        dropped_part_infos[drop_name] = DroppedPartInfo(part_type, destination)
     drops_info['dropped_parts'] = dropped_part_infos
     print(drops_info)
     return drops_info
@@ -348,9 +371,7 @@ def prepare_template_data(config_dict):
         'options': {},
     }
     # Process the options first as they may affect the processing of the rest
-    options_dict = {}
-    if 'options' in config_dict:
-        options_dict = config_dict['options']
+    options_dict = get_field_with_default(config_dict, 'options', {})
     template_data['options'].update(create_options_info(options_dict))
 
     for key, value in config_dict.items():
