@@ -53,6 +53,11 @@ void ConveyorBeltPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 {
   SideContactPlugin::Load(_model, _sdf);
 
+  if (this->updateRate > 0)
+    gzdbg << "ConveyorBeltPlugin running at " << this->updateRate << " Hz\n";
+  else
+    gzdbg << "ConveyorBeltPlugin running at the default update rate\n";
+
   if (!this->node)
   {
     this->node = transport::NodePtr(new transport::Node());
@@ -87,11 +92,42 @@ void ConveyorBeltPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   {
     gzerr << "'velocity_axis' tag not found\n";
   }
+
+  if (!_sdf->HasElement("collision"))
+  {
+    gzerr << "'collision' not specified in SDF\n";
+    return;
+  }
+
+  std::string collisionName = _sdf->Get<std::string>("collision");
+  // Let's find the collision element.
+  for (auto const &link : _model->GetLinks())
+  {
+    for (auto const &collision : link->GetCollisions())
+    {
+      if (collision->GetName() == collisionName)
+      {
+        this->beltCollision = collision->GetBoundingBox().Ign();
+      }
+    }
+  }
+
+  if (this->beltCollision.Size() == ignition::math::Vector3d::Zero)
+  {
+    gzerr << "Collision [" << collisionName << "] not found\n";
+    return;
+  }
+
 }
 
 /////////////////////////////////////////////////
 void ConveyorBeltPlugin::OnUpdate(const common::UpdateInfo &/*_info*/)
 {
+  // If we're using a custom update rate value we have to check if it's time to
+  // update the plugin or not.
+  if (!this->TimeToExecute())
+    return;
+
   auto prevNumberContactingLinks = this->contactingLinks.size();
   this->CalculateContactingLinks();
   if (prevNumberContactingLinks != this->contactingLinks.size()) {
@@ -109,8 +145,11 @@ void ConveyorBeltPlugin::ActOnContactingLinks(double velocity)
   ignition::math::Vector3d velocity_beltFrame = velocity * this->velocityAxis;
   auto beltPose = this->parentLink->GetWorldPose().Ign();
   math::Vector3 velocity_worldFrame = beltPose.Rot().RotateVector(velocity_beltFrame);
-  for (auto linkPtr : this->contactingLinks) {
-    if (linkPtr) {
+  for (auto linkPtr : this->contactingLinks)
+  {
+    if (linkPtr && this->beltCollision.Intersects(
+        linkPtr->GetBoundingBox().Ign()))
+    {
       linkPtr->SetLinearVel(velocity_worldFrame);
     }
   }

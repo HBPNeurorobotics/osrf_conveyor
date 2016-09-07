@@ -31,10 +31,12 @@
       </visual>
     </link>
 
-    <!-- plugin for proecssing contact sensor output -->
+    <!-- plugin for processing contact sensor output -->
     <plugin name="object_disposal_plugin" filename="libObjectDisposalPlugin.so">
       <contact_sensor_name>object_disposal_contact</contact_sensor_name>
       <contact_side_normal>1 0 0</contact_side_normal>
+      <collision>collision</collision>
+      <update_rate>5</update_rate>
     </plugin>
 
   </model>

@@ -111,6 +111,10 @@ namespace gazebo
     /// \brief True when the plugin is enabled or false if it's paused.
     protected: bool Enabled() const;
 
+    /// \brief Determine whether is time to give the plugin an update based on
+    /// the plugin's update rate.
+    protected: bool TimeToExecute();
+
     /// \brief Overwrite this method for sending periodic updates with the
     /// plugin state.
     private: virtual void Publish() const;

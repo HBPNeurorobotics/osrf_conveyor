@@ -41,23 +41,18 @@ ObjectDisposalPlugin::~ObjectDisposalPlugin()
 void ObjectDisposalPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 {
   SideContactPlugin::Load(_model, _sdf);
+
+  if (this->updateRate > 0)
+    gzdbg << "ObjectDisposalPlugin running at " << this->updateRate << " Hz\n";
+  else
+    gzdbg << "ObjectDisposalPlugin running at the default update rate\n";
+
   this->centerOfGravityCheck = false;
   if (_sdf->HasElement("center_of_gravity_check"))
   {
     this->centerOfGravityCheck = _sdf->Get<bool>("center_of_gravity_check");
   }
-}
 
-/////////////////////////////////////////////////
-void ObjectDisposalPlugin::OnUpdate(const common::UpdateInfo &/*_info*/)
-{
-  this->CalculateContactingModels();
-  this->ActOnContactingModels();
-}
-
-/////////////////////////////////////////////////
-void ObjectDisposalPlugin::ActOnContactingModels()
-{
   // Only remove models if their center of gravity is "above" the link
   // TODO: make more general than just z axis
   auto linkBox = this->parentLink->GetBoundingBox();
@@ -65,8 +60,24 @@ void ObjectDisposalPlugin::ActOnContactingModels()
   auto linkBoxMin = linkBox.min;
   linkBoxMin.z = std::numeric_limits<double>::lowest();
   linkBoxMax.z = std::numeric_limits<double>::max();
-  auto disposalBox = math::Box(linkBoxMin, linkBoxMax);
+  this->disposalBox = math::Box(linkBoxMin, linkBoxMax);
+}
 
+/////////////////////////////////////////////////
+void ObjectDisposalPlugin::OnUpdate(const common::UpdateInfo &/*_info*/)
+{
+  // If we're using a custom update rate value we have to check if it's time to
+  // update the plugin or not.
+  if (!this->TimeToExecute())
+    return;
+
+  this->CalculateContactingModels();
+  this->ActOnContactingModels();
+}
+
+/////////////////////////////////////////////////
+void ObjectDisposalPlugin::ActOnContactingModels()
+{
   for (auto model : this->contactingModels) {
     if (model) {
       bool removeModel = true;
@@ -85,7 +96,7 @@ void ObjectDisposalPlugin::ActOnContactingModels()
         {
           modelCog /= modelMass;
         }
-        removeModel = disposalBox.Contains(modelCog);
+        removeModel = this->disposalBox.Contains(modelCog);
       }
       if (removeModel)
       {

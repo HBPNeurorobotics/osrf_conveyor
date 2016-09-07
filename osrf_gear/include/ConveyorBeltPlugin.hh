@@ -27,6 +27,7 @@
 #include <gazebo/msgs/msgs.hh>
 #include <gazebo/sensors/sensors.hh>
 #include <gazebo/util/system.hh>
+#include <ignition/math/Box.hh>
 #include <ignition/math/Vector3.hh>
 
 namespace gazebo
@@ -75,6 +76,9 @@ namespace gazebo
 
     /// \brief Act on links that are ontop of the belt
     protected: void ActOnContactingLinks(double velocity);
+
+    /// \brief Conveyor's belt bounding box.
+    protected: ignition::math::Box beltCollision;
   };
 }
 #endif

@@ -89,6 +89,24 @@ void SideContactPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
     this->sideNormal = ignition::math::Vector3d(0, 0, 1);
   }
 
+  if (_sdf->HasElement("update_rate"))
+  {
+    std::string ur = _sdf->Get<std::string>("update_rate");
+    try
+    {
+      double v = std::stod(ur);
+      if (v <= 0)
+      {
+        gzerr << "Illegal update_rate value [" << v << "]" << std::endl;
+      }
+      this->updateRate = v;
+    } catch (const std::exception& e)
+    {
+      gzerr << "Unable to parse update_rate [" << ur << "]" << std::endl;
+    }
+  }
+
+  this->lastUpdateTime = this->world->GetSimTime();
 
   // FIXME: how to not hard-code this gazebo prefix?
   std::string contactTopic = "/gazebo/" + this->scopedContactSensorName;
@@ -155,7 +173,6 @@ void SideContactPlugin::CalculateContactingLinks()
   // Get all the contacts
   boost::mutex::scoped_lock lock(this->mutex);
   msgs::Contacts contacts = this->newestContactsMsg;
-  this->contactingLinks.clear();
   double factor = 1.0;
 
   for (int i = 0; i < contacts.contact_size(); ++i)
@@ -178,6 +195,9 @@ void SideContactPlugin::CalculateContactingLinks()
         if (collisionPtr) { // ensure the collision hasn't been deleted
           physics::LinkPtr link = collisionPtr->GetLink();
           this->contactingLinks.insert(link);
+          // ToDo: Figure out how to remove the contacting links if this become
+          // a problem. E.g.: Defining a condition that can be overloaded by the
+          // derived plugins.
         }
       }
     }
@@ -195,4 +215,28 @@ void SideContactPlugin::CalculateContactingModels()
     physics::ModelPtr model = link->GetModel();
     this->contactingModels.insert(model);
   }
+}
+
+/////////////////////////////////////////////////
+bool SideContactPlugin::TimeToExecute()
+{
+  // We're using a custom update rate.
+  if (this->updateRate <= 0)
+    return true;
+
+  gazebo::common::Time curTime = this->world->GetSimTime();
+  auto dt = (curTime - this->lastUpdateTime).Double();
+  if (dt < 0)
+  {
+    // Probably we had a reset.
+    this->lastUpdateTime = curTime;
+    return false;
+  }
+
+  // Update based on sensorsUpdateRate.
+  if (dt < (1.0 / this->updateRate))
+    return false;
+
+  this->lastUpdateTime = curTime;
+  return true;
 }
