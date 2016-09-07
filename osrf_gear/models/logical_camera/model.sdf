@@ -3,6 +3,21 @@
   <model name="logical_camera">
     <plugin name="ros_logical_camera" filename="libROSLogicalCameraPlugin.so">
       <robotNamespace>ariac</robotNamespace>
+      <known_model_types>
+        <type>part1</type>
+        <type>part2</type>
+        <type>part3</type>
+        <type>part4</type>
+        <type>arm_part</type>
+        <type>cross_joint_part</type>
+        <type>disk_part</type>
+        <type>gasket_part</type>
+        <type>gear_part</type>
+        <type>piston_rod_part</type>
+        <type>pulley_part</type>
+        <type>t_brace_part</type>
+        <type>u_joint_part</type>
+      </known_model_types>
     </plugin>
     <link name="link">
       <gravity>false</gravity>

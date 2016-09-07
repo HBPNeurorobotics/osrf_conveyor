@@ -11,12 +11,11 @@ drops:
       part_type_to_drop: order_part1
       destination:
         xyz: [0.6, 3.1, 1.0]
-        rpy: [0, 0, 0.2]
     reachable:
       part_type_to_drop: order_part2
       destination:
         xyz: [0.9, 2.8, 0.9]
-        rpy: [0, 0, 0.2]
+        rpy: [0, 0, 0.5]
     impeding:
       part_type_to_drop: order_part3
       destination:
@@ -24,7 +23,7 @@ drops:
         rpy: [0, 0, 0.5]
 
 options:
-  spawn_extra_models: true  # start with order_part1 in gripper
+  spawn_extra_models: true # start with part in gripper
   model_type_aliases:
     order_part1: part4
     order_part2: part3

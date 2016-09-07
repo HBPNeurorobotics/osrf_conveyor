@@ -26,6 +26,8 @@
 #include <gazebo/sensors/Sensor.hh>
 #include <gazebo/sensors/SensorManager.hh>
 
+#include <algorithm>
+#include <sstream>
 #include <string>
 
 using namespace gazebo;
@@ -61,6 +63,29 @@ void ROSLogicalCameraPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sd
         << "unable to load plugin. Load the Gazebo system plugin "
         << "'libgazebo_ros_api_plugin.so' in the gazebo_ros package)");
     return;
+  }
+
+  this->onlyPublishKnownModels = false;
+  if (_sdf->HasElement("known_model_types"))
+  {
+    this->onlyPublishKnownModels = true;
+    this->knownModelTypes.clear();
+    sdf::ElementPtr knownModelTypesElem = _sdf->GetElement("known_model_types");
+    if (!knownModelTypesElem->HasElement("type"))
+    {
+      gzerr << "Unable to find <type> elements in the <known_model_types> section\n";
+      return;
+    }
+    sdf::ElementPtr knownModelTypeElem = knownModelTypesElem->GetElement("type");
+    while (knownModelTypeElem)
+    {
+      // Parse the model type, which is encoded in model names.
+      std::string type = knownModelTypeElem->Get<std::string>();
+
+      ROS_DEBUG_STREAM("New known model type: " << type);
+      this->knownModelTypes.push_back(type);
+      knownModelTypeElem = knownModelTypeElem->GetNextElement("type");
+    }
   }
 
   this->model = _parent;
@@ -126,8 +151,23 @@ void ROSLogicalCameraPlugin::OnImage(ConstLogicalCameraImagePtr &_msg)
   imageMsg.pose.orientation.z = cameraOrientation.z();
   imageMsg.pose.orientation.w = cameraOrientation.w();
 
+  std::ostringstream logStream;
   for (int i = 0; i < _msg->model_size(); ++i)
   {
+    std::string modelType = ariac::DetermineModelType(_msg->model(i).name());
+
+    // Check if there are restrictions on which models to publish
+    if (this->onlyPublishKnownModels)
+    {
+      // Only publish the model if its type is one of the known types
+      auto it = std::find(this->knownModelTypes.begin(), this->knownModelTypes.end(), modelType);
+      bool knownModel = it != this->knownModelTypes.end();
+      if (!knownModel)
+      {
+        logStream << "Not publishing model of type: " << modelType << std::endl;
+        continue;
+      }
+    }
     msgs::Vector3d position = _msg->model(i).pose().position();
     msgs::Quaternion orientation = _msg->model(i).pose().orientation();
     osrf_gear::Model modelMsg;
@@ -138,8 +178,12 @@ void ROSLogicalCameraPlugin::OnImage(ConstLogicalCameraImagePtr &_msg)
     modelMsg.pose.orientation.y = orientation.y();
     modelMsg.pose.orientation.z = orientation.z();
     modelMsg.pose.orientation.w = orientation.w();
-    modelMsg.type = ariac::DetermineModelType(_msg->model(i).name());
+    modelMsg.type = modelType;
     imageMsg.models.push_back(modelMsg);
+  }
+  if (!logStream.str().empty())
+  {
+    ROS_DEBUG_THROTTLE(1, "%s", logStream.str().c_str());
   }
   this->imagePub.publish(imageMsg);
 }

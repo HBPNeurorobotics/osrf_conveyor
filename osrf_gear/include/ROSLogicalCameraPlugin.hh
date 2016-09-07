@@ -18,6 +18,9 @@
 #ifndef _ROS_LOGICAL_CAMERA_PLUGIN_HH_
 #define _ROS_LOGICAL_CAMERA_PLUGIN_HH_
 
+#include <string>
+#include <vector>
+
 #include <sdf/sdf.hh>
 
 #include "gazebo/common/Plugin.hh"
@@ -77,6 +80,12 @@ namespace gazebo
 
     /// \brief ROS publisher for the logical camera image
     protected: ros::Publisher imagePub;
+
+    /// \brief If true, only publish the models if their type is known; otherwise publish all
+    protected: bool onlyPublishKnownModels;
+
+    /// \brief Whitelist of the known model types to detect
+    protected: std::vector<std::string> knownModelTypes;
   };
 }
 #endif
