@@ -155,11 +155,13 @@
       <pose>1.2 -4.1 1.4 0 0 1.5708</pose>
     </include>
 
-    <!-- Pool of part3 objects -->
-    <population name="part3_population">
-      <model name="part3">
+
+@[for spawn_time, part in belt_parts.items()]@
+    <!-- Pool of @(part.type) objects -->
+    <population name="@(part.type)_@(spawn_time)_population">
+      <model name="@(part.type)">
         <include>
-          <uri>model://part3</uri>
+          <uri>model://@(part.type)</uri>
         </include>
       </model>
       <pose>-6.5 -3 2.1 0 0 0</pose>
@@ -171,21 +173,7 @@
       </distribution>
     </population>
 
-    <!-- Pool of part4 objects -->
-    <population name="part4_population">
-      <model name="part4">
-        <include>
-          <uri>model://part4</uri>
-        </include>
-      </model>
-      <pose>-6.5 -4 2.1 0 0 0</pose>
-      <distribution>
-        <type>grid</type>
-        <rows>3</rows>
-        <cols>5</cols>
-        <step>0.2 0.2 0</step>
-      </distribution>
-    </population>
+@[end for]@
 
     <!-- AGV1 -->
     <model name ="agv1">
