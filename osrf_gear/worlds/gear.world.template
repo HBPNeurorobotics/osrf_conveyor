@@ -159,7 +159,7 @@
 @[for spawn_time, part in belt_parts.items()]@
     <!-- Pool of @(part.type) objects -->
     <population name="@(part.type)_@(spawn_time)_population">
-      <model name="@(part.type)">
+      <model name="populate_conveyor|@(part.type)">
         <include>
           <uri>model://@(part.type)</uri>
         </include>
