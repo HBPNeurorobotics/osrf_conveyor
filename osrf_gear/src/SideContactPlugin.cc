@@ -162,44 +162,29 @@ void SideContactPlugin::OnUpdate(const common::UpdateInfo &/*_info*/)
 /////////////////////////////////////////////////
 void SideContactPlugin::CalculateContactingLinks()
 {
+  boost::mutex::scoped_lock lock(this->mutex);
+
   if (!this->newMsg)
   {
     return;
   }
 
-  auto parentLinkPose = this->parentLink->GetWorldPose().Ign();
-  math::Vector3 parentLinkTopNormal = parentLinkPose.Rot().RotateVector(this->sideNormal);
+  this->contactingLinks.clear();
 
   // Get all the contacts
-  boost::mutex::scoped_lock lock(this->mutex);
-  msgs::Contacts contacts = this->newestContactsMsg;
-  double factor = 1.0;
-
-  for (int i = 0; i < contacts.contact_size(); ++i)
+  for (int i = 0; i < this->newestContactsMsg.contact_size(); ++i)
   {
     // Get the collision that's not the parent link
-    std::string collision = contacts.contact(i).collision1();
-    if (this->collisionName == contacts.contact(i).collision1()) {
-      collision = contacts.contact(i).collision2();
-      factor = -1.0; // the frames are reversed for the alignment check
+    const auto &contact = this->newestContactsMsg.contact(i);
+    const std::string *collision = &(contact.collision1());
+    if (this->collisionName == *collision) {
+      collision = &(contact.collision2());
     }
 
-    // Only consider links with collision normals aligned with the normal of the link's side
-    for (int j = 0; j < contacts.contact(i).position_size(); ++j)
-    {
-      ignition::math::Vector3d contactNormal = msgs::ConvertIgn(contacts.contact(i).normal(j));
-      double alignment = factor * parentLinkTopNormal.Dot(contactNormal);
-      if (alignment > 0.0) {
-        physics::CollisionPtr collisionPtr =
-          boost::dynamic_pointer_cast<physics::Collision>(this->world->GetEntity(collision));
-        if (collisionPtr) { // ensure the collision hasn't been deleted
-          physics::LinkPtr link = collisionPtr->GetLink();
-          this->contactingLinks.insert(link);
-          // ToDo: Figure out how to remove the contacting links if this become
-          // a problem. E.g.: Defining a condition that can be overloaded by the
-          // derived plugins.
-        }
-      }
+    physics::CollisionPtr collisionPtr =
+      boost::static_pointer_cast<physics::Collision>(this->world->GetEntity(*collision));
+    if (collisionPtr) { // ensure the collision hasn't been deleted
+      this->contactingLinks.insert(collisionPtr->GetLink());
     }
   }
   this->newMsg = false;

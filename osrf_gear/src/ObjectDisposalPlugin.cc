@@ -17,9 +17,9 @@
 
 #include <limits>
 #include <string>
+#include <gazebo/transport/Node.hh>
 
 #include "ObjectDisposalPlugin.hh"
-#include <gazebo/transport/Node.hh>
 
 using namespace gazebo;
 GZ_REGISTER_MODEL_PLUGIN(ObjectDisposalPlugin)
@@ -52,6 +52,14 @@ void ObjectDisposalPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   {
     this->centerOfGravityCheck = _sdf->Get<bool>("center_of_gravity_check");
   }
+
+  if (!_sdf->HasElement("disposal_pose"))
+  {
+    gzerr << "ObjectDisposalPlugin: Unable to find <disposal_pose> element\n";
+    return;
+  }
+
+  this->disposalPose = _sdf->Get<math::Pose>("disposal_pose");
 
   // Only remove models if their center of gravity is "above" the link
   // TODO: make more general than just z axis
@@ -101,7 +109,7 @@ void ObjectDisposalPlugin::ActOnContactingModels()
       if (removeModel)
       {
         gzdbg << "[" << this->model->GetName() << "] Removing model: " << model->GetName() << "\n";
-        this->world->RemoveModel(model);
+        model->SetWorldPose(this->disposalPose);
       }
     }
   }

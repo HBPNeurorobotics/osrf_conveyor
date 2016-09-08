@@ -232,8 +232,7 @@
         <belt_start_velocity>0.0</belt_start_velocity>
         <velocity_axis>-1 0 0</velocity_axis>
         <contact_sensor_name>conveyor_belt_contact</contact_sensor_name>
-        <collision>belt_collision2</collision>
-        <update_rate>50</update_rate>
+        <update_rate>13</update_rate>
       </plugin>
       <link name="belt">
         <pose>-5 0 0 0 0 0</pose>
@@ -247,7 +246,7 @@
           <pose>5 0 0 0 0 0</pose>
           <geometry>
             <box>
-              <size>0.2 0.65461 0.18862</size>
+              <size>19.62206 0.65461 0.18862</size>
             </box>
           </geometry>
           <surface>
@@ -255,25 +254,6 @@
               <ode>
                 <mu>1.0</mu>
                 <mu2>1.0</mu2>
-              </ode>
-              <torsional>
-                <coefficient>1000.0</coefficient>
-                <patch_radius>0.1</patch_radius>
-              </torsional>
-            </friction>
-          </surface>
-        </collision>
-        <collision name="belt_collision2">
-          <geometry>
-            <box>
-              <size>19.8 0.65461 0.18862</size>
-            </box>
-          </geometry>
-          <surface>
-            <friction>
-              <ode>
-                <mu>1</mu>
-                <mu2>1</mu2>
               </ode>
               <torsional>
                 <coefficient>1000.0</coefficient>

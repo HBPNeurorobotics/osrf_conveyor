@@ -22,11 +22,13 @@
 #define _GAZEBO_OBJECT_DISPOSAL_PLUGIN_HH_
 
 #include <string>
-
-#include "SideContactPlugin.hh"
 #include <gazebo/common/Plugin.hh>
+#include <gazebo/math/Box.hh>
+#include <gazebo/math/Pose.hh>
 #include <gazebo/sensors/sensors.hh>
 #include <gazebo/util/system.hh>
+
+#include "SideContactPlugin.hh"
 
 namespace gazebo
 {
@@ -55,6 +57,9 @@ namespace gazebo
 
     /// \brief Bounding box of the parent's link.
     protected: math::Box disposalBox;
+
+    /// \brief Pose where the object will be teleported.
+    protected: math::Pose disposalPose;
   };
 }
 #endif

@@ -92,37 +92,18 @@ void ConveyorBeltPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   {
     gzerr << "'velocity_axis' tag not found\n";
   }
-
-  if (!_sdf->HasElement("collision"))
-  {
-    gzerr << "'collision' not specified in SDF\n";
-    return;
-  }
-
-  std::string collisionName = _sdf->Get<std::string>("collision");
-  // Let's find the collision element.
-  for (auto const &link : _model->GetLinks())
-  {
-    for (auto const &collision : link->GetCollisions())
-    {
-      if (collision->GetName() == collisionName)
-      {
-        this->beltCollision = collision->GetBoundingBox().Ign();
-      }
-    }
-  }
-
-  if (this->beltCollision.Size() == ignition::math::Vector3d::Zero)
-  {
-    gzerr << "Collision [" << collisionName << "] not found\n";
-    return;
-  }
-
 }
 
 /////////////////////////////////////////////////
 void ConveyorBeltPlugin::OnUpdate(const common::UpdateInfo &/*_info*/)
 {
+  double velocity;
+  {
+    std::lock_guard<std::mutex> lock(this->mutex);
+    velocity = this->beltVelocity;
+  }
+  this->ActOnContactingLinks(velocity);
+
   // If we're using a custom update rate value we have to check if it's time to
   // update the plugin or not.
   if (!this->TimeToExecute())
@@ -133,10 +114,6 @@ void ConveyorBeltPlugin::OnUpdate(const common::UpdateInfo &/*_info*/)
   if (prevNumberContactingLinks != this->contactingLinks.size()) {
     gzdbg << "Number of links ontop of belt: " << this->contactingLinks.size() << "\n";
   }
-
-  std::lock_guard<std::mutex> lock(this->mutex);
-  double velocity = this->beltVelocity;
-  this->ActOnContactingLinks(velocity);
 }
 
 /////////////////////////////////////////////////
@@ -147,8 +124,7 @@ void ConveyorBeltPlugin::ActOnContactingLinks(double velocity)
   math::Vector3 velocity_worldFrame = beltPose.Rot().RotateVector(velocity_beltFrame);
   for (auto linkPtr : this->contactingLinks)
   {
-    if (linkPtr && this->beltCollision.Intersects(
-        linkPtr->GetBoundingBox().Ign()))
+    if (linkPtr)
     {
       linkPtr->SetLinearVel(velocity_worldFrame);
     }

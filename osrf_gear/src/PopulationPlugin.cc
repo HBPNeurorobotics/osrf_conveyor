@@ -282,7 +282,7 @@ void PopulationPlugin::Restart()
   this->dataPtr->startTime = this->dataPtr->world->GetSimTime();
   this->dataPtr->objects = this->dataPtr->initialObjects;
 
-   gzmsg << "Object population restarted" << std::endl;
+  // gzmsg << "Object population restarted" << std::endl;
 }
 
 /////////////////////////////////////////////////
