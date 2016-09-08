@@ -12,21 +12,23 @@
   <!-- vacuum gripper -->
   <xacro:include filename="$(find osrf_gear)/launch/vacuum_gripper/vacuum_gripper.urdf.xacro" />
 
-  <xacro:create_vacuum_gripper wrist_link="${wrist_link}" do_drops="@('true' if drops else 'false')">
-    <drops>
+  <xacro:create_vacuum_gripper wrist_link="${wrist_link}" >
+    <drops_info>
 @[if drops]@
-      <drop_region>
-        <min>@(' '.join(drops['drop_region'].min))</min>
-        <max>@(' '.join(drops['drop_region'].max))</max>
-      </drop_region>
+      <drops>
+        <drop_region>
+          <min>@(' '.join(drops['drop_region'].min))</min>
+          <max>@(' '.join(drops['drop_region'].max))</max>
+        </drop_region>
 @[for name, dropped_part in drops['dropped_parts'].items()]@
-      <object>
-        <type>@(dropped_part.type)</type>
-        <destination>@(' '.join(dropped_part.destination.xyz)) @(' '.join(dropped_part.destination.rpy))</destination>
-      </object>
+        <object>
+          <type>@(dropped_part.type)</type>
+          <destination>@(' '.join(dropped_part.destination.xyz)) @(' '.join(dropped_part.destination.rpy))</destination>
+        </object>
 @[end for]@
+      </drops>
 @[end if]@
-    </drops>
+    </drops_info>
   </xacro:create_vacuum_gripper>
 @[end if]@
 
