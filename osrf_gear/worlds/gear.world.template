@@ -243,7 +243,6 @@
           </contact>
         </sensor>
         <collision name="belt_collision">
-          <pose>5 0 0 0 0 0</pose>
           <geometry>
             <box>
               <size>19.62206 0.65461 0.18862</size>
