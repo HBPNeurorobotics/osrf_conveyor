@@ -68,8 +68,8 @@ void KitTrayPlugin::OnUpdate(const common::UpdateInfo &/*_info*/)
   auto prevNumberContactingModels = this->contactingModels.size();
   this->CalculateContactingModels();
   if (prevNumberContactingModels != this->contactingModels.size()) {
-    gzdbg << this->parentLink->GetScopedName() << ": number of contacting models: " \
-      << this->contactingModels.size() << "\n";
+    ROS_DEBUG_STREAM(this->parentLink->GetScopedName() << ": number of contacting models: "
+      << this->contactingModels.size());
   }
   this->ProcessContactingModels();
   this->PublishKitMsg();

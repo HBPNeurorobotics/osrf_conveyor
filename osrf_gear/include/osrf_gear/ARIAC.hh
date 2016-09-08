@@ -307,7 +307,6 @@ namespace ariac
     {
       _out << "<Goal>" << std::endl;
       _out << "Start time: [" << _goal.startTime << "]" << std::endl;
-      _out << "Allowed time: [" << _goal.allowedTime << "]" << std::endl;
       _out << "Kits:" << std::endl;
       for (const auto & item : _goal.kits)
       {

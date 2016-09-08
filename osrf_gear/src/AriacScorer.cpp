@@ -102,7 +102,7 @@ void AriacScorer::ScoreCurrentState()
         auto goalKitType = kit.kitType;
         tray.currentKit.kitType = goalKitType;
         auto trayScore = ScoreTray(tray);
-        ROS_INFO_STREAM("Score from tray '" << trayID
+        ROS_INFO_STREAM_COND(trayScore.total() > 0, "Score from tray '" << trayID
           << "' if it were to have kit type '" << goalKitType << "': "
           << trayScore.total());
       }

@@ -325,7 +325,6 @@ def create_drops_info(drops_dict):
         destination = create_pose_info(destination_info)
         dropped_part_infos[drop_name] = DroppedPartInfo(part_type, destination)
     drops_info['dropped_parts'] = dropped_part_infos
-    print(drops_info)
     return drops_info
 
 
@@ -423,7 +422,7 @@ def main(sysargv=None):
                 config_data += comp_config_data
     dict_config = yaml.load(config_data) or {}
     expanded_dict_config = expand_yaml_substitutions(dict_config)
-    print(yaml.dump({'Using configuration': expanded_dict_config}))
+    # print(yaml.dump({'Using configuration': expanded_dict_config}))
     template_data = prepare_template_data(expanded_dict_config)
     files = generate_files(template_data)
     if not args.dry_run and not os.path.isdir(args.output):
