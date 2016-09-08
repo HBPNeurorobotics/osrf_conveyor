@@ -60,15 +60,6 @@ void ObjectDisposalPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   }
 
   this->disposalPose = _sdf->Get<math::Pose>("disposal_pose");
-
-  // Only remove models if their center of gravity is "above" the link
-  // TODO: make more general than just z axis
-  auto linkBox = this->parentLink->GetBoundingBox();
-  auto linkBoxMax = linkBox.max;
-  auto linkBoxMin = linkBox.min;
-  linkBoxMin.z = std::numeric_limits<double>::lowest();
-  linkBoxMax.z = std::numeric_limits<double>::max();
-  this->disposalBox = math::Box(linkBoxMin, linkBoxMax);
 }
 
 /////////////////////////////////////////////////
@@ -86,6 +77,15 @@ void ObjectDisposalPlugin::OnUpdate(const common::UpdateInfo &/*_info*/)
 /////////////////////////////////////////////////
 void ObjectDisposalPlugin::ActOnContactingModels()
 {
+  // Only remove models if their center of gravity is "above" the link
+  // TODO: make more general than just z axis
+  auto linkBox = this->parentLink->GetBoundingBox();
+  auto linkBoxMax = linkBox.max;
+  auto linkBoxMin = linkBox.min;
+  linkBoxMin.z = std::numeric_limits<double>::lowest();
+  linkBoxMax.z = std::numeric_limits<double>::max();
+  auto disposalBox = math::Box(linkBoxMin, linkBoxMax);
+
   for (auto model : this->contactingModels) {
     if (model) {
       bool removeModel = true;
@@ -104,7 +104,7 @@ void ObjectDisposalPlugin::ActOnContactingModels()
         {
           modelCog /= modelMass;
         }
-        removeModel = this->disposalBox.Contains(modelCog);
+        removeModel = disposalBox.Contains(modelCog);
       }
       if (removeModel)
       {

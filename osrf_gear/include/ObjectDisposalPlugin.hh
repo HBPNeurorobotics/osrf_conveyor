@@ -55,9 +55,6 @@ namespace gazebo
     /// \brief If true, only delete models if their CoG is within the bounding box of the link
     protected: bool centerOfGravityCheck;
 
-    /// \brief Bounding box of the parent's link.
-    protected: math::Box disposalBox;
-
     /// \brief Pose where the object will be teleported.
     protected: math::Pose disposalPose;
   };
