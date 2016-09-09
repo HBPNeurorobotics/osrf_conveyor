@@ -6,10 +6,10 @@ of Standards and Technology (NIST).
 
 ## Install
 
-Refer the [system setup tutorial](https://bitbucket.org/osrf/gear/wiki/system_setup).
+Refer the [system setup tutorial](https://bitbucket.org/osrf/ariac/wiki/system_setup).
 
 ## Resources
 
 1. [Tutorials](https://bitbucket.org/osrf/gear/wiki/tutorials)
-1. [Documentation](https://bitbucket.org/osrf/gear/wiki/documentation)
+1. [Documentation](https://bitbucket.org/osrf/ariac/wiki/documentation)
 1. [ARIAC website](http://robotagility.wix.com/competition)
