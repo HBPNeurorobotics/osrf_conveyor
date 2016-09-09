@@ -325,13 +325,16 @@
 @[end for]@
     </plugin>
 
-@[if options['fill_demo_tray']]@
+@[if options['fill_demo_tray'] and orders]@
+@{
+order_name, order = orders.items()[0]
+count = {}
+}@
     <!-- Populate kit tray with order parts -->
     <plugin filename="libPopulationPlugin.so" name="populate_kit_tray_1">
       <activation_topic>/ariac/populate_belt</activation_topic>
       <loop_forever>false</loop_forever>
       <frame>agv1::kit_tray::tray</frame>
-@[for order_name, order in orders.items()]@
       <object_sequence>
 @[for part in order['parts']]@
         <object>
@@ -341,8 +344,26 @@
         </object>
 @[end for]@
       </object_sequence>
-@[end for]@
     </plugin>
+
+    <!-- Insert models to fill the kit tray -->
+@[for part in order['parts']]@
+@{
+try:
+    id = count[part.type]
+except:
+    id = 0
+}@
+    <include>
+      <name>populate_kit_tray_1|@(part.type)_clone_@(id)</name>
+      <uri>model://@(part.type)</uri>
+      <pose>-7.5 -3 2.1 0 0 0</pose>
+    </include>
+@{
+count[part.type] = id + 1
+}@
+@[end for]@
+
 @[end if]@
 
   </world>
