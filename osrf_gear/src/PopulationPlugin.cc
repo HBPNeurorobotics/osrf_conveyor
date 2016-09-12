@@ -341,6 +341,8 @@ void PopulationPlugin::OnUpdate()
     {
       // Move it to the target pose.
       modelPtr->SetWorldPose(obj.pose);
+      modelPtr->SetLinearVel(math::Vector3::Zero);
+      modelPtr->SetLinearAccel(math::Vector3::Zero);
       gzdbg << "Object [" << modelName << "] on belt" << std::endl;
     }
 

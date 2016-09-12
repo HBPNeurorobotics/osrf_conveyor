@@ -9,12 +9,13 @@
 #
 # Parts to be spawned on the conveyor belt
 # belt_parts:
-#   1.0:                              # Time in seconds to wait before spawning models
-#     type: model_type_1              # Type of model to insert
-#     pose:
-#       xyz: [0.0, 0.0, 0.0]          # Position of the model from the belt origin
+#   model_type_1:                     # Type of model to insert
+#     1.0:                            # Time in seconds to wait before spawning models
+#       type: model_type_1            # Type of model to insert
+#       pose:
+#         xyz: [0.0, 0.0, 0.0]        # Position of the model from the belt origin
 #                                     # y = 0 is in the center of the belt; y > 0 is towards the robot
-#       rpy: [0, 0, 'pi/2']           # Orientation of the model in the belt frame
+#         rpy: [0, 0, 'pi/2']         # Orientation of the model in the belt frame
 #
 # Orders to announce during the game
 # orders:
@@ -59,16 +60,18 @@ options:
     belt_model_type2: gear_part
 
 belt_parts:
-  1.0:
-    type: belt_model_type1
-    pose:
-      xyz: [0.0, 0.0, 0.1]
-      rpy: [0, 0, 0]
-  2.0:
-    type: belt_model_type2
-    pose:
-      xyz: [0.0, 0.0, 0.1]
-      rpy: [0, 0, 0]
+  belt_model_type1:
+    1.0:
+      type: belt_model_type1
+      pose:
+        xyz: [0.0, 0.0, 0.1]
+        rpy: [0, 0, 0]
+  belt_model_type2:
+    2.0:
+      type: belt_model_type2
+      pose:
+        xyz: [0.0, 0.0, 0.1]
+        rpy: [0, 0, 0]
 
 orders:
   order_0:
@@ -157,3 +160,5 @@ models_to_spawn:
         pose:
           xyz: [0.1, -0.15, 0]
           rpy: [0, 0, 0]
+
+time_limit: 300

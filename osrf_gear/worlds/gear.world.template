@@ -161,24 +161,36 @@
     </include>
 
 
-@[for spawn_time, part in belt_parts.items()]@
-    <!-- Pool of @(part.type) objects -->
-    <population name="@(part.type)_@(spawn_time)_population">
-      <model name="populate_conveyor|@(part.type)">
+
+@[if belt_parts]@
+<!-- Simulation time at which the last object is spawned (per cycle) -->
+@{max_spawn_time = max([max(times.keys()) for times in belt_parts.values()])}@
+<!-- If 'time_limit' is not set, the default value is 300 segs -->
+@[if not time_limit]@
+@{time_limit = 300}
+@[end if]@
+<!-- Calculate the number of population cycles to run before the end.
+     Equivalent to math.ceil(time_limit / max_spawn_time) (without math) -->
+@{belt_population_cycles = -(-time_limit // max_spawn_time)}
+@[for obj_type, spawn_times in belt_parts.items()]@
+    <!-- Pool of @(obj_type) objects -->
+    <population name="@(obj_type)_population">
+      <model name="populate_conveyor|@(obj_type)">
         <include>
-          <uri>model://@(part.type)</uri>
+          <uri>model://@(obj_type)</uri>
         </include>
       </model>
-      <pose>-6.5 -3 2.1 0 0 0</pose>
+      <pose>-16.5 -3 2.1 0 0 0</pose>
       <distribution>
         <type>grid</type>
-        <rows>3</rows>
-        <cols>5</cols>
+        <rows>@(belt_population_cycles * len(spawn_times))</rows>
+        <cols>1</cols>
         <step>0.2 0.2 0</step>
       </distribution>
     </population>
 
 @[end for]@
+@[end if]@
 
     <!-- AGV1 -->
     <model name ="agv1">
@@ -289,12 +301,14 @@
       <loop_forever>true</loop_forever>
       <frame>conveyor_belt</frame>
       <object_sequence>
-@[for spawn_time, part in belt_parts.items()]@
+@[for obj_type, spawn_times in belt_parts.items()]@
+  @[for spawn_time, part in spawn_times.items()]@
         <object>
           <time>@(spawn_time)</time>
           <type>@(part.type)</type>
           <pose>@(' '.join(part.pose.xyz)) @(' '.join(part.pose.rpy))</pose>
         </object>
+  @[end for]@
 @[end for]@
       </object_sequence>
       <update_rate>10</update_rate>
