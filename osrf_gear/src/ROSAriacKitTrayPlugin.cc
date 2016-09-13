@@ -40,8 +40,13 @@ KitTrayPlugin::~KitTrayPlugin()
 /////////////////////////////////////////////////
 void KitTrayPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 {
-
   SideContactPlugin::Load(_model, _sdf);
+
+  if (this->updateRate > 0)
+    gzdbg << "KitTrayPlugin running at " << this->updateRate << " Hz\n";
+  else
+    gzdbg << "KitTrayPlugin running at the default update rate\n";
+
   this->trayID = this->parentLink->GetScopedName();
 
   // Make sure the ROS node for Gazebo has already been initialized
@@ -60,6 +65,11 @@ void KitTrayPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 /////////////////////////////////////////////////
 void KitTrayPlugin::OnUpdate(const common::UpdateInfo &/*_info*/)
 {
+  // If we're using a custom update rate value we have to check if it's time to
+  // update the plugin or not.
+  if (!this->TimeToExecute())
+    return;
+
   if (!this->newMsg)
   {
     return;

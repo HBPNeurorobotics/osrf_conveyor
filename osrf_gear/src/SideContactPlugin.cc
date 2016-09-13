@@ -89,6 +89,24 @@ void SideContactPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
     this->sideNormal = ignition::math::Vector3d(0, 0, 1);
   }
 
+  if (_sdf->HasElement("update_rate"))
+  {
+    std::string ur = _sdf->Get<std::string>("update_rate");
+    try
+    {
+      double v = std::stod(ur);
+      if (v <= 0)
+      {
+        gzerr << "Illegal update_rate value [" << v << "]" << std::endl;
+      }
+      this->updateRate = v;
+    } catch (const std::exception& e)
+    {
+      gzerr << "Unable to parse update_rate [" << ur << "]" << std::endl;
+    }
+  }
+
+  this->lastUpdateTime = this->world->GetSimTime();
 
   // FIXME: how to not hard-code this gazebo prefix?
   std::string contactTopic = "/gazebo/" + this->scopedContactSensorName;
@@ -144,42 +162,29 @@ void SideContactPlugin::OnUpdate(const common::UpdateInfo &/*_info*/)
 /////////////////////////////////////////////////
 void SideContactPlugin::CalculateContactingLinks()
 {
+  boost::mutex::scoped_lock lock(this->mutex);
+
   if (!this->newMsg)
   {
     return;
   }
 
-  auto parentLinkPose = this->parentLink->GetWorldPose().Ign();
-  math::Vector3 parentLinkTopNormal = parentLinkPose.Rot().RotateVector(this->sideNormal);
+  this->contactingLinks.clear();
 
   // Get all the contacts
-  boost::mutex::scoped_lock lock(this->mutex);
-  msgs::Contacts contacts = this->newestContactsMsg;
-  this->contactingLinks.clear();
-  double factor = 1.0;
-
-  for (int i = 0; i < contacts.contact_size(); ++i)
+  for (int i = 0; i < this->newestContactsMsg.contact_size(); ++i)
   {
     // Get the collision that's not the parent link
-    std::string collision = contacts.contact(i).collision1();
-    if (this->collisionName == contacts.contact(i).collision1()) {
-      collision = contacts.contact(i).collision2();
-      factor = -1.0; // the frames are reversed for the alignment check
+    const auto &contact = this->newestContactsMsg.contact(i);
+    const std::string *collision = &(contact.collision1());
+    if (this->collisionName == *collision) {
+      collision = &(contact.collision2());
     }
 
-    // Only consider links with collision normals aligned with the normal of the link's side
-    for (int j = 0; j < contacts.contact(i).position_size(); ++j)
-    {
-      ignition::math::Vector3d contactNormal = msgs::ConvertIgn(contacts.contact(i).normal(j));
-      double alignment = factor * parentLinkTopNormal.Dot(contactNormal);
-      if (alignment > 0.0) {
-        physics::CollisionPtr collisionPtr =
-          boost::dynamic_pointer_cast<physics::Collision>(this->world->GetEntity(collision));
-        if (collisionPtr) { // ensure the collision hasn't been deleted
-          physics::LinkPtr link = collisionPtr->GetLink();
-          this->contactingLinks.insert(link);
-        }
-      }
+    physics::CollisionPtr collisionPtr =
+      boost::static_pointer_cast<physics::Collision>(this->world->GetEntity(*collision));
+    if (collisionPtr) { // ensure the collision hasn't been deleted
+      this->contactingLinks.insert(collisionPtr->GetLink());
     }
   }
   this->newMsg = false;
@@ -195,4 +200,28 @@ void SideContactPlugin::CalculateContactingModels()
     physics::ModelPtr model = link->GetModel();
     this->contactingModels.insert(model);
   }
+}
+
+/////////////////////////////////////////////////
+bool SideContactPlugin::TimeToExecute()
+{
+  // We're using a custom update rate.
+  if (this->updateRate <= 0)
+    return true;
+
+  gazebo::common::Time curTime = this->world->GetSimTime();
+  auto dt = (curTime - this->lastUpdateTime).Double();
+  if (dt < 0)
+  {
+    // Probably we had a reset.
+    this->lastUpdateTime = curTime;
+    return false;
+  }
+
+  // Update based on sensorsUpdateRate.
+  if (dt < (1.0 / this->updateRate))
+    return false;
+
+  this->lastUpdateTime = curTime;
+  return true;
 }

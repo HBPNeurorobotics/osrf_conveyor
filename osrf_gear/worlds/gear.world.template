@@ -8,6 +8,11 @@
       </camera>
     </gui>
 
+    <physics type="ode">
+      <max_step_size>0.005</max_step_size>
+      <real_time_update_rate>200</real_time_update_rate>
+    </physics>
+
 @[if not options['disable_shadows']]@
     <!-- Disable shadows. -->
     <scene>
@@ -155,6 +160,26 @@
       <pose>1.2 -4.1 1.4 0 0 1.5708</pose>
     </include>
 
+
+@[for spawn_time, part in belt_parts.items()]@
+    <!-- Pool of @(part.type) objects -->
+    <population name="@(part.type)_@(spawn_time)_population">
+      <model name="populate_conveyor|@(part.type)">
+        <include>
+          <uri>model://@(part.type)</uri>
+        </include>
+      </model>
+      <pose>-6.5 -3 2.1 0 0 0</pose>
+      <distribution>
+        <type>grid</type>
+        <rows>3</rows>
+        <cols>5</cols>
+        <step>0.2 0.2 0</step>
+      </distribution>
+    </population>
+
+@[end for]@
+
     <!-- AGV1 -->
     <model name ="agv1">
       <pose>0.3 3.3 0 0 0 3.1415</pose>
@@ -212,6 +237,7 @@
         <belt_start_velocity>0.0</belt_start_velocity>
         <velocity_axis>-1 0 0</velocity_axis>
         <contact_sensor_name>conveyor_belt_contact</contact_sensor_name>
+        <update_rate>13</update_rate>
       </plugin>
       <link name="belt">
         <pose>-5 0 0 0 0 0</pose>
@@ -230,8 +256,8 @@
           <surface>
             <friction>
               <ode>
-                <mu>0.0</mu>
-                <mu2>0.0</mu2>
+                <mu>1.0</mu>
+                <mu2>1.0</mu2>
               </ode>
               <torsional>
                 <coefficient>1000.0</coefficient>
@@ -271,6 +297,7 @@
         </object>
 @[end for]@
       </object_sequence>
+      <update_rate>10</update_rate>
     </plugin>
 @[end if]@
 
@@ -298,13 +325,16 @@
 @[end for]@
     </plugin>
 
-@[if options['fill_demo_tray']]@
+@[if options['fill_demo_tray'] and orders]@
+@{
+order_name, order = orders.items()[0]
+count = {}
+}@
     <!-- Populate kit tray with order parts -->
     <plugin filename="libPopulationPlugin.so" name="populate_kit_tray_1">
       <activation_topic>/ariac/populate_belt</activation_topic>
       <loop_forever>false</loop_forever>
       <frame>agv1::kit_tray::tray</frame>
-@[for order_name, order in orders.items()]@
       <object_sequence>
 @[for part in order['parts']]@
         <object>
@@ -314,8 +344,26 @@
         </object>
 @[end for]@
       </object_sequence>
-@[end for]@
     </plugin>
+
+    <!-- Insert models to fill the kit tray -->
+@[for part in order['parts']]@
+@{
+try:
+    id = count[part.type]
+except:
+    id = 0
+}@
+    <include>
+      <name>populate_kit_tray_1|@(part.type)_clone_@(id)</name>
+      <uri>model://@(part.type)</uri>
+      <pose>-7.5 -3 2.1 0 0 0</pose>
+    </include>
+@{
+count[part.type] = id + 1
+}@
+@[end for]@
+
 @[end if]@
 
   </world>

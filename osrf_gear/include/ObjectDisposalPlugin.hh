@@ -21,12 +21,12 @@
 #ifndef _GAZEBO_OBJECT_DISPOSAL_PLUGIN_HH_
 #define _GAZEBO_OBJECT_DISPOSAL_PLUGIN_HH_
 
-#include <string>
-
-#include "SideContactPlugin.hh"
 #include <gazebo/common/Plugin.hh>
+#include <gazebo/math/Pose.hh>
 #include <gazebo/sensors/sensors.hh>
 #include <gazebo/util/system.hh>
+
+#include "SideContactPlugin.hh"
 
 namespace gazebo
 {
@@ -50,8 +50,11 @@ namespace gazebo
     /// \brief Act on models that are ontop of the sensor's link
     protected: void ActOnContactingModels();
 
-    /// \brief If true, only delete models if their CoG is within the bounding box of the link 
+    /// \brief If true, only delete models if their CoG is within the bounding box of the link
     protected: bool centerOfGravityCheck;
+
+    /// \brief Pose where the object will be teleported.
+    protected: math::Pose disposalPose;
   };
 }
 #endif

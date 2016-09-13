@@ -234,6 +234,13 @@ namespace ariac
       modelType = modelType.substr(0, index);
     }
 
+    // Trim "_clone" suffix if exists
+    index = modelType.rfind("_clone");
+    if (index != std::string::npos)
+    {
+      modelType.erase(index);
+    }
+
     return modelType;
   }
 

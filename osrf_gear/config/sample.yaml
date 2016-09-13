@@ -5,12 +5,12 @@ options:
   fill_demo_tray: false
 
 belt_parts:
-  1.0:
+  3.0:
     type: part3
     pose:
       xyz: [0.0, 0.0, 0.1]
       rpy: [0, 0, 'pi/2']
-  2.0:
+  6.0:
     type: part4
     pose:
       xyz: [0.0, 0.0, 0.1]

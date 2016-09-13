@@ -17,9 +17,9 @@
 
 #include <limits>
 #include <string>
+#include <gazebo/transport/Node.hh>
 
 #include "ObjectDisposalPlugin.hh"
-#include <gazebo/transport/Node.hh>
 
 using namespace gazebo;
 GZ_REGISTER_MODEL_PLUGIN(ObjectDisposalPlugin)
@@ -41,16 +41,35 @@ ObjectDisposalPlugin::~ObjectDisposalPlugin()
 void ObjectDisposalPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 {
   SideContactPlugin::Load(_model, _sdf);
+
+  if (this->updateRate > 0)
+    gzdbg << "ObjectDisposalPlugin running at " << this->updateRate << " Hz\n";
+  else
+    gzdbg << "ObjectDisposalPlugin running at the default update rate\n";
+
   this->centerOfGravityCheck = false;
   if (_sdf->HasElement("center_of_gravity_check"))
   {
     this->centerOfGravityCheck = _sdf->Get<bool>("center_of_gravity_check");
   }
+
+  if (!_sdf->HasElement("disposal_pose"))
+  {
+    gzerr << "ObjectDisposalPlugin: Unable to find <disposal_pose> element\n";
+    return;
+  }
+
+  this->disposalPose = _sdf->Get<math::Pose>("disposal_pose");
 }
 
 /////////////////////////////////////////////////
 void ObjectDisposalPlugin::OnUpdate(const common::UpdateInfo &/*_info*/)
 {
+  // If we're using a custom update rate value we have to check if it's time to
+  // update the plugin or not.
+  if (!this->TimeToExecute())
+    return;
+
   this->CalculateContactingModels();
   this->ActOnContactingModels();
 }
@@ -90,7 +109,7 @@ void ObjectDisposalPlugin::ActOnContactingModels()
       if (removeModel)
       {
         gzdbg << "[" << this->model->GetName() << "] Removing model: " << model->GetName() << "\n";
-        this->world->RemoveModel(model);
+        model->SetWorldPose(this->disposalPose);
       }
     }
   }

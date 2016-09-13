@@ -26,6 +26,7 @@
 #include <gazebo/math/Pose.hh>
 #include <gazebo/msgs/gz_string.pb.h>
 #include <gazebo/physics/Link.hh>
+#include <gazebo/physics/Model.hh>
 #include <gazebo/physics/PhysicsTypes.hh>
 #include <gazebo/physics/World.hh>
 #include <gazebo/transport/transport.hh>
@@ -114,6 +115,18 @@ namespace gazebo
 
     /// \brief Elapsed time since "startTime" when the plugin is paused.
     public: common::Time elapsedWhenPaused;
+
+    /// \brief Plugin update rate (Hz). A negative value means that the custom
+    /// update rate is disabled. The plugin will execute at the physics rate.
+    public: double updateRate = -1;
+
+    /// \brief Last time (sim time) that the plugin was updated.
+    public: gazebo::common::Time lastUpdateTime;
+
+    /// \brief Counter for spawning objects with unique names on the belt.
+    /// The key is the object type and the value contains the index of the next
+    /// object to be spawned.
+    public: std::map<std::string, int> objectCounter;
   };
 }
 
@@ -230,6 +243,8 @@ void PopulationPlugin::Load(physics::WorldPtr _world, sdf::ElementPtr _sdf)
   else
     this->Restart();
 
+  this->dataPtr->lastUpdateTime = this->dataPtr->world->GetSimTime();
+
   this->dataPtr->connection = event::Events::ConnectWorldUpdateEnd(
       boost::bind(&PopulationPlugin::OnUpdate, this));
 }
@@ -267,12 +282,17 @@ void PopulationPlugin::Restart()
   this->dataPtr->startTime = this->dataPtr->world->GetSimTime();
   this->dataPtr->objects = this->dataPtr->initialObjects;
 
-   gzmsg << "Object population restarted" << std::endl;
+  // gzmsg << "Object population restarted" << std::endl;
 }
 
 /////////////////////////////////////////////////
 void PopulationPlugin::OnUpdate()
 {
+  // If we're using a custom update rate value we have to check if it's time to
+  // update the plugin or not.
+  if (!this->TimeToExecute())
+    return;
+
   std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
 
   this->Publish();
@@ -302,18 +322,28 @@ void PopulationPlugin::OnUpdate()
     }
     std::string modelName = this->GetHandle() + "|" + obj.type;
 
-    std::ostringstream newModelStr;
-    newModelStr <<
-      "<sdf version='" << SDF_VERSION << "'>\n"
-      "  <include>\n"
-      "    <pose>" << obj.pose << "</pose>\n"
-      "    <name>" << modelName << "</name>\n"
-      "    <uri>model://" << obj.type << "</uri>\n"
-      "  </include>\n"
-      "</sdf>\n";
+    // Get a new index for the object.
+    if (this->dataPtr->objectCounter.find(obj.type) ==
+        this->dataPtr->objectCounter.end())
+    {
+      this->dataPtr->objectCounter[obj.type] = 0;
+    }
+    else
+    {
+      this->dataPtr->objectCounter[obj.type]++;
+    }
+    int index = this->dataPtr->objectCounter[obj.type];
 
-    gzdbg << "Object spawned: " << modelName << std::endl;
-    this->dataPtr->world->InsertModelString(newModelStr.str());
+    // Get a unique name for the object.
+    modelName += "_clone_" + std::to_string(index);
+    auto modelPtr = this->dataPtr->world->GetModel(modelName);
+    if (modelPtr)
+    {
+      // Move it to the target pose.
+      modelPtr->SetWorldPose(obj.pose);
+      gzdbg << "Object [" << modelName << "] on belt" << std::endl;
+    }
+
     this->dataPtr->objects.erase(this->dataPtr->objects.begin());
   }
 }
@@ -342,4 +372,28 @@ bool PopulationPlugin::Enabled() const
 /////////////////////////////////////////////////
 void PopulationPlugin::Publish() const
 {
+}
+
+/////////////////////////////////////////////////
+bool PopulationPlugin::TimeToExecute()
+{
+  // We're using a custom update rate.
+  if (this->dataPtr->updateRate <= 0)
+    return true;
+
+  gazebo::common::Time curTime = this->dataPtr->world->GetSimTime();
+  auto dt = (curTime - this->dataPtr->lastUpdateTime).Double();
+  if (dt < 0)
+  {
+    // Probably we had a reset.
+    this->dataPtr->lastUpdateTime = curTime;
+    return false;
+  }
+
+  // Update based on sensorsUpdateRate.
+  if (dt < (1.0 / this->dataPtr->updateRate))
+    return false;
+
+  this->dataPtr->lastUpdateTime = curTime;
+  return true;
 }

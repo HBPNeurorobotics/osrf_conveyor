@@ -22,6 +22,7 @@
 #define _GAZEBO_SIDE_CONTACT_PLUGIN_HH_
 
 #include <gazebo/common/Plugin.hh>
+#include <gazebo/common/Time.hh>
 #include <gazebo/common/UpdateInfo.hh>
 #include <gazebo/sensors/sensors.hh>
 #include <gazebo/transport/Node.hh>
@@ -110,6 +111,17 @@ namespace gazebo
 
     /// \brief Determine which models are in contact with the side of the parent link
     protected: virtual void CalculateContactingModels();
+
+    /// \brief Determine whether is time to give the plugin an update based on
+    /// the plugin's update rate.
+    protected: bool TimeToExecute();
+
+    /// \brief Plugin update rate (Hz). A negative value means that the custom
+    /// update rate is disabled. The plugin will execute at the physics rate.
+    protected: double updateRate = -1;
+
+    /// \brief Last time (sim time) that the plugin was updated.
+    protected: gazebo::common::Time lastUpdateTime;
 
   };
 }
