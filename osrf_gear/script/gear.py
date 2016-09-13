@@ -299,18 +299,14 @@ def create_models_over_bins_infos(models_over_bins_dict):
     return models_to_spawn_infos
 
 
-# def create_belt_part_infos(belt_parts_dict):
-#     belt_part_infos = {}
-#     for spawn_time, belt_part_dict in belt_parts_dict.items():
-#       belt_part_infos[spawn_time] = create_model_info('belt_part', belt_part_dict)
-#     return belt_part_infos
-
 def create_belt_part_infos(belt_parts_dict):
     belt_part_infos = {}
     for obj_type, spawn_times in belt_parts_dict.items():
         for spawn_time, belt_part_dict in spawn_times.items():
+            obj_type = replace_type_aliases(obj_type)
             if not obj_type in belt_part_infos:
                 belt_part_infos[obj_type] = {}
+            belt_part_dict['type'] = obj_type
             belt_part_infos[obj_type][spawn_time] = create_model_info('belt_part', belt_part_dict)
     return belt_part_infos
 

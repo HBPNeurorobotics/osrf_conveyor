@@ -7,13 +7,11 @@ options:
 belt_parts:
   part3:
     3.0:
-      type: part3
       pose:
         xyz: [0.0, 0.0, 0.1]
         rpy: [0, 0, 'pi/2']
   part4:
     6.0:
-      type: part4
       pose:
         xyz: [0.0, 0.0, 0.1]
         rpy: [0, 0, 'pi/2']

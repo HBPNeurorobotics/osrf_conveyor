@@ -11,7 +11,6 @@
 # belt_parts:
 #   model_type_1:                     # Type of model to insert
 #     1.0:                            # Time in seconds to wait before spawning models
-#       type: model_type_1            # Type of model to insert
 #       pose:
 #         xyz: [0.0, 0.0, 0.0]        # Position of the model from the belt origin
 #                                     # y = 0 is in the center of the belt; y > 0 is towards the robot
@@ -62,13 +61,11 @@ options:
 belt_parts:
   belt_model_type1:
     1.0:
-      type: belt_model_type1
       pose:
         xyz: [0.0, 0.0, 0.1]
         rpy: [0, 0, 0]
   belt_model_type2:
     2.0:
-      type: belt_model_type2
       pose:
         xyz: [0.0, 0.0, 0.1]
         rpy: [0, 0, 0]
