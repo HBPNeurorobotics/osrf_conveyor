@@ -5,16 +5,16 @@ options:
   fill_demo_tray: false
 
 belt_parts:
-  3.0:
-    type: part3
-    pose:
-      xyz: [0.0, 0.0, 0.1]
-      rpy: [0, 0, 'pi/2']
-  6.0:
-    type: part4
-    pose:
-      xyz: [0.0, 0.0, 0.1]
-      rpy: [0, 0, 'pi/2']
+  part3:
+    3.0:
+      pose:
+        xyz: [0.0, 0.0, 0.1]
+        rpy: [0, 0, 'pi/2']
+  part4:
+    6.0:
+      pose:
+        xyz: [0.0, 0.0, 0.1]
+        rpy: [0, 0, 'pi/2']
 
 orders:
   order_0:
@@ -49,6 +49,8 @@ models_over_bins:
         rpy: [0, 0, 0]
         num_models_x: 4
         num_models_y: 5
+
+time_limit: 300
 
 
 # Competitor trial configuration options

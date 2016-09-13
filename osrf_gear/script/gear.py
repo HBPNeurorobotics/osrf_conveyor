@@ -301,8 +301,13 @@ def create_models_over_bins_infos(models_over_bins_dict):
 
 def create_belt_part_infos(belt_parts_dict):
     belt_part_infos = {}
-    for spawn_time, belt_part_dict in belt_parts_dict.items():
-      belt_part_infos[spawn_time] = create_model_info('belt_part', belt_part_dict)
+    for obj_type, spawn_times in belt_parts_dict.items():
+        for spawn_time, belt_part_dict in spawn_times.items():
+            obj_type = replace_type_aliases(obj_type)
+            if not obj_type in belt_part_infos:
+                belt_part_infos[obj_type] = {}
+            belt_part_dict['type'] = obj_type
+            belt_part_infos[obj_type][spawn_time] = create_model_info('belt_part', belt_part_dict)
     return belt_part_infos
 
 
@@ -368,6 +373,7 @@ def prepare_template_data(config_dict):
         'drops': {},
         'orders': {},
         'options': {},
+        'time_limit': None,
     }
     # Process the options first as they may affect the processing of the rest
     options_dict = get_field_with_default(config_dict, 'options', {})
@@ -393,6 +399,8 @@ def prepare_template_data(config_dict):
         elif key == 'models_to_spawn':
             template_data['models_to_spawn'].update(
                 create_models_to_spawn_infos(value))
+        elif key == 'time_limit':
+            template_data['time_limit'] = value
         else:
             print("Error: unknown top level entry '{0}'".format(key), file=sys.stderr)
             sys.exit(1)
