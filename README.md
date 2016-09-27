@@ -10,6 +10,6 @@ Refer the [system setup tutorial](https://bitbucket.org/osrf/ariac/wiki/system_s
 
 ## Resources
 
-1. [Tutorials](https://bitbucket.org/osrf/gear/wiki/tutorials)
+1. [Tutorials](https://bitbucket.org/osrf/ariac/wiki/tutorials)
 1. [Documentation](https://bitbucket.org/osrf/ariac/wiki/documentation)
 1. [ARIAC website](http://robotagility.wix.com/competition)
