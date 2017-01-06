@@ -1,3 +1,8 @@
+# In this scenario:
+# - the conveyor belt is used
+# - one order is sent that consists of a part from the belt and one from a bin
+# - the first part from the belt will fall to the ground once over the kit tray
+
 options:
   insert_models_over_bins: true
   fill_demo_tray: false
@@ -20,16 +25,16 @@ drops:
         xyz: [0.6, 3.1, 1.0]
 
 belt_parts:
-  1.0:
-    type: order_part1
-    pose:
-      xyz: [0.0, 0.0, 0.1]
-      rpy: [0, 0, 'pi/2']
-  2.0:
-    type: belt_part1
-    pose:
-      xyz: [0.0, 0.0, 0.1]
-      rpy: [0, 0, 'pi/2']
+  order_part1:
+    1.0:
+      pose:
+        xyz: [0.0, 0.0, 0.1]
+        rpy: [0, 0, 'pi/2']
+  belt_part1:
+    2.0:
+      pose:
+        xyz: [0.0, 0.0, 0.1]
+        rpy: [0, 0, 'pi/2']
 
 orders:
   order_0:

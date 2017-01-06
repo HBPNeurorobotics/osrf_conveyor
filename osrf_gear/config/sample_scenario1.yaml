@@ -1,3 +1,7 @@
+# In this scenario:
+# - the conveyor belt is not used
+# - there is one order consisting of two types of parts, found in the bins
+
 options:
   insert_models_over_bins: true
   fill_demo_tray: false
