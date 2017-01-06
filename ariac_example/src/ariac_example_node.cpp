@@ -168,7 +168,7 @@ void laser_profiler_callback(const sensor_msgs::LaserScan::ConstPtr & msg) {
 // %Tag(MAIN)%
 int main(int argc, char ** argv) {
   // Last argument is the default name of the node.
-  ros::init(argc, argv, "gear_example_node");
+  ros::init(argc, argv, "ariac_example_node");
 
   ros::NodeHandle node;
 
