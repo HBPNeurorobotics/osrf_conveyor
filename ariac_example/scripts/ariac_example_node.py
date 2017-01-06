@@ -78,7 +78,7 @@ class MyCompetitionClass:
 
 
 def main():
-    rospy.init_node("gear_example_node")
+    rospy.init_node("ariac_example_node")
 
     comp_class = MyCompetitionClass()
     goal_sub = rospy.Subscriber("/ariac/orders", Goal, comp_class.goal_callback)

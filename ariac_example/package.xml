@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>gear_example</name>
+  <name>ariac_example</name>
   <version>0.1.0</version>
-  <description>An example of a gear competitor's package.</description>
+  <description>An example of an ARIAC competitor's package.</description>
   <maintainer email="william@osrfoundation.org">William Woodall</maintainer>
 
   <license>Apache 2.0</license>
