@@ -92,6 +92,7 @@ void KitTrayPlugin::ProcessContactingModels()
   auto trayPose = this->parentLink->GetWorldPose().Ign();
   for (auto model : this->contactingModels) {
     if (model) {
+      model->SetAutoDisable(false);
       ariac::KitObject object;
 
       // Determine the object type
