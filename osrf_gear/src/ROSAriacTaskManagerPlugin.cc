@@ -84,10 +84,10 @@ namespace gazebo
     public: ros::Subscriber gripperStateSub;
 
     /// \brief Publishes the Gazebo task state.
-    public: ros::Publisher gazeboTaskStatePub;
+    public: ros::Publisher taskStatePub;
 
     /// \brief Publishes the game score total.
-    public: ros::Publisher gazeboTaskScorePub;
+    public: ros::Publisher taskScorePub;
 
     /// \brief Service that allows the user to start the competition.
     public: ros::ServiceServer teamStartServiceServer;
@@ -103,6 +103,9 @@ namespace gazebo
 
     /// \brief Client for controlling the conveyor.
     public: ros::ServiceClient conveyorControlClient;
+
+    /// \brief Timer for regularly publishing state/score.
+    public: ros::Timer statusPubTimer;
 
     /// \brief Connection event.
     public: event::ConnectionPtr connection;
@@ -188,13 +191,13 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
   if (_sdf->HasElement("team_start_service_name"))
     teamStartServiceName = _sdf->Get<std::string>("team_start_service_name");
 
-  std::string gazeboTaskStateTopic = "competition_state";
-  if (_sdf->HasElement("gazebo_task_state_topic"))
-    gazeboTaskStateTopic = _sdf->Get<std::string>("gazebo_task_state_topic");
+  std::string taskStateTopic = "competition_state";
+  if (_sdf->HasElement("task_state_topic"))
+    taskStateTopic = _sdf->Get<std::string>("task_state_topic");
 
-  std::string gazeboTaskScoreTopic = "current_score";
-  if (_sdf->HasElement("gazebo_task_score_topic"))
-    gazeboTaskScoreTopic = _sdf->Get<std::string>("gazebo_task_score_topic");
+  std::string taskScoreTopic = "current_score";
+  if (_sdf->HasElement("task_score_topic"))
+    taskScoreTopic = _sdf->Get<std::string>("task_score_topic");
 
   std::string conveyorControlTopic = "conveyor/control";
   if (_sdf->HasElement("conveyor_control_topic"))
@@ -339,13 +342,13 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
   this->dataPtr->goalPub = this->dataPtr->rosnode->advertise<
     osrf_gear::Goal>(goalsTopic, 1000, true);  // latched=true
 
-  // Publisher for announcing new state of Gazebo's task.
-  this->dataPtr->gazeboTaskStatePub = this->dataPtr->rosnode->advertise<
-    std_msgs::String>(gazeboTaskStateTopic, 1000);
+  // Publisher for announcing new state of the competition.
+  this->dataPtr->taskStatePub = this->dataPtr->rosnode->advertise<
+    std_msgs::String>(taskStateTopic, 1000);
 
   // Publisher for announcing the score of the game.
-  this->dataPtr->gazeboTaskScorePub = this->dataPtr->rosnode->advertise<
-    std_msgs::Float32>(gazeboTaskScoreTopic, 1000);
+  this->dataPtr->taskScorePub = this->dataPtr->rosnode->advertise<
+    std_msgs::Float32>(taskScoreTopic, 1000);
 
   // Service for starting the competition.
   this->dataPtr->teamStartServiceServer =
@@ -361,6 +364,11 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
   this->dataPtr->conveyorControlClient =
     this->dataPtr->rosnode->serviceClient<osrf_gear::ConveyorBeltControl>(
       conveyorControlTopic);
+
+  // Timer for regularly publishing state/score.
+  this->dataPtr->statusPubTimer =
+    this->dataPtr->rosnode->createTimer(ros::Duration(0.1),
+      &ROSAriacTaskManagerPlugin::PublishStatus, this);
 
   // Initialize Gazebo transport.
   this->dataPtr->node = transport::NodePtr(new transport::Node());
@@ -453,21 +461,28 @@ void ROSAriacTaskManagerPlugin::OnUpdate()
   }
   else if (this->dataPtr->currentState == "end_game")
   {
-    gzdbg << "No more orders to process. Final score: " << this->dataPtr->currentGameScore.total() << std::endl;
-    gzdbg <<"Score breakdown:\n" << this->dataPtr->currentGameScore << std::endl;
+    std::ostringstream logMessage;
+    logMessage << "No more orders to process. Final score: " << \
+      this->dataPtr->currentGameScore.total() << "\nScore breakdown:\n" << \
+      this->dataPtr->currentGameScore;
+    ROS_INFO_STREAM(logMessage.str().c_str());
+    gzdbg << logMessage.str() << std::endl;
     this->dataPtr->currentState = "done";
   }
 
-  // TODO: Publish at a lower frequency.
+  this->dataPtr->lastUpdateTime = currentSimTime;
+}
+
+/////////////////////////////////////////////////
+void ROSAriacTaskManagerPlugin::PublishStatus(const ros::TimerEvent&)
+{
   std_msgs::Float32 scoreMsg;
   scoreMsg.data = this->dataPtr->currentGameScore.total();
-  this->dataPtr->gazeboTaskScorePub.publish(scoreMsg);
+  this->dataPtr->taskScorePub.publish(scoreMsg);
 
   std_msgs::String stateMsg;
   stateMsg.data = this->dataPtr->currentState;
-  this->dataPtr->gazeboTaskStatePub.publish(stateMsg);
-
-  this->dataPtr->lastUpdateTime = currentSimTime;
+  this->dataPtr->taskStatePub.publish(stateMsg);
 }
 
 /////////////////////////////////////////////////
