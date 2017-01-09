@@ -103,10 +103,10 @@ class AriacScorer
   protected: ariac::Goal currentGoal;
 
   /// \brief Flag for signalling new tray info to process.
-  protected: bool newTrayInfoReceived;
+  protected: bool newTrayInfoReceived = false;
 
   /// \brief Flag for signalling new goal to process.
-  protected: bool newGoalReceived;
+  protected: bool newGoalReceived = false;
 
   /// \brief Whether or not there is a travelling part in the gripper.
   protected: bool isPartTravelling = false;
