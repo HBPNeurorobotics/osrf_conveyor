@@ -406,7 +406,10 @@ void ROSAriacTaskManagerPlugin::OnUpdate()
     auto gameScore = this->dataPtr->ariacScorer.GetGameScore();
     if (gameScore.total() != this->dataPtr->currentGameScore.total())
     {
-      ROS_DEBUG_STREAM("Current game score: " << gameScore.total());
+      std::ostringstream logMessage;
+      logMessage << "Current game score: " << gameScore.total();
+      ROS_INFO_STREAM(logMessage.str().c_str());
+      gzdbg << logMessage.str() << std::endl;
       this->dataPtr->currentGameScore = gameScore;
     }
 
@@ -421,7 +424,10 @@ void ROSAriacTaskManagerPlugin::OnUpdate()
       bool goalCompleted = this->dataPtr->ariacScorer.IsCurrentGoalComplete();
       if (goalCompleted)
       {
-        ROS_INFO_STREAM("Order complete: " << goalID);
+        std::ostringstream logMessage;
+        logMessage << "Order complete: " << goalID;
+        ROS_INFO_STREAM(logMessage.str().c_str());
+        gzdbg << logMessage.str() << std::endl;
         this->StopCurrentGoal();
       }
       else
@@ -429,7 +435,10 @@ void ROSAriacTaskManagerPlugin::OnUpdate()
         // Check if the time limit for the current goal has been exceeded.
         if (this->dataPtr->timeSpentOnCurrentGoal > this->dataPtr->goalsInProgress.top().allowedTime)
         {
-          ROS_INFO_STREAM("Order timed out: " << goalID);
+          std::ostringstream logMessage;
+          logMessage << "Order timed out: " << goalID;
+          ROS_INFO_STREAM(logMessage.str().c_str());
+          gzdbg << logMessage.str() << std::endl;
           this->StopCurrentGoal();
         }
       }
@@ -509,7 +518,9 @@ bool ROSAriacTaskManagerPlugin::HandleSubmitTrayService(
   std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
 
   if (this->dataPtr->currentState != "go") {
-    ROS_ERROR("Competition is not running so trays cannot be submitted.");
+    std::string errStr = "Competition is not running so trays cannot be submitted.";
+    gzerr << errStr << std::endl;
+    ROS_ERROR_STREAM(errStr);
     return false;
   }
 
@@ -543,7 +554,9 @@ void ROSAriacTaskManagerPlugin::ControlConveyorBelt(double velocity)
   srv.request.state = controlMsg;
   this->dataPtr->conveyorControlClient.call(srv);
   if (!srv.response.success) {
-    ROS_ERROR_STREAM("Failed to control conveyor");
+    std::string errStr = "Failed to control conveyor.";
+    gzerr << errStr << std::endl;
+    ROS_ERROR_STREAM(errStr);
   }
 }
 

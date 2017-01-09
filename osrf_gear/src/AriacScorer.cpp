@@ -130,7 +130,7 @@ bool AriacScorer::GetTrayById(const ariac::TrayID_t & trayID, ariac::KitTray & k
   auto it = this->kitTrays.find(trayID);
   if (it == this->kitTrays.end())
   {
-    ROS_DEBUG_STREAM("No known tray with ID: " << trayID);
+    gzwarn << "No known tray with ID: " << trayID << std::endl;
     return false;
   }
   kitTray = it->second;
