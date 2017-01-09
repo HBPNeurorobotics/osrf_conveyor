@@ -444,8 +444,8 @@ void ROSAriacTaskManagerPlugin::OnUpdate()
   }
   else if (this->dataPtr->currentState == "end_game")
   {
-    ROS_INFO_STREAM("No more orders to process. Final score: " << this->dataPtr->currentGameScore.total());
-    ROS_INFO_STREAM("Score breakdown:\n" << this->dataPtr->currentGameScore);
+    gzdbg << "No more orders to process. Final score: " << this->dataPtr->currentGameScore.total() << std::endl;
+    gzdbg <<"Score breakdown:\n" << this->dataPtr->currentGameScore << std::endl;
     this->dataPtr->currentState = "done";
   }
 
@@ -472,6 +472,7 @@ void ROSAriacTaskManagerPlugin::ProcessGoalsToAnnounce()
   if (elapsed.Double() >= this->dataPtr->goalsToAnnounce.front().startTime)
   {
     auto goal = this->dataPtr->goalsToAnnounce.front();
+    gzdbg << "New goal to announce: " << goal.goalID << std::endl;
 
     // Move goal to the 'in process' stack
     this->dataPtr->goalsInProgress.push(ariac::Goal(goal));
@@ -513,6 +514,7 @@ bool ROSAriacTaskManagerPlugin::HandleSubmitTrayService(
   }
 
   ariac::KitTray kitTray;
+  gzdbg << "SubmitTray request received for tray: " << req.tray_id.data << std::endl;
   if (!this->dataPtr->ariacScorer.GetTrayById(req.tray_id.data, kitTray))
   {
     res.success = false;
@@ -521,6 +523,7 @@ bool ROSAriacTaskManagerPlugin::HandleSubmitTrayService(
   kitTray.currentKit.kitType = req.kit_type.data;
   res.success = true;
   res.inspection_result = this->dataPtr->ariacScorer.SubmitTray(kitTray).total();
+  gzdbg << "Inspection result: " << res.inspection_result << std::endl;
   return true;
 }
 
@@ -557,7 +560,7 @@ void ROSAriacTaskManagerPlugin::PopulateConveyorBelt()
 void ROSAriacTaskManagerPlugin::AssignGoal(const ariac::Goal & goal)
 {
     // Publish the goal to ROS topic
-    ROS_INFO_STREAM("Announcing order: " << goal.goalID);
+    gzdbg << "Announcing order: " << goal.goalID << std::endl;
     osrf_gear::Goal goalMsg;
     fillGoalMsg(goal, goalMsg);
     this->dataPtr->goalPub.publish(goalMsg);
@@ -572,7 +575,7 @@ void ROSAriacTaskManagerPlugin::StopCurrentGoal()
 {
   if (this->dataPtr->goalsInProgress.size())
   {
-    ROS_INFO_STREAM("Stopping order: " << this->dataPtr->goalsInProgress.top().goalID);
+    gzdbg << "Stopping order: " << this->dataPtr->goalsInProgress.top().goalID << std::endl;
     this->dataPtr->goalsInProgress.pop();
     this->dataPtr->ariacScorer.UnassignCurrentGoal(this->dataPtr->timeSpentOnCurrentGoal);
   }
@@ -581,7 +584,7 @@ void ROSAriacTaskManagerPlugin::StopCurrentGoal()
   {
     // Assign the previous goal to the scorer
     auto goal = this->dataPtr->goalsInProgress.top();
-    ROS_INFO_STREAM("Restoring order: " << goal.goalID);
+    gzdbg << "Restoring order: " << goal.goalID << std::endl;
     this->AssignGoal(goal);
   }
 }
