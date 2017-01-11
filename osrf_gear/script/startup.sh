@@ -2,9 +2,9 @@
 
 echo "Ensuring scoring log file exists"
 log_dir="$HOME/.ariac/log"
-mkdir -p "$log_dir/ariac"
+mkdir -p "$log_dir"
 
-scoring_log_file="$log_dir/ariac/performance.log"
+scoring_log_file="$log_dir/performance.log"
 gazebo_log_file="$HOME/.gazebo/server-11345/default.log"
 
 if [ ! \( -e "${scoring_log_file}" \) ] ; then

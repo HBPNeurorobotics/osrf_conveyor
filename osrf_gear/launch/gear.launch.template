@@ -11,7 +11,7 @@
   <arg name="debug" default="false"/>
   <arg name="world_path" />
   <arg name="gear_urdf_xacro" />
-  <arg name="state_log_path" value="$(env HOME)/.ariac/log/gazebo" />
+  <arg name="state_log_dir" value="$(env HOME)/.ariac/log/gazebo" />
 
   <!-- run startup script -->
   <node name="startup_ariac" pkg="osrf_gear" type="startup.sh" output="screen" />
@@ -22,7 +22,7 @@
     <!-- Always start paused because the arm spawn needs it that way. -->
     <arg name="paused" value="true"/>
     <arg name="gui" value="$(arg gui)"/>
-    <arg name="extra_gazebo_args" value="-r --record_path=$(arg state_log_path)" />
+    <arg name="extra_gazebo_args" value="-r --record_path=$(arg state_log_dir)" />
     <arg name="debug" value="$(arg debug)" />
   </include>
 
