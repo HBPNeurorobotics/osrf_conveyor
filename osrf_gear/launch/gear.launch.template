@@ -11,7 +11,10 @@
   <arg name="debug" default="false"/>
   <arg name="world_path" />
   <arg name="gear_urdf_xacro" />
-  <arg name="state_log_path" value="$(env HOME)/.ariac/log/gazebo"/>
+  <arg name="state_log_path" value="$(env HOME)/.ariac/log/gazebo" />
+
+  <!-- run startup script -->
+  <node name="startup_ariac" pkg="osrf_gear" type="startup.sh" output="screen" />
 
   <!-- startup simulated world -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
