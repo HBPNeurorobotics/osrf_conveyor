@@ -294,6 +294,7 @@ def create_models_over_bins_infos(models_over_bins_dict):
                     # if the models all spawn at the same time
                     scoped_model_name = bin_name + '|' + \
                         model_info.type + '_' + str(model_count)
+                    model_info.bin = bin_name
                     models_to_spawn_infos[scoped_model_name] = model_info
                     model_count += 1
     return models_to_spawn_infos
@@ -356,6 +357,28 @@ def create_bin_infos():
     return bin_infos
 
 
+def create_material_location_info(belt_parts, models_over_bins):
+    # Specify where trays can be found
+    material_locations = {'tray': set(['agv1', 'agv2'])}
+
+    # Specify that belt parts can be found on the conveyor belt
+    for _, spawn_times in belt_parts.items():
+        for spawn_time, part in spawn_times.items():
+            if part.type in material_locations:
+                material_locations[part.type].update(['belt'])
+            else:
+                material_locations[part.type] = set(['belt'])
+
+    # Specify in which bin the different bin parts can be found
+    for part_name, part in models_over_bins.items():
+        if part.type in material_locations:
+            material_locations[part.type].update([part.bin])
+        else:
+            material_locations[part.type] = set([part.bin])
+
+    return material_locations
+
+
 def create_options_info(options_dict):
     options = configurable_options
     for option, val in options_dict.items():
@@ -386,8 +409,8 @@ def prepare_template_data(config_dict):
             template_data['sensors'].update(
                 create_sensor_infos(value))
         elif key == 'models_over_bins':
-            template_data['models_to_insert'].update(
-                create_models_over_bins_infos(value))
+            models_over_bins = create_models_over_bins_infos(value)
+            template_data['models_to_insert'].update(models_over_bins)
         elif key == 'belt_parts':
             template_data['belt_parts'].update(create_belt_part_infos(value))
         elif key == 'drops':
@@ -405,6 +428,10 @@ def prepare_template_data(config_dict):
             print("Error: unknown top level entry '{0}'".format(key), file=sys.stderr)
             sys.exit(1)
     template_data['bins'] = create_bin_infos()
+    template_data['material_locations'] = create_material_location_info(
+        template_data['belt_parts'] or {},
+        models_over_bins or {},
+    )
     return template_data
 
 

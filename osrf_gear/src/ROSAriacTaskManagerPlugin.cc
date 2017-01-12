@@ -65,6 +65,9 @@ namespace gazebo
     /// The order at the top of the stack is the active order.
     public: std::stack<ariac::Order> ordersInProgress;
 
+    /// \brief Mapping between material types and their locations.
+    public: std::map<std::string, std::vector<std::string> > materialLocations;
+
     /// \brief A scorer to mange the game score.
     public: AriacScorer ariacScorer;
 
@@ -91,6 +94,9 @@ namespace gazebo
 
     /// \brief Service that allows the user to start the competition.
     public: ros::ServiceServer teamStartServiceServer;
+
+    /// \brief Service that allows users to query the location of materials.
+    public: ros::ServiceServer getMaterialLocationsServiceServer;
 
     /// \brief Service that allows a tray to be submitted for inspection.
     public: ros::ServiceServer submitTrayServiceServer;
@@ -215,6 +221,10 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
   if (_sdf->HasElement("submit_tray_service_name"))
     submitTrayServiceName = _sdf->Get<std::string>("submit_tray_service_name");
 
+  std::string getMaterialLocationsServiceName = "material_locations";
+  if (_sdf->HasElement("material_locations_service_name"))
+    getMaterialLocationsServiceName = _sdf->Get<std::string>("material_locations_service_name");
+
 
   // Parse the orders.
   sdf::ElementPtr orderElem = NULL;
@@ -330,6 +340,37 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
   // for (auto order : this->dataPtr->ordersToAnnounce)
   //   gzdbg << order << std::endl;
 
+  // Parse the material storage locations.
+  if (_sdf->HasElement("material_locations"))
+  {
+    sdf::ElementPtr materialLocationsElem = _sdf->GetElement("material_locations");
+    sdf::ElementPtr materialElem = NULL;
+    if (materialLocationsElem->HasElement("material"))
+    {
+      materialElem = materialLocationsElem->GetElement("material");
+    }
+    while (materialElem)
+    {
+      std::string materialType = materialElem->Get<std::string>("type");
+      std::vector<std::string> locations;
+
+      // Parse locations of this material.
+      sdf::ElementPtr locationElem = NULL;
+      if (materialElem->HasElement("location"))
+      {
+        locationElem = materialElem->GetElement("location");
+      }
+      while (locationElem)
+      {
+        std::string location = locationElem->Get<std::string>("storage_unit");
+        locations.push_back(location);
+        locationElem = locationElem->GetNextElement("location");
+      }
+      this->dataPtr->materialLocations[materialType] = locations;
+      materialElem = materialElem->GetNextElement("material");
+    }
+  }
+
   // Initialize ROS
   this->dataPtr->rosnode.reset(new ros::NodeHandle(robotNamespace));
 
@@ -359,6 +400,11 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
   this->dataPtr->submitTrayServiceServer =
     this->dataPtr->rosnode->advertiseService(submitTrayServiceName,
       &ROSAriacTaskManagerPlugin::HandleSubmitTrayService, this);
+
+  // Service for submitting trays for inspection.
+  this->dataPtr->getMaterialLocationsServiceServer =
+    this->dataPtr->rosnode->advertiseService(getMaterialLocationsServiceName,
+      &ROSAriacTaskManagerPlugin::HandleGetMaterialLocationsService, this);
 
   // Client for the conveyor control commands.
   this->dataPtr->conveyorControlClient =
@@ -550,6 +596,30 @@ bool ROSAriacTaskManagerPlugin::HandleSubmitTrayService(
   res.success = true;
   res.inspection_result = this->dataPtr->ariacScorer.SubmitTray(kitTray).total();
   gzdbg << "Inspection result: " << res.inspection_result << std::endl;
+  return true;
+}
+
+/////////////////////////////////////////////////
+bool ROSAriacTaskManagerPlugin::HandleGetMaterialLocationsService(
+  osrf_gear::GetMaterialLocations::Request & req,
+  osrf_gear::GetMaterialLocations::Response & res)
+{
+  std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
+  auto it = this->dataPtr->materialLocations.find(req.material_type);
+  if (it == this->dataPtr->materialLocations.end())
+  {
+    gzdbg << "No known locations for material type: " << req.material_type << std::endl;
+  }
+  else
+  {
+    auto locations = it->second;
+    for (auto storage_unit : locations)
+    {
+      osrf_gear::StorageUnit storageUnitMsg;
+      storageUnitMsg.unit_id = storage_unit;
+      res.storage_units.push_back(storageUnitMsg);
+    }
+  }
   return true;
 }
 

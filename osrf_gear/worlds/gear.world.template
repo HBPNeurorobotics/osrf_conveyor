@@ -301,7 +301,7 @@
       <loop_forever>true</loop_forever>
       <frame>conveyor_belt</frame>
       <object_sequence>
-@[for obj_type, spawn_times in belt_parts.items()]@
+@[for part_name, spawn_times in belt_parts.items()]@
   @[for spawn_time, part in spawn_times.items()]@
         <object>
           <time>@(spawn_time)</time>
@@ -322,6 +322,7 @@
       <population_activate_topic>/ariac/populate_belt</population_activate_topic>
       <conveyor_control_topic>/ariac/conveyor/control</conveyor_control_topic>
       <submit_tray_service_name>/ariac/submit_tray</submit_tray_service_name>
+      <material_locations_service_name>/ariac/material_locations</material_locations_service_name>
       <orders_topic>/ariac/orders</orders_topic>
 @[for order_name, order in orders.items()]@
       <order>
@@ -337,6 +338,19 @@
         </kit>
       </order>
 @[end for]@
+      <material_locations>
+@[for material_name, locations in material_locations.items()]@
+        <material>
+          <type>@(material_name)</type>
+@[for location in locations]@
+          <location>
+            <storage_unit>@(location)</storage_unit>
+          </location>
+@[end for]@
+        </material>
+@[end for]@
+      </material_locations>
+
     </plugin>
 
 @[if options['fill_demo_tray'] and orders]@
