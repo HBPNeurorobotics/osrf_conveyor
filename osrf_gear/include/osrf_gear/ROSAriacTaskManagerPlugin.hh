@@ -32,9 +32,9 @@ namespace gazebo
   class ROSAriacTaskManagerPluginPrivate;
 
   /// \brief A plugin that orchestrates an ARIAC task. First of all, it loads a
-  /// description of the goals. Here's an example:
+  /// description of the orders. Here's an example:
   ///
-  ///  <goal>
+  ///  <order>
   ///    <time>5.0</time>
   ///    <!-- 1st kit -->
   ///    <kit>
@@ -66,16 +66,16 @@ namespace gazebo
   ///        <pose>-1 2.5 0.2 0 0 0</pose>
   ///      </object>
   ///    </kit>
-  ///  </goal>
+  ///  </order>
   ///
-  /// A task can have multiple goals. Each goal has a time element. At that
-  /// point in simulation time, the goal will be notified to the team.
-  /// A goal is composed by a positive number of kits. A kit is composed by
+  /// A task can have multiple orders. Each order has a time element. At that
+  /// point in simulation time, the order will be notified to the team.
+  /// An order is composed by a positive number of kits. A kit is composed by
   /// a positive number of objects. An object contains a type (e.g.: coke_can)
   /// and a pose. The pose is the target pose where the object should be placed
   /// on a destination tray.
   ///
-  /// After loading the goals, the plugin will use a simple finite state machine
+  /// After loading the orders, the plugin will use a simple finite state machine
   /// to handle the different tasks to do.
   ///
   /// The initial state is called "init" and there's not much to do when the
@@ -88,10 +88,10 @@ namespace gazebo
   /// "ready" too.
   ///
   /// The "ready" state is considered simulation time zero for notifying the
-  /// goals to the teams. A <time>1.0</time> inside a <goal> element will be
-  /// notified 1 second after entering in the "ready" state. The goal will be
-  /// published using a ROS topic on the topic ${robot_namespace}/goal or
-  /// ${robot_namespace}/${goals_topic} if the parameter <goals_topic> is passed
+  /// orders to the teams. A <time>1.0</time> inside a <order> element will be
+  /// notified 1 second after entering in the "ready" state. The order will be
+  /// published using a ROS topic on the topic ${robot_namespace}/order or
+  /// ${robot_namespace}/${orders_topic} if the parameter <orders_topic> is passed
   /// in to the plugin. Also, when the plugin is in this state, it will use the
   /// conveyor activation topic to communicate with the Population plugin and
   /// enable the population of the conveyor belt. The element
@@ -100,10 +100,8 @@ namespace gazebo
   /// belt, the state changes to "go".
   ///
   /// In "go" state, the plugin will be updating the function that processes
-  /// the goals. This is essentially checking if it's time to announce a new
-  /// goal.
-  /// ToDo: Check if the team has completed all the goals or the maximum time
-  /// limit has been reached. In that case, move to "finish" state.
+  /// the orders. This is essentially checking if it's time to announce a new
+  /// order.
   ///
   /// In "finish" state there's nothing to do.
   class GAZEBO_VISIBLE ROSAriacTaskManagerPlugin : public WorldPlugin
@@ -120,8 +118,8 @@ namespace gazebo
     /// \brief Update the plugin.
     protected: void OnUpdate();
 
-    /// \brief Decide whether to announce a new goal.
-    protected: void ProcessGoalsToAnnounce();
+    /// \brief Decide whether to announce a new order.
+    protected: void ProcessOrdersToAnnounce();
 
     /// \brief Set the velocity of the conveyor belt.
     protected: void ControlConveyorBelt(double velocity);
@@ -140,11 +138,11 @@ namespace gazebo
     public: bool HandleSubmitTrayService(
       osrf_gear::SubmitTray::Request & req, osrf_gear::SubmitTray::Response & res);
 
-    /// \brief Assign a goal to be monitored by the scorer.
-    protected: void AssignGoal(const ariac::Goal & goal);
+    /// \brief Assign an order to be monitored by the scorer.
+    protected: void AssignOrder(const ariac::Order & order);
 
-    /// \brief Stop scoring the current goal and assign the next goal on stack.
-    protected: void StopCurrentGoal();
+    /// \brief Stop scoring the current order and assign the next order on stack.
+    protected: void StopCurrentOrder();
 
     /// \brief Private data pointer.
     private: std::unique_ptr<ROSAriacTaskManagerPluginPrivate> dataPtr;

@@ -30,7 +30,7 @@ namespace ariac
 
   typedef std::string KitType_t;
   typedef std::string TrayID_t;
-  typedef std::string GoalID_t;
+  typedef std::string OrderID_t;
 
   /// \brief The score of a tray.
   class TrayScore
@@ -64,17 +64,17 @@ namespace ariac
             }
   };
 
-  /// \brief The score of a goal.
-  class GoalScore
+  /// \brief The score of an order.
+  class OrderScore
   {
     /// \brief Stream insertion operator.
     /// \param[in] _out output stream.
-    /// \param[in] _obj GoalScore object to output.
+    /// \param[in] _obj OrderScore object to output.
     /// \return The output stream
     public: friend std::ostream &operator<<(std::ostream &_out,
-                                            const GoalScore &_obj)
+                                            const OrderScore &_obj)
     {
-      _out << "<goal_score " << _obj.goalID << ">" << std::endl;
+      _out << "<order_score " << _obj.orderID << ">" << std::endl;
       _out << "Total score: [" << _obj.total() << "]" << std::endl;
       _out << "Time taken: [" << _obj.timeTaken << "]" << std::endl;
       _out << "Complete: [" << (_obj.isComplete() ? "true" : "false") << "]" << std::endl;
@@ -82,34 +82,34 @@ namespace ariac
       {
         _out << item.second << std::endl;
       }
-      _out << "</goal_score>" << std::endl;
+      _out << "</order_score>" << std::endl;
       return _out;
     }
 
     /// \brief Mapping between tray IDs and scores.
     public: std::map<TrayID_t, TrayScore> trayScores;
 
-            /// \brief ID of the goal being scored.
-            GoalID_t goalID;
+            /// \brief ID of the order being scored.
+            OrderID_t orderID;
 
-            /// \brief Time in seconds spend on the goal.
+            /// \brief Time in seconds spend on the order.
             double timeTaken = 0.0;
 
-            /// \brief Calculate if the goal is complete.
+            /// \brief Calculate if the order is complete.
             /// \return True if all trays are complete.
-            ///   Will return false if there are no trays in the goal.
+            ///   Will return false if there are no trays in the order.
             bool isComplete() const
             {
-              bool isGoalComplete = !this->trayScores.empty();
+              bool isOrderComplete = !this->trayScores.empty();
               for (const auto & item : this->trayScores)
               {
-                isGoalComplete &= item.second.isComplete;
-                if (!isGoalComplete)
+                isOrderComplete &= item.second.isComplete;
+                if (!isOrderComplete)
                 {
                   break;
                 }
               }
-              return isGoalComplete;
+              return isOrderComplete;
             };
 
             /// \brief Calculate the total score.
@@ -138,7 +138,7 @@ namespace ariac
       _out << "Total score: [" << _obj.total() << "]" << std::endl;
       _out << "Total process time: [" << _obj.totalProcessTime << "]" << std::endl;
       _out << "Part travel time: [" << _obj.partTravelTime << "]" << std::endl;
-      for (const auto & item : _obj.goalScores)
+      for (const auto & item : _obj.orderScores)
       {
         _out << item.second << std::endl;
       }
@@ -152,8 +152,8 @@ namespace ariac
             double partTravelDistance = 0.0;
             double manipulatorTravelDistance = 0.0;
 
-            // The score of each of the goals during the game.
-            std::map<GoalID_t, GoalScore> goalScores;
+            // The score of each of the orders during the game.
+            std::map<OrderID_t, OrderScore> orderScores;
 
             /// \brief Calculate the total score.
             double total() const
@@ -165,7 +165,7 @@ namespace ariac
               total += partTravelDistance;
               total += manipulatorTravelDistance;
 
-              for (const auto & item : this->goalScores)
+              for (const auto & item : this->orderScores)
               {
                 total += item.second.total();
               }
@@ -294,50 +294,50 @@ namespace ariac
     public: std::vector<KitObject> objects;
   };
 
-  /// \brief Class to store information about a goal.
-  class Goal
+  /// \brief Class to store information about an order.
+  class Order
   {
     /// \brief Less than operator.
-    /// \param[in] _goal Other goal to compare.
-    /// \return True if this < _goal.
-    public: bool operator<(const Goal &_goal) const
+    /// \param[in] _order Other order to compare.
+    /// \return True if this < _order.
+    public: bool operator<(const Order &_order) const
     {
-      return this->startTime < _goal.startTime;
+      return this->startTime < _order.startTime;
     }
 
     /// \brief Stream insertion operator.
     /// \param[in] _out output stream.
-    /// \param[in] _goal Goal to output.
+    /// \param[in] _order Order to output.
     /// \return The output stream.
     public: friend std::ostream &operator<<(std::ostream &_out,
-                                            const Goal &_goal)
+                                            const Order &_order)
     {
-      _out << "<Goal>" << std::endl;
-      _out << "Start time: [" << _goal.startTime << "]" << std::endl;
+      _out << "<Order>" << std::endl;
+      _out << "Start time: [" << _order.startTime << "]" << std::endl;
       _out << "Kits:" << std::endl;
-      for (const auto & item : _goal.kits)
+      for (const auto & item : _order.kits)
       {
         _out << item.second << std::endl;
       }
-      _out << "</goal>" << std::endl;
+      _out << "</order>" << std::endl;
 
       return _out;
     }
 
-    /// \brief The ID of this goal.
-    public: GoalID_t goalID;
+    /// \brief The ID of this order.
+    public: OrderID_t orderID;
 
-    /// \brief Simulation time in which the goal should be triggered.
+    /// \brief Simulation time in which the order should be triggered.
     public: double startTime;
 
-    /// \brief Simulation time in seconds permitted for the goal to be
+    /// \brief Simulation time in seconds permitted for the order to be
     /// completed before cancelling it. Infinite by default.
     public: double allowedTime;
 
-    /// \brief A goal is composed of multiple kits of different types.
+    /// \brief An order is composed of multiple kits of different types.
     public: std::map<KitType_t, Kit> kits;
 
-    /// \brief Simulation time in seconds spent on this goal.
+    /// \brief Simulation time in seconds spent on this order.
     public: double timeTaken;
   };
 }

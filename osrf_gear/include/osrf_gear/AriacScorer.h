@@ -28,8 +28,8 @@
 
 #include "osrf_gear/ARIAC.hh"
 #include "osrf_gear/AriacKitTray.h"
-#include <osrf_gear/Goal.h>
 #include <osrf_gear/KitTray.h>
+#include <osrf_gear/Order.h>
 #include "osrf_gear/VacuumGripperState.h"
 
 /// \brief A scorer for the ARIAC game.
@@ -49,22 +49,22 @@ class AriacScorer
   /// \return The score for the game.
   public: ariac::GameScore GetGameScore();
 
-  /// \brief Get the score of the current goal.
-  /// \return True if the goal is complete.
-  public: bool IsCurrentGoalComplete();
+  /// \brief Get the score of the current order.
+  /// \return True if the order is complete.
+  public: bool IsCurrentOrderComplete();
 
-  /// \brief Get the score of the current goal.
-  /// \return The score for the goal.
-  public: ariac::GoalScore GetCurrentGoalScore();
+  /// \brief Get the score of the current order.
+  /// \return The score for the order.
+  public: ariac::OrderScore GetCurrentOrderScore();
 
-  /// \brief Assign a goal to process.
-  /// \param[in] goal The goal.
-  public: void AssignGoal(const ariac::Goal & goal);
+  /// \brief Assign an order to process.
+  /// \param[in] order The order.
+  public: void AssignOrder(const ariac::Order & order);
 
-  /// \brief Stop processing the current goal.
-  /// \param[in] timeTaken The time spent on the goal.
-  /// \return The score for the goal.
-  public: ariac::GoalScore UnassignCurrentGoal(double timeTaken = 0.0);
+  /// \brief Stop processing the current order.
+  /// \param[in] timeTaken The time spent on the order.
+  /// \return The score for the order.
+  public: ariac::OrderScore UnassignCurrentOrder(double timeTaken = 0.0);
 
   /// \brief Get the kit tray with the specified ID.
   /// \param[in] trayID The ID of the tray to get.
@@ -72,7 +72,7 @@ class AriacScorer
   /// \return True if the tray was found, false otherwise.
   public: bool GetTrayById(const ariac::TrayID_t & trayID, ariac::KitTray & kitTray);
 
-  /// \brief Submit tray for scoring and store the result in the goal score.
+  /// \brief Submit tray for scoring and store the result in the order score.
   public: ariac::TrayScore SubmitTray(const ariac::KitTray & tray);
 
   /// \brief Calculate the score for a tray given the type of kit being built.
@@ -84,8 +84,8 @@ class AriacScorer
   /// \brief Helper function for filling a Kit from a kit ROS message.
   public: static void FillKitFromMsg(const osrf_gear::Kit & kitMsg, ariac::Kit & kit);
 
-  /// \brief Callback for receiving goal message.
-  public: void OnGoalReceived(const osrf_gear::Goal::ConstPtr & goalMsg);
+  /// \brief Callback for receiving order message.
+  public: void OnOrderReceived(const osrf_gear::Order::ConstPtr & orderMsg);
 
   /// \brief Callback for receiving tray state message.
   public: void OnTrayInfoReceived(const osrf_gear::KitTray::ConstPtr & trayMsg);
@@ -99,30 +99,29 @@ class AriacScorer
   /// \brief Mutex for protecting the kit trays being monitored.
   protected: mutable boost::mutex kitTraysMutex;
 
-  /// \brief Current goal being monitored.
-  protected: ariac::Goal currentGoal;
+  /// \brief Current order being monitored.
+  protected: ariac::Order currentOrder;
 
   /// \brief Flag for signalling new tray info to process.
   protected: bool newTrayInfoReceived = false;
 
-  /// \brief Flag for signalling new goal to process.
-  protected: bool newGoalReceived = false;
+  /// \brief Flag for signalling new order to process.
+  protected: bool newOrderReceived = false;
 
   /// \brief Whether or not there is a travelling part in the gripper.
   protected: bool isPartTravelling = false;
 
-  /// \brief Goal receivd from goal messages.
-  protected: ariac::Goal newGoal;
+  /// \brief Order receivd from order messages.
+  protected: ariac::Order newOrder;
 
   /// \brief Parameters to use for calculating scores.
   protected: ariac::ScoringParameters scoringParameters;
 
-  /// \brief Pointer to the score of the current goal.
-  protected: ariac::GoalScore* goalScore;
+  /// \brief Pointer to the score of the current order.
+  protected: ariac::OrderScore* orderScore;
 
   /// \brief The score of the run.
   protected: ariac::GameScore gameScore;
 
 };
 #endif
-

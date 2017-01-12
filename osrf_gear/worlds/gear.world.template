@@ -322,9 +322,9 @@
       <population_activate_topic>/ariac/populate_belt</population_activate_topic>
       <conveyor_control_topic>/ariac/conveyor/control</conveyor_control_topic>
       <submit_tray_service_name>/ariac/submit_tray</submit_tray_service_name>
-      <goals_topic>/ariac/orders</goals_topic>
+      <orders_topic>/ariac/orders</orders_topic>
 @[for order_name, order in orders.items()]@
-      <goal>
+      <order>
         <start_time>@(order['announcement_time'])</start_time>
         <kit>
           <kit_type>@(order_name)</kit_type>
@@ -335,7 +335,7 @@
           </object>
 @[end for]@
         </kit>
-      </goal>
+      </order>
 @[end for]@
     </plugin>
 

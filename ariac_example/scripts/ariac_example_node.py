@@ -19,7 +19,7 @@ import time
 
 import rospy
 
-from osrf_gear.msg import Goal
+from osrf_gear.msg import Order
 from sensor_msgs.msg import JointState
 from std_srvs.srv import Trigger
 from trajectory_msgs.msg import JointTrajectory
@@ -48,13 +48,13 @@ class MyCompetitionClass:
     def __init__(self):
         self.joint_trajectory_publisher = \
             rospy.Publisher("/ariac/arm/command", JointTrajectory, queue_size=10)
-        self.received_goals = []
+        self.received_orders = []
         self.current_joint_state = None
         self.last_joint_state_print = time.time()
         self.has_been_zeroed = False
 
-    def goal_callback(self, msg):
-        rospy.loginfo("Received goal:\n" + str(msg))
+    def order_callback(self, msg):
+        rospy.loginfo("Received order:\n" + str(msg))
 
     def joint_state_callback(self, msg):
         if time.time() - self.last_joint_state_print >= 10:
@@ -81,8 +81,9 @@ def main():
     rospy.init_node("ariac_example_node")
 
     comp_class = MyCompetitionClass()
-    goal_sub = rospy.Subscriber("/ariac/orders", Goal, comp_class.goal_callback)
-    joint_state_sub = rospy.Subscriber("/joint_states", JointState, comp_class.joint_state_callback)
+    order_sub = rospy.Subscriber("/ariac/orders", Order, comp_class.order_callback)
+    joint_state_sub = rospy.Subscriber(
+        "/joint_states", JointState, comp_class.joint_state_callback)
 
     rospy.loginfo("Setup complete.")
     start_competition()

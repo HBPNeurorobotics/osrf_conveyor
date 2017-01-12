@@ -24,12 +24,12 @@ find_package(gazebo REQUIRED)
 add_message_files(DIRECTORY msg
   FILES
   ConveyorBeltState.msg
-  Goal.msg
   Kit.msg
   KitObject.msg
   KitTray.msg
   LogicalCameraImage.msg
   Model.msg
+  Order.msg
   PopulationState.msg
   Proximity.msg
   VacuumGripperState.msg
