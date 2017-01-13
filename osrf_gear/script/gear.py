@@ -359,7 +359,7 @@ def create_bin_infos():
 
 def create_material_location_info(belt_parts, models_over_bins):
     # Specify where trays can be found
-    material_locations = {'tray': set(['agv1', 'agv2'])}
+    material_locations = {'tray': set(['agv1_load_point', 'agv2_load_point'])}
 
     # Specify that belt parts can be found on the conveyor belt
     for _, spawn_times in belt_parts.items():
