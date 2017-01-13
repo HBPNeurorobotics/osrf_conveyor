@@ -204,10 +204,13 @@
       </plugin>
 
       <!-- a tray for building kits -->
-      <include>
-        <uri>model://kit_tray</uri>
+      <!-- (this has to be in a model tag so logical cameras can detect it as a nested model) -->
+      <model name="kit_tray">
         <pose>0.0 0.15 0.75 0 0 0</pose>
-      </include>
+        <include>
+          <uri>model://kit_tray</uri>
+        </include>
+      </model>
 
       <!-- join the tray and agv -->
       <joint name="agv_tray" type="fixed">
@@ -228,10 +231,13 @@
       </plugin>
 
       <!-- a tray for building kits -->
-      <include>
-        <uri>model://kit_tray</uri>
+      <!-- (this has to be in a model tag so logical cameras can detect it as a nested model) -->
+      <model name="kit_tray">
         <pose>0.0 0.15 0.75 0 0 0</pose>
-      </include>
+        <include>
+          <uri>model://kit_tray</uri>
+        </include>
+      </model>
 
       <!-- join the tray and agv -->
       <joint name="agv_tray" type="fixed">
@@ -362,7 +368,7 @@ count = {}
     <plugin filename="libPopulationPlugin.so" name="populate_kit_tray_1">
       <activation_topic>/ariac/populate_belt</activation_topic>
       <loop_forever>false</loop_forever>
-      <frame>agv1::kit_tray::tray</frame>
+      <frame>agv1::kit_tray::kit_tray::tray</frame>
       <object_sequence>
 @[for part in order['parts']]@
         <object>
