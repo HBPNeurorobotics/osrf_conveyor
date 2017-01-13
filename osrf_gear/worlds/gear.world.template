@@ -62,12 +62,63 @@
 @[for name, sensor in sensors.items()]@
 @[if sensor.type == "break_beam"]@
     <!-- a break beam sensor called @(name) -->
-    <include>
-      <uri>model://break_beam</uri>
-      <name>@(name)</name>
+    <model name="@(name)">
       <pose>@(' '.join(sensor.pose.xyz)) @(' '.join(sensor.pose.rpy))</pose>
+      <link name="link">
+        <sensor name="@(name)" type="ray">
+          <pose>0.025 0 0 0 0 0</pose>
+          <plugin name="proximity_ray_plugin" filename="libROSProximityRayPlugin.so" >
+            <robotNamespace>ariac</robotNamespace>
+            <time_delay>0.05</time_delay><!-- this modifies the update rate of the ray sensor -->
+          </plugin>
+          <ray>
+            <range>
+              <min>0.0</min>
+              <max>1.0</max> <!-- this represents the distance at which the reflector's placed. max 12m -->
+              <resolution>0.001</resolution>
+            </range>
+
+            <!-- nothing below this line really needs to be modified upon change of sensor model -->
+
+            <scan>
+              <horizontal>
+                <samples>1</samples>
+                <resolution>1</resolution>
+                <min_angle>0</min_angle>
+                <max_angle>0</max_angle>
+              </horizontal>
+            </scan>
+            <noise>
+              <type>gaussian</type>
+              <mean>0.0</mean>
+              <stddev>0.01</stddev>
+            </noise>
+          </ray>
+
+          <always_on>1</always_on>
+          <visualize>true</visualize>
+        </sensor>
+        <gravity>false</gravity>
+        <inertial>
+          <mass>0.1</mass>
+        </inertial>
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://hokuyo/meshes/hokuyo.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name="collision">
+          <geometry>
+            <mesh>
+              <uri>model://hokuyo/meshes/hokuyo.dae</uri>
+            </mesh>
+          </geometry>
+        </collision>
+      </link>
       <static>true</static>
-    </include>
+    </model>
 
 @[end if]@
 @[if sensor.type == "proximity_sensor"]@
