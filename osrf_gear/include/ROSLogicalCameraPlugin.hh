@@ -32,6 +32,7 @@
 #include "gazebo/transport/TransportTypes.hh"
 
 // ROS
+#include "osrf_gear/LogicalCameraImage.h"
 #include <ros/ros.h>
 
 namespace gazebo
@@ -47,6 +48,9 @@ namespace gazebo
 
     /// \brief Model that contains the logical camera
     protected: physics::ModelPtr model;
+
+    /// \brief Gazebo world pointer.
+    protected: physics::WorldPtr world;
 
     /// \brief Link that holds the logical camera
     protected: physics::LinkPtr cameraLink;
@@ -65,6 +69,14 @@ namespace gazebo
     /// \brief Callback for when logical camera images are received
     /// \param[in] _msg The logical camera image
     public: void OnImage(ConstLogicalCameraImagePtr &_msg);
+
+    /// \brief Determine if the model type is one that should be published.
+    protected: bool ModelTypeToPublish(const std::string & modelType);
+
+    /// \brief Add model info to the message to be published.
+    protected: void AddModelToMsg(
+      const std::string & modelType, const math::Pose & modelPose,
+      osrf_gear::LogicalCameraImage & imageMsg);
 
     /// \brief Node for communication with gazebo
     protected: transport::NodePtr node;

@@ -204,10 +204,13 @@
       </plugin>
 
       <!-- a tray for building kits -->
-      <include>
-        <uri>model://kit_tray</uri>
+      <!-- (this has to be in a model tag so logical cameras can detect it as a nested model) -->
+      <model name="kit_tray">
         <pose>0.0 0.15 0.75 0 0 0</pose>
-      </include>
+        <include>
+          <uri>model://kit_tray</uri>
+        </include>
+      </model>
 
       <!-- join the tray and agv -->
       <joint name="agv_tray" type="fixed">
@@ -228,10 +231,13 @@
       </plugin>
 
       <!-- a tray for building kits -->
-      <include>
-        <uri>model://kit_tray</uri>
+      <!-- (this has to be in a model tag so logical cameras can detect it as a nested model) -->
+      <model name="kit_tray">
         <pose>0.0 0.15 0.75 0 0 0</pose>
-      </include>
+        <include>
+          <uri>model://kit_tray</uri>
+        </include>
+      </model>
 
       <!-- join the tray and agv -->
       <joint name="agv_tray" type="fixed">
@@ -301,7 +307,7 @@
       <loop_forever>true</loop_forever>
       <frame>conveyor_belt</frame>
       <object_sequence>
-@[for obj_type, spawn_times in belt_parts.items()]@
+@[for part_name, spawn_times in belt_parts.items()]@
   @[for spawn_time, part in spawn_times.items()]@
         <object>
           <time>@(spawn_time)</time>
@@ -322,6 +328,7 @@
       <population_activate_topic>/ariac/populate_belt</population_activate_topic>
       <conveyor_control_topic>/ariac/conveyor/control</conveyor_control_topic>
       <submit_tray_service_name>/ariac/submit_tray</submit_tray_service_name>
+      <material_locations_service_name>/ariac/material_locations</material_locations_service_name>
       <orders_topic>/ariac/orders</orders_topic>
 @[for order_name, order in orders.items()]@
       <order>
@@ -337,6 +344,19 @@
         </kit>
       </order>
 @[end for]@
+      <material_locations>
+@[for material_name, locations in material_locations.items()]@
+        <material>
+          <type>@(material_name)</type>
+@[for location in locations]@
+          <location>
+            <storage_unit>@(location)</storage_unit>
+          </location>
+@[end for]@
+        </material>
+@[end for]@
+      </material_locations>
+
     </plugin>
 
 @[if options['fill_demo_tray'] and orders]@
@@ -348,7 +368,7 @@ count = {}
     <plugin filename="libPopulationPlugin.so" name="populate_kit_tray_1">
       <activation_topic>/ariac/populate_belt</activation_topic>
       <loop_forever>false</loop_forever>
-      <frame>agv1::kit_tray::tray</frame>
+      <frame>agv1::kit_tray::kit_tray::tray</frame>
       <object_sequence>
 @[for part in order['parts']]@
         <object>

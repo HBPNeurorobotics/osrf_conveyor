@@ -21,6 +21,7 @@
 #include <memory>
 #include <gazebo/common/Plugin.hh>
 #include <gazebo/physics/PhysicsTypes.hh>
+#include <osrf_gear/GetMaterialLocations.h>
 #include <osrf_gear/SubmitTray.h>
 #include <sdf/sdf.hh>
 #include <std_msgs/String.h>
@@ -137,6 +138,10 @@ namespace gazebo
     /// \brief Callback for when a tray is submitted for inspection.
     public: bool HandleSubmitTrayService(
       osrf_gear::SubmitTray::Request & req, osrf_gear::SubmitTray::Response & res);
+
+    /// \brief Callback for when a query is made for material locations.
+    public: bool HandleGetMaterialLocationsService(
+      osrf_gear::GetMaterialLocations::Request & req, osrf_gear::GetMaterialLocations::Response & res);
 
     /// \brief Assign an order to be monitored by the scorer.
     protected: void AssignOrder(const ariac::Order & order);

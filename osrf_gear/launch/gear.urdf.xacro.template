@@ -57,6 +57,29 @@
     <origin xyz="@(' '.join(sensor.pose.xyz))" rpy="@(' '.join(sensor.pose.rpy))" />
   </joint>
 @[end for]@
+@[for name, pose in bins.items()]@
+  <!-- a bin in the frame @(name)_frame -->
+  <link name="@(name)_frame" />
+  <joint name="@(name)_joint" type="fixed">
+    <parent link="world" />
+    <child link="@(name)_frame" />
+    <origin xyz="@(' '.join(pose.xyz))" rpy="@(' '.join(pose.rpy))" />
+  </joint>
+@[end for]@
+  <!-- agv load point frames -->
+  <link name="agv1_load_point_frame" />
+  <joint name="agv1_load_point_joint" type="fixed">
+    <parent link="world" />
+    <child link="agv1_load_point_frame" />
+    <origin xyz="0.3 3.3 0" rpy="0 0 3.1415" />
+  </joint>
+  <link name="agv2_load_point_frame" />
+  <joint name="agv2_load_point_joint" type="fixed">
+    <parent link="world" />
+    <child link="agv2_load_point_frame" />
+    <origin xyz="0.3 -3.3 0" rpy="0 0 0" />
+  </joint>
+
 
   <!-- plugin to spawn gazebo scene data into the moveit scene -->
   <!--

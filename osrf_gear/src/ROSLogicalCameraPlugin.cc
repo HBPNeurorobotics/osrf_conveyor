@@ -20,6 +20,7 @@
 #include "osrf_gear/ARIAC.hh"
 #include "osrf_gear/LogicalCameraImage.h"
 
+#include <gazebo/math/Pose.hh>
 #include <gazebo/physics/Link.hh>
 #include <gazebo/physics/Model.hh>
 #include <gazebo/physics/World.hh>
@@ -56,6 +57,8 @@ void ROSLogicalCameraPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sd
         "robotNamespace")->Get<std::string>() + "/";
   }
 
+  this->world = _parent->GetWorld();
+
   // Make sure the ROS node for Gazebo has already been initialized
   if (!ros::isInitialized())
   {
@@ -68,6 +71,7 @@ void ROSLogicalCameraPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sd
   this->onlyPublishKnownModels = false;
   if (_sdf->HasElement("known_model_types"))
   {
+    ROS_DEBUG("Only publishing known model types");
     this->onlyPublishKnownModels = true;
     this->knownModelTypes.clear();
     sdf::ElementPtr knownModelTypesElem = _sdf->GetElement("known_model_types");
@@ -86,6 +90,10 @@ void ROSLogicalCameraPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sd
       this->knownModelTypes.push_back(type);
       knownModelTypeElem = knownModelTypeElem->GetNextElement("type");
     }
+  }
+  else
+  {
+    ROS_DEBUG("Publishing all model types");
   }
 
   this->model = _parent;
@@ -141,49 +149,94 @@ void ROSLogicalCameraPlugin::FindLogicalCamera()
 void ROSLogicalCameraPlugin::OnImage(ConstLogicalCameraImagePtr &_msg)
 {
   osrf_gear::LogicalCameraImage imageMsg;
-  msgs::Vector3d cameraPosition = _msg->pose().position();
-  msgs::Quaternion cameraOrientation = _msg->pose().orientation();
-  imageMsg.pose.position.x = cameraPosition.x();
-  imageMsg.pose.position.y = cameraPosition.y();
-  imageMsg.pose.position.z = cameraPosition.z();
-  imageMsg.pose.orientation.x = cameraOrientation.x();
-  imageMsg.pose.orientation.y = cameraOrientation.y();
-  imageMsg.pose.orientation.z = cameraOrientation.z();
-  imageMsg.pose.orientation.w = cameraOrientation.w();
+  math::Vector3 cameraPosition = math::Vector3(msgs::ConvertIgn(_msg->pose().position()));
+  math::Quaternion cameraOrientation = math::Quaternion(
+    msgs::ConvertIgn(_msg->pose().orientation()));
+  math::Pose cameraPose = math::Pose(cameraPosition, cameraOrientation);
+
+  imageMsg.pose.position.x = cameraPosition.x;
+  imageMsg.pose.position.y = cameraPosition.y;
+  imageMsg.pose.position.z = cameraPosition.z;
+  imageMsg.pose.orientation.x = cameraOrientation.x;
+  imageMsg.pose.orientation.y = cameraOrientation.y;
+  imageMsg.pose.orientation.z = cameraOrientation.z;
+  imageMsg.pose.orientation.w = cameraOrientation.w;
 
   std::ostringstream logStream;
+  math::Pose modelPose;
   for (int i = 0; i < _msg->model_size(); ++i)
   {
-    std::string modelType = ariac::DetermineModelType(_msg->model(i).name());
+    std::string modelName = _msg->model(i).name();
+    std::string modelType = ariac::DetermineModelType(modelName);
 
-    // Check if there are restrictions on which models to publish
-    if (this->onlyPublishKnownModels)
+    if (!this->ModelTypeToPublish(modelType))
     {
-      // Only publish the model if its type is one of the known types
-      auto it = std::find(this->knownModelTypes.begin(), this->knownModelTypes.end(), modelType);
-      bool knownModel = it != this->knownModelTypes.end();
-      if (!knownModel)
+      logStream << "Not publishing model: " << modelName << " of type: " << modelType << std::endl;
+    }
+    else
+    {
+      logStream << "Publishing model: " << modelName << " of type: " << modelType << std::endl;
+      math::Vector3 modelPosition = math::Vector3(
+        msgs::ConvertIgn(_msg->model(i).pose().position()));
+      math::Quaternion modelOrientation = math::Quaternion(
+        msgs::ConvertIgn(_msg->model(i).pose().orientation()));
+      modelPose = math::Pose(cameraPosition, cameraOrientation);
+      this->AddModelToMsg(modelType, modelPose, imageMsg);
+    }
+
+    // Check any children models
+    auto modelPtr = this->world->GetModel(modelName);
+    auto nestedModels = modelPtr->NestedModels();
+    for (auto nestedModel : nestedModels)
+    {
+      modelName = nestedModel->GetName();
+      modelType = ariac::DetermineModelType(modelName);
+      if (!this->ModelTypeToPublish(modelType))
       {
-        logStream << "Not publishing model of type: " << modelType << std::endl;
+        logStream << "Not publishing model: " << modelName << " of type: " << modelType << std::endl;
         continue;
       }
+      logStream << "Publishing model: " << modelName << " of type: " << modelType  << std::endl;
+      // Convert the world pose of the model into the camera frame
+      modelPose = (nestedModel->GetWorldPose()) - cameraPose;
+      this->AddModelToMsg(modelType, modelPose, imageMsg);
     }
-    msgs::Vector3d position = _msg->model(i).pose().position();
-    msgs::Quaternion orientation = _msg->model(i).pose().orientation();
-    osrf_gear::Model modelMsg;
-    modelMsg.pose.position.x = position.x();
-    modelMsg.pose.position.y = position.y();
-    modelMsg.pose.position.z = position.z();
-    modelMsg.pose.orientation.x = orientation.x();
-    modelMsg.pose.orientation.y = orientation.y();
-    modelMsg.pose.orientation.z = orientation.z();
-    modelMsg.pose.orientation.w = orientation.w();
-    modelMsg.type = modelType;
-    imageMsg.models.push_back(modelMsg);
   }
+
   if (!logStream.str().empty())
   {
     ROS_DEBUG_THROTTLE(1, "%s", logStream.str().c_str());
   }
   this->imagePub.publish(imageMsg);
+}
+
+bool ROSLogicalCameraPlugin::ModelTypeToPublish(const std::string & modelType)
+{
+  bool publishModelType = true;
+
+  // Check if there are restrictions on which models to publish
+  if (this->onlyPublishKnownModels)
+  {
+    // Only publish the model if its type is one of the known types
+    auto it = std::find(this->knownModelTypes.begin(), this->knownModelTypes.end(), modelType);
+    bool knownModel = it != this->knownModelTypes.end();
+    publishModelType = knownModel;
+  }
+  return publishModelType;
+}
+
+void ROSLogicalCameraPlugin::AddModelToMsg(
+  const std::string & modelType, const math::Pose & modelPose,
+  osrf_gear::LogicalCameraImage & imageMsg)
+{
+  osrf_gear::Model modelMsg;
+  modelMsg.pose.position.x = modelPose.pos.x;
+  modelMsg.pose.position.y = modelPose.pos.y;
+  modelMsg.pose.position.z = modelPose.pos.z;
+  modelMsg.pose.orientation.x = modelPose.rot.x;
+  modelMsg.pose.orientation.y = modelPose.rot.y;
+  modelMsg.pose.orientation.z = modelPose.rot.z;
+  modelMsg.pose.orientation.w = modelPose.rot.w;
+  modelMsg.type = modelType;
+  imageMsg.models.push_back(modelMsg);
 }

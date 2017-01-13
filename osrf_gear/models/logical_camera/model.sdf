@@ -4,6 +4,7 @@
     <plugin name="ros_logical_camera" filename="libROSLogicalCameraPlugin.so">
       <robotNamespace>ariac</robotNamespace>
       <known_model_types>
+        <type>kit_tray</type>
         <type>part1</type>
         <type>part2</type>
         <type>part3</type>

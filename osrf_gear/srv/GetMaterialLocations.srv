@@ -1,0 +1,4 @@
+string material_type
+
+---
+StorageUnit[] storage_units

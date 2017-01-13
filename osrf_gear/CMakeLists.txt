@@ -32,6 +32,7 @@ add_message_files(DIRECTORY msg
   Order.msg
   PopulationState.msg
   Proximity.msg
+  StorageUnit.msg
   VacuumGripperState.msg
 )
 
@@ -39,6 +40,7 @@ add_service_files(DIRECTORY srv
   FILES
   AGVControl.srv
   ConveyorBeltControl.srv
+  GetMaterialLocations.srv
   PopulationControl.srv
   SubmitTray.srv
   VacuumGripperControl.srv
