@@ -17,6 +17,7 @@
 
 #include <string>
 
+#include <gazebo/common/Console.hh>
 #include <gazebo/math/Pose.hh>
 #include <gazebo/math/Vector3.hh>
 #include <gazebo/math/Quaternion.hh>
@@ -40,9 +41,9 @@ ariac::GameScore AriacScorer::GetGameScore()
 }
 
 /////////////////////////////////////////////////
-ariac::GoalScore AriacScorer::GetCurrentGoalScore()
+ariac::OrderScore AriacScorer::GetCurrentOrderScore()
 {
-  return *this->goalScore;
+  return *this->orderScore;
 }
 
 /////////////////////////////////////////////////
@@ -55,9 +56,10 @@ void AriacScorer::Update(double timeStep)
 
   boost::mutex::scoped_lock kitTraysLock(this->kitTraysMutex);
 
-  if (this->newGoalReceived)
+  if (this->newOrderReceived)
   {
-    this->AssignGoal(this->newGoal);
+    gzdbg << "New order received: " << this->newOrder.orderID << std::endl;
+    this->AssignOrder(this->newOrder);
   }
 
   // During the competition, this environment variable will be set.
@@ -65,49 +67,61 @@ void AriacScorer::Update(double timeStep)
   if (!v)
   {
     // Check score of trays in progress.
-    if (this->newGoalReceived || this->newTrayInfoReceived)
+    if (this->newOrderReceived || this->newTrayInfoReceived)
     {
       this->ScoreCurrentState();
     }
   }
 
-  this->newGoalReceived = false;
+  this->newOrderReceived = false;
   this->newTrayInfoReceived = false;
 }
 
 /////////////////////////////////////////////////
-bool AriacScorer::IsCurrentGoalComplete()
+bool AriacScorer::IsCurrentOrderComplete()
 {
-  return this->goalScore->isComplete();
+  return this->orderScore->isComplete();
 }
 
 /////////////////////////////////////////////////
 void AriacScorer::ScoreCurrentState()
 {
+  gzdbg << "Scoring current state." << std::endl;
   for (const auto & item : this->kitTrays)
   {
     auto trayID = item.first;
+  gzdbg << "Scoring tray: " << trayID << std::endl;
     auto tray = item.second;
     if (tray.currentKit.kitType != "")
     {
       auto trayScore = ScoreTray(tray);
-      ROS_INFO_STREAM("Score from tray '" << trayID <<
-        "' with kit type '" << tray.currentKit.kitType << "': " << trayScore.total());
+          std::ostringstream logStream;
+      logStream << "Score from tray '" << trayID << \
+        "' with kit type '" << tray.currentKit.kitType << "': " << trayScore.total();
+      ROS_INFO_STREAM(logStream.str().c_str());
+      gzdbg << logStream.str().c_str() << std::endl;
     }
     else
     {
-      for (const auto & item : this->currentGoal.kits)
+      for (const auto & item : this->currentOrder.kits)
       {
         auto kit = item.second;
-        auto goalKitType = kit.kitType;
-        tray.currentKit.kitType = goalKitType;
+        auto orderKitType = kit.kitType;
+        tray.currentKit.kitType = orderKitType;
         auto trayScore = ScoreTray(tray);
-        ROS_INFO_STREAM_COND(trayScore.total() > 0, "Score from tray '" << trayID
-          << "' if it were to have kit type '" << goalKitType << "': "
-          << trayScore.total());
+        if (trayScore.total() > 0)
+        {
+          std::ostringstream logStream;
+          logStream << "Score from tray '" << trayID \
+            << "' if it were to have kit type '" << orderKitType << "': " \
+            << trayScore.total();
+          ROS_INFO_STREAM(logStream.str().c_str());
+          gzdbg << logStream.str().c_str() << std::endl;
+        }
       }
     }
   }
+  gzdbg << "Finished scoring current state." << std::endl;
 }
 
 /////////////////////////////////////////////////
@@ -116,7 +130,7 @@ bool AriacScorer::GetTrayById(const ariac::TrayID_t & trayID, ariac::KitTray & k
   auto it = this->kitTrays.find(trayID);
   if (it == this->kitTrays.end())
   {
-    ROS_DEBUG_STREAM("No known tray with ID: " << trayID);
+    gzwarn << "No known tray with ID: " << trayID << std::endl;
     return false;
   }
   kitTray = it->second;
@@ -127,8 +141,8 @@ bool AriacScorer::GetTrayById(const ariac::TrayID_t & trayID, ariac::KitTray & k
 ariac::TrayScore AriacScorer::SubmitTray(const ariac::KitTray & tray)
 {
   auto trayScore = ScoreTray(tray);
-  ROS_DEBUG_STREAM("Score from tray '" << tray.trayID << "': " << trayScore.total());
-  this->goalScore->trayScores[tray.trayID] = trayScore;
+  gzdbg << "Score from tray '" << tray.trayID << "': " << trayScore.total() << std::endl;
+  this->orderScore->trayScores[tray.trayID] = trayScore;
   return trayScore;
 }
 
@@ -138,16 +152,21 @@ ariac::TrayScore AriacScorer::ScoreTray(const ariac::KitTray & tray)
   ariac::Kit kit = tray.currentKit;
   ariac::KitType_t kitType = tray.currentKit.kitType;
   ariac::TrayScore score;
-  if (this->currentGoal.kits.find(kitType) == this->currentGoal.kits.end())
+  if (this->currentOrder.kits.find(kitType) == this->currentOrder.kits.end())
   {
-    ROS_DEBUG_STREAM("No known kit type: " << kitType);
+    gzdbg << "No known kit type: " << kitType << std::endl;
+    gzdbg << "Known kit types: " << std::endl;
+    for (auto item : this->currentOrder.kits)
+    {
+      gzdbg << item.first << std::endl;
+    }
+    gzdbg << "Current order: " << this->currentOrder << std::endl;
     return score;
   }
-  ariac::Kit assignedKit = this->currentGoal.kits[kitType];
+  ariac::Kit assignedKit = this->currentOrder.kits[kitType];
   auto numAssignedObjects = assignedKit.objects.size();
-  ROS_DEBUG_STREAM("Comparing the " << numAssignedObjects <<
-    " assigned objects with the current " <<
-    kit.objects.size() << " objects");
+  gzdbg << "Comparing the " << numAssignedObjects << " assigned objects with the current " << \
+    kit.objects.size() << " objects" << std::endl;
 
   // Count the number of each type of assigned object
   std::map<std::string, unsigned int> assignedObjectTypeCount, currentObjectTypeCount;
@@ -160,7 +179,7 @@ ariac::TrayScore AriacScorer::ScoreTray(const ariac::KitTray & tray)
     assignedObjectTypeCount[obj.type] += 1;
   }
 
-  ROS_DEBUG_STREAM("Checking object counts");
+  gzdbg << "Checking object counts" << std::endl;
 
   bool assignedObjectsMissing = false;
   for (auto & value : assignedObjectTypeCount)
@@ -170,8 +189,8 @@ ariac::TrayScore AriacScorer::ScoreTray(const ariac::KitTray & tray)
     auto currentObjectCount =
       std::count_if(kit.objects.begin(), kit.objects.end(),
         [assignedObjectType](ariac::KitObject k) {return k.type == assignedObjectType;});
-    ROS_DEBUG_STREAM("Found " << currentObjectCount <<
-      " objects of type '" << assignedObjectType << "'");
+    gzdbg << "Found " << currentObjectCount << \
+      " objects of type '" << assignedObjectType << "'" << std::endl;
     score.partPresence +=
       std::min(long(assignedObjectCount), currentObjectCount) * scoringParameters.objectPresence;
     if (currentObjectCount < assignedObjectCount)
@@ -181,11 +200,11 @@ ariac::TrayScore AriacScorer::ScoreTray(const ariac::KitTray & tray)
   }
   if (!assignedObjectsMissing)
   {
-    ROS_DEBUG_STREAM("All objects on tray");
+    gzdbg << "All objects on tray" << std::endl;
     score.allPartsBonus += scoringParameters.allObjectsBonusFactor * numAssignedObjects;
   }
 
-  ROS_DEBUG_STREAM("Checking object poses");
+  gzdbg << "Checking object poses" << std::endl;
   // Keep track of which assigned objects have already been 'matched' to one on the tray.
   // This is to prevent multiple objects being close to a single target pose both scoring points.
   std::vector<ariac::KitObject> remainingAssignedObjects(assignedKit.objects);
@@ -200,23 +219,23 @@ ariac::TrayScore AriacScorer::ScoreTray(const ariac::KitTray & tray)
         continue;
 
       // Check the position of the object (ignoring orientation)
-      ROS_DEBUG_STREAM("Comparing pose '" << currentObject.pose <<
-        "' with the assigned pose '" << assignedObject.pose << "'");
+      gzdbg << "Comparing pose '" << currentObject.pose << \
+        "' with the assigned pose '" << assignedObject.pose << "'" << std::endl;
       gazebo::math::Vector3 posnDiff = assignedObject.pose.CoordPositionSub(currentObject.pose);
       posnDiff.z = 0;
       if (posnDiff.GetLength() > scoringParameters.distanceThresh)
         continue;
-      ROS_DEBUG_STREAM("Object of type '" << currentObject.type <<
-        "' in the correct position");
+      gzdbg << "Object of type '" << currentObject.type << \
+        "' in the correct position" << std::endl;
       score.partPose += scoringParameters.objectPosition;
 
       // Check the orientation of the object.
       gazebo::math::Quaternion objOrientation = currentObject.pose.rot;
-      gazebo::math::Quaternion goalOrientation = assignedObject.pose.rot;
+      gazebo::math::Quaternion orderOrientation = assignedObject.pose.rot;
 
       // Filter objects that aren't in the appropriate orientation (loosely).
       // If the quaternions represent the same orientation, q1 = +-q2 => q1.dot(q2) = +-1
-      double orientationDiff = objOrientation.Dot(goalOrientation);
+      double orientationDiff = objOrientation.Dot(orderOrientation);
       // TODO: this value can probably be derived using relationships between
       // euler angles and quaternions.
       double quaternionDiffThresh = 0.05;
@@ -224,12 +243,12 @@ ariac::TrayScore AriacScorer::ScoreTray(const ariac::KitTray & tray)
         continue;
 
       // Now filter the poses based on a threshold set in radians (more user-friendly).
-      double yawDiff = objOrientation.GetYaw() - goalOrientation.GetYaw();
+      double yawDiff = objOrientation.GetYaw() - orderOrientation.GetYaw();
       if (std::abs(yawDiff) > scoringParameters.orientationThresh)
         continue;
 
-      ROS_DEBUG_STREAM("Object of type '" << currentObject.type <<
-        "' in the correct orientation");
+      gzdbg << "Object of type '" << currentObject.type << \
+        "' in the correct orientation" << std::endl;
       score.partPose += scoringParameters.objectOrientation;
 
       // Once a match is found, don't permit it to be matched again
@@ -263,8 +282,8 @@ void AriacScorer::OnTrayInfoReceived(const osrf_gear::KitTray::ConstPtr & trayMs
 
   // Update the state of the tray.
   // TODO: this should be moved outside of the callback
-  // Do this even if the tray isn't part of the current goal because maybe it
-  // will be part of future goals.
+  // Do this even if the tray isn't part of the current order because maybe it
+  // will be part of future orders.
   this->newTrayInfoReceived = true;
   ariac::Kit kitState;
   FillKitFromMsg(trayMsg->kit, kitState);
@@ -272,45 +291,47 @@ void AriacScorer::OnTrayInfoReceived(const osrf_gear::KitTray::ConstPtr & trayMs
 }
 
 /////////////////////////////////////////////////
-void AriacScorer::OnGoalReceived(const osrf_gear::Goal::ConstPtr & goalMsg)
+void AriacScorer::OnOrderReceived(const osrf_gear::Order::ConstPtr & orderMsg)
 {
-  ROS_DEBUG("Received a goal");
-  this->newGoalReceived = true;
+  gzdbg << "Received an order" << std::endl;
+  this->newOrderReceived = true;
 
-  ariac::Goal goal;
-  goal.goalID = goalMsg->goal_id.data;
-  for (const auto & kitMsg : goalMsg->kits)
+  ariac::Order order;
+  order.orderID = orderMsg->order_id.data;
+  for (const auto & kitMsg : orderMsg->kits)
   {
     ariac::KitType_t kitType = kitMsg.kit_type.data;
     ariac::Kit assignedKit;
     FillKitFromMsg(kitMsg, assignedKit);
-    goal.kits[kitType] = assignedKit;
+    order.kits[kitType] = assignedKit;
   }
-  this->newGoal = goal;
+  this->newOrder = order;
 }
 
 /////////////////////////////////////////////////
-void AriacScorer::AssignGoal(const ariac::Goal & goal)
+void AriacScorer::AssignOrder(const ariac::Order & order)
 {
-  ariac::GoalID_t goalID = goal.goalID;
-  if (this->gameScore.goalScores.find(goalID) == this->gameScore.goalScores.end())
+  ariac::OrderID_t orderID = order.orderID;
+  if (this->gameScore.orderScores.find(orderID) == this->gameScore.orderScores.end())
   {
-    // This is a previously unseen goal: start scoring from scratch
-    this->gameScore.goalScores[goalID] = ariac::GoalScore();
-    this->gameScore.goalScores[goalID].goalID = goalID;
+    // This is a previously unseen order: start scoring from scratch
+    this->gameScore.orderScores[orderID] = ariac::OrderScore();
+    this->gameScore.orderScores[orderID].orderID = orderID;
   }
-  this->goalScore = &this->gameScore.goalScores[goalID];
+  this->orderScore = &this->gameScore.orderScores[orderID];
 
-  this->currentGoal = goal;
+  this->currentOrder = order;
+  gzdbg << "Assigned order: " << this->currentOrder << std::endl;
 }
 
 /////////////////////////////////////////////////
-ariac::GoalScore AriacScorer::UnassignCurrentGoal(double timeTaken)
+ariac::OrderScore AriacScorer::UnassignCurrentOrder(double timeTaken)
 {
-  auto goalScore = *this->goalScore;
-  goalScore.timeTaken = timeTaken;
-  this->currentGoal.kits.clear();
-  return goalScore;
+  gzdbg << "Unassigning order: " << this->currentOrder.orderID << std::endl;
+  auto orderScore = *this->orderScore;
+  orderScore.timeTaken = timeTaken;
+  this->currentOrder.kits.clear();
+  return orderScore;
 }
 
 /////////////////////////////////////////////////

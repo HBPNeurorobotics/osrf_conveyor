@@ -117,5 +117,6 @@
         </material>
       </visual>
     </link>
+    <allow_auto_disable>0</allow_auto_disable>
   </model>
 </sdf>

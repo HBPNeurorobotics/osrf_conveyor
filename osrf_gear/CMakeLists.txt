@@ -24,12 +24,12 @@ find_package(gazebo REQUIRED)
 add_message_files(DIRECTORY msg
   FILES
   ConveyorBeltState.msg
-  Goal.msg
   Kit.msg
   KitObject.msg
   KitTray.msg
   LogicalCameraImage.msg
   Model.msg
+  Order.msg
   PopulationState.msg
   Proximity.msg
   VacuumGripperState.msg
@@ -348,7 +348,7 @@ install(TARGETS ${target_name}
 ## Install ##
 #############
 
-install(PROGRAMS script/gear.py
+install(PROGRAMS script/gear.py script/startup.sh
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

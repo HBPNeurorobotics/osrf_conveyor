@@ -41,9 +41,9 @@
 #include "osrf_gear/AriacScorer.h"
 #include <osrf_gear/ConveyorBeltControl.h>
 #include <osrf_gear/ConveyorBeltState.h>
-#include "osrf_gear/Goal.h"
 #include "osrf_gear/Kit.h"
 #include "osrf_gear/KitObject.h"
+#include "osrf_gear/Order.h"
 #include "osrf_gear/VacuumGripperState.h"
 
 namespace gazebo
@@ -58,12 +58,12 @@ namespace gazebo
     /// \brief SDF pointer.
     public: sdf::ElementPtr sdf;
 
-    /// \brief Collection of goals to announce.
-    public: std::vector<ariac::Goal> goalsToAnnounce;
+    /// \brief Collection of orders to announce.
+    public: std::vector<ariac::Order> ordersToAnnounce;
 
-    /// \brief Collection of goals which have been announced but are not yet complete.
-    /// The goal at the top of the stack is the active goal.
-    public: std::stack<ariac::Goal> goalsInProgress;
+    /// \brief Collection of orders which have been announced but are not yet complete.
+    /// The order at the top of the stack is the active order.
+    public: std::stack<ariac::Order> ordersInProgress;
 
     /// \brief A scorer to mange the game score.
     public: AriacScorer ariacScorer;
@@ -74,8 +74,8 @@ namespace gazebo
     /// \brief ROS node handle.
     public: std::unique_ptr<ros::NodeHandle> rosnode;
 
-    /// \brief Publishes a goal.
-    public: ros::Publisher goalPub;
+    /// \brief Publishes an order.
+    public: ros::Publisher orderPub;
 
     /// \brief ROS subscriber for the tray states.
     public: ros::Subscriber trayInfoSub;
@@ -84,10 +84,10 @@ namespace gazebo
     public: ros::Subscriber gripperStateSub;
 
     /// \brief Publishes the Gazebo task state.
-    public: ros::Publisher gazeboTaskStatePub;
+    public: ros::Publisher taskStatePub;
 
     /// \brief Publishes the game score total.
-    public: ros::Publisher gazeboTaskScorePub;
+    public: ros::Publisher taskScorePub;
 
     /// \brief Service that allows the user to start the competition.
     public: ros::ServiceServer teamStartServiceServer;
@@ -104,6 +104,9 @@ namespace gazebo
     /// \brief Client for controlling the conveyor.
     public: ros::ServiceClient conveyorControlClient;
 
+    /// \brief Timer for regularly publishing state/score.
+    public: ros::Timer statusPubTimer;
+
     /// \brief Connection event.
     public: event::ConnectionPtr connection;
 
@@ -113,8 +116,8 @@ namespace gazebo
     /// \brief The time specified in the object is relative to this time.
     public: common::Time gameStartTime;
 
-    /// \brief The time in seconds that has been spent on the current goal.
-    public: double timeSpentOnCurrentGoal;
+    /// \brief The time in seconds that has been spent on the current order.
+    public: double timeSpentOnCurrentOrder;
 
     /// \brief Pointer to the current state.
     public: std::string currentState = "init";
@@ -129,11 +132,11 @@ using namespace gazebo;
 GZ_REGISTER_WORLD_PLUGIN(ROSAriacTaskManagerPlugin)
 
 /////////////////////////////////////////////////
-static void fillGoalMsg(const ariac::Goal &_goal,
-                        osrf_gear::Goal &_msgGoal)
+static void fillOrderMsg(const ariac::Order &_order,
+                        osrf_gear::Order &_msgOrder)
 {
-  _msgGoal.goal_id.data = _goal.goalID;
-  for (const auto item : _goal.kits)
+  _msgOrder.order_id.data = _order.orderID;
+  for (const auto item : _order.kits)
   {
     osrf_gear::Kit msgKit;
     msgKit.kit_type.data = item.first;
@@ -152,7 +155,7 @@ static void fillGoalMsg(const ariac::Goal &_goal,
       // Add the object to the kit.
       msgKit.objects.push_back(msgObj);
     }
-    _msgGoal.kits.push_back(msgKit);
+    _msgOrder.kits.push_back(msgKit);
   }
 }
 
@@ -188,13 +191,13 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
   if (_sdf->HasElement("team_start_service_name"))
     teamStartServiceName = _sdf->Get<std::string>("team_start_service_name");
 
-  std::string gazeboTaskStateTopic = "competition_state";
-  if (_sdf->HasElement("gazebo_task_state_topic"))
-    gazeboTaskStateTopic = _sdf->Get<std::string>("gazebo_task_state_topic");
+  std::string taskStateTopic = "competition_state";
+  if (_sdf->HasElement("task_state_topic"))
+    taskStateTopic = _sdf->Get<std::string>("task_state_topic");
 
-  std::string gazeboTaskScoreTopic = "current_score";
-  if (_sdf->HasElement("gazebo_task_score_topic"))
-    gazeboTaskScoreTopic = _sdf->Get<std::string>("gazebo_task_score_topic");
+  std::string taskScoreTopic = "current_score";
+  if (_sdf->HasElement("task_score_topic"))
+    taskScoreTopic = _sdf->Get<std::string>("task_score_topic");
 
   std::string conveyorControlTopic = "conveyor/control";
   if (_sdf->HasElement("conveyor_control_topic"))
@@ -204,55 +207,55 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
   if (_sdf->HasElement("population_activate_topic"))
     populationActivateTopic = _sdf->Get<std::string>("population_activate_topic");
 
-  std::string goalsTopic = "orders";
-  if (_sdf->HasElement("goals_topic"))
-    goalsTopic = _sdf->Get<std::string>("goals_topic");
+  std::string ordersTopic = "orders";
+  if (_sdf->HasElement("orders_topic"))
+    ordersTopic = _sdf->Get<std::string>("orders_topic");
 
   std::string submitTrayServiceName = "submit_tray";
   if (_sdf->HasElement("submit_tray_service_name"))
     submitTrayServiceName = _sdf->Get<std::string>("submit_tray_service_name");
 
 
-  // Parse the goals.
-  sdf::ElementPtr goalElem = NULL;
-  if (_sdf->HasElement("goal"))
+  // Parse the orders.
+  sdf::ElementPtr orderElem = NULL;
+  if (_sdf->HasElement("order"))
   {
-    goalElem = _sdf->GetElement("goal");
+    orderElem = _sdf->GetElement("order");
   }
 
-  unsigned int goalCount = 0;
-  while (goalElem)
+  unsigned int orderCount = 0;
+  while (orderElem)
   {
     // Parse the start time.
-    if (!goalElem->HasElement("start_time"))
+    if (!orderElem->HasElement("start_time"))
     {
-      gzerr << "Unable to find <start_time> element in <goal>. Ignoring" << std::endl;
-      goalElem = goalElem->GetNextElement("goal");
+      gzerr << "Unable to find <start_time> element in <order>. Ignoring" << std::endl;
+      orderElem = orderElem->GetNextElement("order");
       continue;
     }
-    sdf::ElementPtr startTimeElement = goalElem->GetElement("start_time");
+    sdf::ElementPtr startTimeElement = orderElem->GetElement("start_time");
     double startTime = startTimeElement->Get<double>();
 
     // Parse the allowed completion time.
     double allowedTime = std::numeric_limits<double>::infinity();
-    if (goalElem->HasElement("allowed_time"))
+    if (orderElem->HasElement("allowed_time"))
     {
-      sdf::ElementPtr allowedTimeElement = goalElem->GetElement("allowed_time");
+      sdf::ElementPtr allowedTimeElement = orderElem->GetElement("allowed_time");
       allowedTime = allowedTimeElement->Get<double>();
     }
 
     // Parse the kits.
-    if (!goalElem->HasElement("kit"))
+    if (!orderElem->HasElement("kit"))
     {
-      gzerr << "Unable to find <kit> element in <goal>. Ignoring" << std::endl;
-      goalElem = goalElem->GetNextElement("goal");
+      gzerr << "Unable to find <kit> element in <order>. Ignoring" << std::endl;
+      orderElem = orderElem->GetNextElement("order");
       continue;
     }
 
-    // Store all kits for a goal.
+    // Store all kits for an order.
     std::map<std::string, ariac::Kit> kits;
 
-    sdf::ElementPtr kitElem = goalElem->GetElement("kit");
+    sdf::ElementPtr kitElem = orderElem->GetElement("kit");
     while (kitElem)
     {
       // Check the validity of the kit.
@@ -311,21 +314,21 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
       kitElem = kitElem->GetNextElement("kit");
     }
 
-    // Add a new goal.
-    ariac::GoalID_t goalID = "goal_" + std::to_string(goalCount++);
-    ariac::Goal goal = {goalID, startTime, allowedTime, kits, 0.0};
-    this->dataPtr->goalsToAnnounce.push_back(goal);
+    // Add a new order.
+    ariac::OrderID_t orderID = "order_" + std::to_string(orderCount++);
+    ariac::Order order = {orderID, startTime, allowedTime, kits, 0.0};
+    this->dataPtr->ordersToAnnounce.push_back(order);
 
-    goalElem = goalElem->GetNextElement("goal");
+    orderElem = orderElem->GetNextElement("order");
   }
 
-  // Sort the goals by their start times.
-  std::sort(this->dataPtr->goalsToAnnounce.begin(), this->dataPtr->goalsToAnnounce.end());
+  // Sort the orders by their start times.
+  std::sort(this->dataPtr->ordersToAnnounce.begin(), this->dataPtr->ordersToAnnounce.end());
 
   // Debug output.
-  // gzdbg << "Goals:" << std::endl;
-  // for (auto goal : this->dataPtr->goalsToAnnounce)
-  //   gzdbg << goal << std::endl;
+  // gzdbg << "Orders:" << std::endl;
+  // for (auto order : this->dataPtr->ordersToAnnounce)
+  //   gzdbg << order << std::endl;
 
   // Initialize ROS
   this->dataPtr->rosnode.reset(new ros::NodeHandle(robotNamespace));
@@ -335,17 +338,17 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
     ros::console::notifyLoggerLevelsChanged();
   }
 
-  // Publisher for announcing new goals.
-  this->dataPtr->goalPub = this->dataPtr->rosnode->advertise<
-    osrf_gear::Goal>(goalsTopic, 1000, true);  // latched=true
+  // Publisher for announcing new orders.
+  this->dataPtr->orderPub = this->dataPtr->rosnode->advertise<
+    osrf_gear::Order>(ordersTopic, 1000, true);  // latched=true
 
-  // Publisher for announcing new state of Gazebo's task.
-  this->dataPtr->gazeboTaskStatePub = this->dataPtr->rosnode->advertise<
-    std_msgs::String>(gazeboTaskStateTopic, 1000);
+  // Publisher for announcing new state of the competition.
+  this->dataPtr->taskStatePub = this->dataPtr->rosnode->advertise<
+    std_msgs::String>(taskStateTopic, 1000);
 
   // Publisher for announcing the score of the game.
-  this->dataPtr->gazeboTaskScorePub = this->dataPtr->rosnode->advertise<
-    std_msgs::Float32>(gazeboTaskScoreTopic, 1000);
+  this->dataPtr->taskScorePub = this->dataPtr->rosnode->advertise<
+    std_msgs::Float32>(taskScoreTopic, 1000);
 
   // Service for starting the competition.
   this->dataPtr->teamStartServiceServer =
@@ -361,6 +364,11 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
   this->dataPtr->conveyorControlClient =
     this->dataPtr->rosnode->serviceClient<osrf_gear::ConveyorBeltControl>(
       conveyorControlTopic);
+
+  // Timer for regularly publishing state/score.
+  this->dataPtr->statusPubTimer =
+    this->dataPtr->rosnode->createTimer(ros::Duration(0.1),
+      &ROSAriacTaskManagerPlugin::PublishStatus, this);
 
   // Initialize Gazebo transport.
   this->dataPtr->node = transport::NodePtr(new transport::Node());
@@ -398,44 +406,53 @@ void ROSAriacTaskManagerPlugin::OnUpdate()
   }
   else if (this->dataPtr->currentState == "go")
   {
-    // Update the goal manager.
-    this->ProcessGoalsToAnnounce();
+    // Update the order manager.
+    this->ProcessOrdersToAnnounce();
 
     // Update the score.
     this->dataPtr->ariacScorer.Update(elapsedTime);
     auto gameScore = this->dataPtr->ariacScorer.GetGameScore();
     if (gameScore.total() != this->dataPtr->currentGameScore.total())
     {
-      ROS_DEBUG_STREAM("Current game score: " << gameScore.total());
+      std::ostringstream logMessage;
+      logMessage << "Current game score: " << gameScore.total();
+      ROS_INFO_STREAM(logMessage.str().c_str());
+      gzdbg << logMessage.str() << std::endl;
       this->dataPtr->currentGameScore = gameScore;
     }
 
-    if (!this->dataPtr->goalsInProgress.empty())
+    if (!this->dataPtr->ordersInProgress.empty())
     {
-      this->dataPtr->goalsInProgress.top().timeTaken += elapsedTime;
-      auto goalID = this->dataPtr->goalsInProgress.top().goalID;
+      this->dataPtr->ordersInProgress.top().timeTaken += elapsedTime;
+      auto orderID = this->dataPtr->ordersInProgress.top().orderID;
       // TODO: timing should probably be managed by the scorer but we want to use sim time
-      this->dataPtr->timeSpentOnCurrentGoal = this->dataPtr->goalsInProgress.top().timeTaken;
+      this->dataPtr->timeSpentOnCurrentOrder = this->dataPtr->ordersInProgress.top().timeTaken;
 
-      // Check for completed goals.
-      bool goalCompleted = this->dataPtr->ariacScorer.IsCurrentGoalComplete();
-      if (goalCompleted)
+      // Check for completed orders.
+      bool orderCompleted = this->dataPtr->ariacScorer.IsCurrentOrderComplete();
+      if (orderCompleted)
       {
-        ROS_INFO_STREAM("Order complete: " << goalID);
-        this->StopCurrentGoal();
+        std::ostringstream logMessage;
+        logMessage << "Order complete: " << orderID;
+        ROS_INFO_STREAM(logMessage.str().c_str());
+        gzdbg << logMessage.str() << std::endl;
+        this->StopCurrentOrder();
       }
       else
       {
-        // Check if the time limit for the current goal has been exceeded.
-        if (this->dataPtr->timeSpentOnCurrentGoal > this->dataPtr->goalsInProgress.top().allowedTime)
+        // Check if the time limit for the current order has been exceeded.
+        if (this->dataPtr->timeSpentOnCurrentOrder > this->dataPtr->ordersInProgress.top().allowedTime)
         {
-          ROS_INFO_STREAM("Order timed out: " << goalID);
-          this->StopCurrentGoal();
+          std::ostringstream logMessage;
+          logMessage << "Order timed out: " << orderID;
+          ROS_INFO_STREAM(logMessage.str().c_str());
+          gzdbg << logMessage.str() << std::endl;
+          this->StopCurrentOrder();
         }
       }
     }
 
-    if (this->dataPtr->goalsInProgress.empty() && this->dataPtr->goalsToAnnounce.empty())
+    if (this->dataPtr->ordersInProgress.empty() && this->dataPtr->ordersToAnnounce.empty())
     {
       this->dataPtr->currentGameScore.totalProcessTime =
         (currentSimTime - this->dataPtr->gameStartTime).Double();
@@ -444,40 +461,48 @@ void ROSAriacTaskManagerPlugin::OnUpdate()
   }
   else if (this->dataPtr->currentState == "end_game")
   {
-    ROS_INFO_STREAM("No more orders to process. Final score: " << this->dataPtr->currentGameScore.total());
-    ROS_INFO_STREAM("Score breakdown:\n" << this->dataPtr->currentGameScore);
+    std::ostringstream logMessage;
+    logMessage << "No more orders to process. Final score: " << \
+      this->dataPtr->currentGameScore.total() << "\nScore breakdown:\n" << \
+      this->dataPtr->currentGameScore;
+    ROS_INFO_STREAM(logMessage.str().c_str());
+    gzdbg << logMessage.str() << std::endl;
     this->dataPtr->currentState = "done";
   }
-
-  // TODO: Publish at a lower frequency.
-  std_msgs::Float32 scoreMsg;
-  scoreMsg.data = this->dataPtr->currentGameScore.total();
-  this->dataPtr->gazeboTaskScorePub.publish(scoreMsg);
-
-  std_msgs::String stateMsg;
-  stateMsg.data = this->dataPtr->currentState;
-  this->dataPtr->gazeboTaskStatePub.publish(stateMsg);
 
   this->dataPtr->lastUpdateTime = currentSimTime;
 }
 
 /////////////////////////////////////////////////
-void ROSAriacTaskManagerPlugin::ProcessGoalsToAnnounce()
+void ROSAriacTaskManagerPlugin::PublishStatus(const ros::TimerEvent&)
 {
-  if (this->dataPtr->goalsToAnnounce.empty())
+  std_msgs::Float32 scoreMsg;
+  scoreMsg.data = this->dataPtr->currentGameScore.total();
+  this->dataPtr->taskScorePub.publish(scoreMsg);
+
+  std_msgs::String stateMsg;
+  stateMsg.data = this->dataPtr->currentState;
+  this->dataPtr->taskStatePub.publish(stateMsg);
+}
+
+/////////////////////////////////////////////////
+void ROSAriacTaskManagerPlugin::ProcessOrdersToAnnounce()
+{
+  if (this->dataPtr->ordersToAnnounce.empty())
     return;
 
-  // Check whether announce a new goal from the list.
+  // Check whether announce a new order from the list.
   auto elapsed = this->dataPtr->world->GetSimTime() - this->dataPtr->gameStartTime;
-  if (elapsed.Double() >= this->dataPtr->goalsToAnnounce.front().startTime)
+  if (elapsed.Double() >= this->dataPtr->ordersToAnnounce.front().startTime)
   {
-    auto goal = this->dataPtr->goalsToAnnounce.front();
+    auto order = this->dataPtr->ordersToAnnounce.front();
+    gzdbg << "New order to announce: " << order.orderID << std::endl;
 
-    // Move goal to the 'in process' stack
-    this->dataPtr->goalsInProgress.push(ariac::Goal(goal));
-    this->dataPtr->goalsToAnnounce.erase(this->dataPtr->goalsToAnnounce.begin());
+    // Move order to the 'in process' stack
+    this->dataPtr->ordersInProgress.push(ariac::Order(order));
+    this->dataPtr->ordersToAnnounce.erase(this->dataPtr->ordersToAnnounce.begin());
 
-    this->AssignGoal(goal);
+    this->AssignOrder(order);
   }
 }
 
@@ -508,11 +533,14 @@ bool ROSAriacTaskManagerPlugin::HandleSubmitTrayService(
   std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
 
   if (this->dataPtr->currentState != "go") {
-    ROS_ERROR("Competition is not running so trays cannot be submitted.");
+    std::string errStr = "Competition is not running so trays cannot be submitted.";
+    gzerr << errStr << std::endl;
+    ROS_ERROR_STREAM(errStr);
     return false;
   }
 
   ariac::KitTray kitTray;
+  gzdbg << "SubmitTray request received for tray: " << req.tray_id.data << std::endl;
   if (!this->dataPtr->ariacScorer.GetTrayById(req.tray_id.data, kitTray))
   {
     res.success = false;
@@ -521,6 +549,7 @@ bool ROSAriacTaskManagerPlugin::HandleSubmitTrayService(
   kitTray.currentKit.kitType = req.kit_type.data;
   res.success = true;
   res.inspection_result = this->dataPtr->ariacScorer.SubmitTray(kitTray).total();
+  gzdbg << "Inspection result: " << res.inspection_result << std::endl;
   return true;
 }
 
@@ -540,7 +569,9 @@ void ROSAriacTaskManagerPlugin::ControlConveyorBelt(double velocity)
   srv.request.state = controlMsg;
   this->dataPtr->conveyorControlClient.call(srv);
   if (!srv.response.success) {
-    ROS_ERROR_STREAM("Failed to control conveyor");
+    std::string errStr = "Failed to control conveyor.";
+    gzerr << errStr << std::endl;
+    ROS_ERROR_STREAM(errStr);
   }
 }
 
@@ -554,34 +585,34 @@ void ROSAriacTaskManagerPlugin::PopulateConveyorBelt()
 }
 
 /////////////////////////////////////////////////
-void ROSAriacTaskManagerPlugin::AssignGoal(const ariac::Goal & goal)
+void ROSAriacTaskManagerPlugin::AssignOrder(const ariac::Order & order)
 {
-    // Publish the goal to ROS topic
-    ROS_INFO_STREAM("Announcing order: " << goal.goalID);
-    osrf_gear::Goal goalMsg;
-    fillGoalMsg(goal, goalMsg);
-    this->dataPtr->goalPub.publish(goalMsg);
+    // Publish the order to ROS topic
+    gzdbg << "Announcing order: " << order.orderID << std::endl;
+    osrf_gear::Order orderMsg;
+    fillOrderMsg(order, orderMsg);
+    this->dataPtr->orderPub.publish(orderMsg);
 
-    // Assign the scorer the goal to monitor
-    gzdbg << "Assigning order: " << goal << std::endl;
-    this->dataPtr->ariacScorer.AssignGoal(goal);
+    // Assign the scorer the order to monitor
+    gzdbg << "Assigning order: " << order << std::endl;
+    this->dataPtr->ariacScorer.AssignOrder(order);
 }
 
 /////////////////////////////////////////////////
-void ROSAriacTaskManagerPlugin::StopCurrentGoal()
+void ROSAriacTaskManagerPlugin::StopCurrentOrder()
 {
-  if (this->dataPtr->goalsInProgress.size())
+  if (this->dataPtr->ordersInProgress.size())
   {
-    ROS_INFO_STREAM("Stopping order: " << this->dataPtr->goalsInProgress.top().goalID);
-    this->dataPtr->goalsInProgress.pop();
-    this->dataPtr->ariacScorer.UnassignCurrentGoal(this->dataPtr->timeSpentOnCurrentGoal);
+    gzdbg << "Stopping order: " << this->dataPtr->ordersInProgress.top().orderID << std::endl;
+    this->dataPtr->ordersInProgress.pop();
+    this->dataPtr->ariacScorer.UnassignCurrentOrder(this->dataPtr->timeSpentOnCurrentOrder);
   }
 
-  if (this->dataPtr->goalsInProgress.size())
+  if (this->dataPtr->ordersInProgress.size())
   {
-    // Assign the previous goal to the scorer
-    auto goal = this->dataPtr->goalsInProgress.top();
-    ROS_INFO_STREAM("Restoring order: " << goal.goalID);
-    this->AssignGoal(goal);
+    // Assign the previous order to the scorer
+    auto order = this->dataPtr->ordersInProgress.top();
+    gzdbg << "Restoring order: " << order.orderID << std::endl;
+    this->AssignOrder(order);
   }
 }

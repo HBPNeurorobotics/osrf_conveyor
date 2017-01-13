@@ -19,8 +19,8 @@
 
 #include <ros/ros.h>
 
-#include <osrf_gear/Goal.h>
 #include <osrf_gear/LogicalCameraImage.h>
+#include <osrf_gear/Order.h>
 #include <osrf_gear/Proximity.h>
 #include <sensor_msgs/JointState.h>
 #include <sensor_msgs/LaserScan.h>
@@ -85,10 +85,10 @@ public:
     competition_state_ = msg->data;
   }
 
-  /// Called when a new Goal message is received.
-  void goal_callback(const osrf_gear::Goal::ConstPtr & goal_msg) {
-    ROS_INFO_STREAM("Received goal:\n" << *goal_msg);
-    received_goals_.push_back(*goal_msg);
+  /// Called when a new Order message is received.
+  void order_callback(const osrf_gear::Order::ConstPtr & order_msg) {
+    ROS_INFO_STREAM("Received order:\n" << *order_msg);
+    received_orders_.push_back(*order_msg);
   }
 
   // %Tag(CB_CLASS)%
@@ -146,7 +146,7 @@ private:
   std::string competition_state_;
   double current_score_;
   ros::Publisher joint_trajectory_publisher_;
-  std::vector<osrf_gear::Goal> received_goals_;
+  std::vector<osrf_gear::Order> received_orders_;
   sensor_msgs::JointState current_joint_states_;
   bool has_been_zeroed_;
 };
@@ -187,9 +187,9 @@ int main(int argc, char ** argv) {
 
   // %Tag(SUB_CLASS)%
   // Subscribe to the '/ariac/orders' topic.
-  ros::Subscriber goals_subscriber = node.subscribe(
+  ros::Subscriber orders_subscriber = node.subscribe(
     "/ariac/orders", 10,
-    &MyCompetitionClass::goal_callback, &comp_class);
+    &MyCompetitionClass::order_callback, &comp_class);
   // %EndTag(SUB_CLASS)%
 
   // Subscribe to the '/ariac/joint_states' topic.
