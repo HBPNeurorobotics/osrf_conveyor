@@ -180,7 +180,7 @@ void ROSLogicalCameraPlugin::OnImage(ConstLogicalCameraImagePtr &_msg)
         msgs::ConvertIgn(_msg->model(i).pose().position()));
       math::Quaternion modelOrientation = math::Quaternion(
         msgs::ConvertIgn(_msg->model(i).pose().orientation()));
-      modelPose = math::Pose(cameraPosition, cameraOrientation);
+      modelPose = math::Pose(modelPosition, modelOrientation);
       this->AddModelToMsg(modelType, modelPose, imageMsg);
     }
 
