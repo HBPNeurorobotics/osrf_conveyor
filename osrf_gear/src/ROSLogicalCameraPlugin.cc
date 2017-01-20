@@ -23,6 +23,7 @@
 #include <gazebo/math/Pose.hh>
 #include <gazebo/physics/Link.hh>
 #include <gazebo/physics/Model.hh>
+#include "gazebo/sensors/Noise.hh"
 #include <gazebo/physics/World.hh>
 #include <gazebo/sensors/Sensor.hh>
 #include <gazebo/sensors/SensorManager.hh>
@@ -107,6 +108,21 @@ void ROSLogicalCameraPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sd
     gzerr << "No logical camera found on any link\n";
     return;
   }
+
+  // Handle noise model settings.
+  if (_sdf->HasElement("position_noise"))
+  {
+    this->noiseModels["POSITION_NOISE"] =
+      sensors::NoiseFactory::NewNoiseModel(_sdf->GetElement("position_noise")->GetElement("noise"),
+      "logical_camera");
+  }
+  if (_sdf->HasElement("orientation_noise"))
+  {
+    this->noiseModels["ORIENTATION_NOISE"] =
+      sensors::NoiseFactory::NewNoiseModel(_sdf->GetElement("orientation_noise")->GetElement("noise"),
+      "logical_camera");
+  }
+
 
   std::string imageTopic_ros = _parent->GetName();
   if (_sdf->HasElement("image_topic_ros")) {
@@ -233,10 +249,31 @@ void ROSLogicalCameraPlugin::AddModelToMsg(
   modelMsg.pose.position.x = modelPose.pos.x;
   modelMsg.pose.position.y = modelPose.pos.y;
   modelMsg.pose.position.z = modelPose.pos.z;
-  modelMsg.pose.orientation.x = modelPose.rot.x;
-  modelMsg.pose.orientation.y = modelPose.rot.y;
-  modelMsg.pose.orientation.z = modelPose.rot.z;
-  modelMsg.pose.orientation.w = modelPose.rot.w;
+  if (this->noiseModels.find("POSITION_NOISE") != this->noiseModels.end())
+  {
+    // Apply additive noise to the model position
+    modelMsg.pose.position.x =
+      this->noiseModels["POSITION_NOISE"]->Apply(modelMsg.pose.position.x);
+    modelMsg.pose.position.y =
+      this->noiseModels["POSITION_NOISE"]->Apply(modelMsg.pose.position.y);
+    modelMsg.pose.position.z =
+      this->noiseModels["POSITION_NOISE"]->Apply(modelMsg.pose.position.z);
+  }
+
+  math::Pose pose = modelPose;
+  if (this->noiseModels.find("ORIENTATION_NOISE") != this->noiseModels.end())
+  {
+    // Create a perturbation quaternion and apply it to the model orientation
+    double r = this->noiseModels["ORIENTATION_NOISE"]->Apply(0.0);
+    double p = this->noiseModels["ORIENTATION_NOISE"]->Apply(0.0);
+    double y = this->noiseModels["ORIENTATION_NOISE"]->Apply(0.0);
+    math::Quaternion pert = math::Quaternion(r, p, y);
+    pose.rot *= pert;
+  }
+  modelMsg.pose.orientation.x = pose.rot.x;
+  modelMsg.pose.orientation.y = pose.rot.y;
+  modelMsg.pose.orientation.z = pose.rot.z;
+  modelMsg.pose.orientation.w = pose.rot.w;
   modelMsg.type = modelType;
   imageMsg.models.push_back(modelMsg);
 }

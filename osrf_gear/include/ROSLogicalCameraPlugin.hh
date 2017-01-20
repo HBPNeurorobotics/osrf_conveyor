@@ -27,6 +27,7 @@
 #include "gazebo/common/UpdateInfo.hh"
 #include "gazebo/msgs/logical_camera_image.pb.h"
 #include "gazebo/physics/PhysicsTypes.hh"
+#include "gazebo/sensors/Noise.hh"
 #include "gazebo/transport/Node.hh"
 #include "gazebo/transport/Subscriber.hh"
 #include "gazebo/transport/TransportTypes.hh"
@@ -98,6 +99,9 @@ namespace gazebo
 
     /// \brief Whitelist of the known model types to detect
     protected: std::vector<std::string> knownModelTypes;
+
+    /// \brief Map of noise IDs to noise models
+    protected: std::map<std::string, sensors::NoisePtr> noiseModels;
   };
 }
 #endif

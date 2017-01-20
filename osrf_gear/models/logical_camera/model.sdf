@@ -3,6 +3,20 @@
   <model name="logical_camera">
     <plugin name="ros_logical_camera" filename="libROSLogicalCameraPlugin.so">
       <robotNamespace>ariac</robotNamespace>
+      <position_noise>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.001</stddev>
+        </noise>
+      </position_noise>
+      <orientation_noise>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.01</stddev>
+        </noise>
+      </orientation_noise>
       <known_model_types>
         <type>kit_tray</type>
         <type>part1</type>
