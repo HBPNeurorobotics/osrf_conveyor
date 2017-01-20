@@ -123,8 +123,8 @@ void ROSLogicalCameraPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sd
       "logical_camera");
   }
 
-
-  std::string imageTopic_ros = _parent->GetName();
+  this->name = _parent->GetName();
+  std::string imageTopic_ros = this->name;
   if (_sdf->HasElement("image_topic_ros")) {
     imageTopic_ros = _sdf->Get<std::string>("image_topic_ros");
   }
@@ -135,6 +135,8 @@ void ROSLogicalCameraPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sd
 
   this->imagePub = this->rosnode->advertise<osrf_gear::LogicalCameraImage>(imageTopic_ros, 1, true);
   gzdbg << "Publishing to ROS topic: " << imagePub.getTopic() << "\n";
+
+ transformBroadcaster = boost::shared_ptr<tf::TransformBroadcaster>(new tf::TransformBroadcaster());
 }
 
 void ROSLogicalCameraPlugin::FindLogicalCamera()
@@ -197,7 +199,9 @@ void ROSLogicalCameraPlugin::OnImage(ConstLogicalCameraImagePtr &_msg)
       math::Quaternion modelOrientation = math::Quaternion(
         msgs::ConvertIgn(_msg->model(i).pose().orientation()));
       modelPose = math::Pose(modelPosition, modelOrientation);
+      this->AddNoise(modelPose);
       this->AddModelToMsg(modelType, modelPose, imageMsg);
+      this->PublishTF(modelPose, this->name + "_frame", ariac::TrimNamespace(modelName));
     }
 
     // Check any children models
@@ -216,6 +220,8 @@ void ROSLogicalCameraPlugin::OnImage(ConstLogicalCameraImagePtr &_msg)
       // Convert the world pose of the model into the camera frame
       modelPose = (nestedModel->GetWorldPose()) - cameraPose;
       this->AddModelToMsg(modelType, modelPose, imageMsg);
+      this->AddNoise(modelPose);
+      this->PublishTF(modelPose, this->name + "_frame", ariac::TrimNamespace(modelName));
     }
   }
 
@@ -241,26 +247,19 @@ bool ROSLogicalCameraPlugin::ModelTypeToPublish(const std::string & modelType)
   return publishModelType;
 }
 
-void ROSLogicalCameraPlugin::AddModelToMsg(
-  const std::string & modelType, const math::Pose & modelPose,
-  osrf_gear::LogicalCameraImage & imageMsg)
+void ROSLogicalCameraPlugin::AddNoise(math::Pose & pose)
 {
-  osrf_gear::Model modelMsg;
-  modelMsg.pose.position.x = modelPose.pos.x;
-  modelMsg.pose.position.y = modelPose.pos.y;
-  modelMsg.pose.position.z = modelPose.pos.z;
   if (this->noiseModels.find("POSITION_NOISE") != this->noiseModels.end())
   {
     // Apply additive noise to the model position
-    modelMsg.pose.position.x =
-      this->noiseModels["POSITION_NOISE"]->Apply(modelMsg.pose.position.x);
-    modelMsg.pose.position.y =
-      this->noiseModels["POSITION_NOISE"]->Apply(modelMsg.pose.position.y);
-    modelMsg.pose.position.z =
-      this->noiseModels["POSITION_NOISE"]->Apply(modelMsg.pose.position.z);
+    pose.pos.x =
+      this->noiseModels["POSITION_NOISE"]->Apply(pose.pos.x);
+    pose.pos.y =
+      this->noiseModels["POSITION_NOISE"]->Apply(pose.pos.y);
+    pose.pos.z =
+      this->noiseModels["POSITION_NOISE"]->Apply(pose.pos.z);
   }
 
-  math::Pose pose = modelPose;
   if (this->noiseModels.find("ORIENTATION_NOISE") != this->noiseModels.end())
   {
     // Create a perturbation quaternion and apply it to the model orientation
@@ -270,10 +269,34 @@ void ROSLogicalCameraPlugin::AddModelToMsg(
     math::Quaternion pert = math::Quaternion(r, p, y);
     pose.rot *= pert;
   }
-  modelMsg.pose.orientation.x = pose.rot.x;
-  modelMsg.pose.orientation.y = pose.rot.y;
-  modelMsg.pose.orientation.z = pose.rot.z;
-  modelMsg.pose.orientation.w = pose.rot.w;
+}
+
+void ROSLogicalCameraPlugin::AddModelToMsg(
+  const std::string & modelType, const math::Pose & modelPose,
+  osrf_gear::LogicalCameraImage & imageMsg)
+{
+  osrf_gear::Model modelMsg;
+  modelMsg.pose.position.x = modelPose.pos.x;
+  modelMsg.pose.position.y = modelPose.pos.y;
+  modelMsg.pose.position.z = modelPose.pos.z;
+
+  modelMsg.pose.orientation.x = modelPose.rot.x;
+  modelMsg.pose.orientation.y = modelPose.rot.y;
+  modelMsg.pose.orientation.z = modelPose.rot.z;
+  modelMsg.pose.orientation.w = modelPose.rot.w;
   modelMsg.type = modelType;
   imageMsg.models.push_back(modelMsg);
+}
+
+void ROSLogicalCameraPlugin::PublishTF(
+  const math::Pose & pose, const std::string & parentFrame, const std::string & frame)
+{
+  ros::Time currentTime = ros::Time::now();
+
+  tf::Quaternion qt(pose.rot.x, pose.rot.y, pose.rot.z, pose.rot.w);
+  tf::Vector3 vt(pose.pos.x, pose.pos.y, pose.pos.z);
+
+  tf::Transform transform (qt, vt);
+  transformBroadcaster->sendTransform(tf::StampedTransform(transform, currentTime, parentFrame, frame));
+
 }

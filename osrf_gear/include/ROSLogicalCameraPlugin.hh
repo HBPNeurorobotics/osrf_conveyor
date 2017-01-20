@@ -35,6 +35,7 @@
 // ROS
 #include "osrf_gear/LogicalCameraImage.h"
 #include <ros/ros.h>
+#include <tf/transform_broadcaster.h>
 
 namespace gazebo
 {
@@ -59,6 +60,9 @@ namespace gazebo
     /// \brief The logical camera sensor
     protected: sensors::SensorPtr sensor;
 
+    /// \brief The model name
+    protected: std::string name;
+
     /// \brief Load the plugin.
     /// \param[in] _parent Pointer to the parent model
     /// \param[in] _sdf Pointer to the SDF element of the plugin.
@@ -71,13 +75,20 @@ namespace gazebo
     /// \param[in] _msg The logical camera image
     public: void OnImage(ConstLogicalCameraImagePtr &_msg);
 
-    /// \brief Determine if the model type is one that should be published.
+    /// \brief Determine if the model type is one that should be published
     protected: bool ModelTypeToPublish(const std::string & modelType);
 
-    /// \brief Add model info to the message to be published.
+    /// \brief Add noise to a model pose
+    protected: void AddNoise(math::Pose & pose);
+
+    /// \brief Add model info to the message to be published
     protected: void AddModelToMsg(
       const std::string & modelType, const math::Pose & modelPose,
       osrf_gear::LogicalCameraImage & imageMsg);
+
+    /// \brief Publish the TF frame of a model
+    protected: void PublishTF(
+      const math::Pose & pose, const std::string & parentFrame, const std::string & frame);
 
     /// \brief Node for communication with gazebo
     protected: transport::NodePtr node;
@@ -102,6 +113,9 @@ namespace gazebo
 
     /// \brief Map of noise IDs to noise models
     protected: std::map<std::string, sensors::NoisePtr> noiseModels;
+
+    /// \brief TF broadcaster for model frames
+    protected: boost::shared_ptr<tf::TransformBroadcaster> transformBroadcaster;
   };
 }
 #endif

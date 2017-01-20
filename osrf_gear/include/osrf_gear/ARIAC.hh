@@ -218,17 +218,21 @@ namespace ariac
     public: double orientationThresh = 0.1;
   };
 
-  /// \brief Determine the type of a gazebo model from its name
-  TrayID_t DetermineModelType(const std::string &modelName)
+  /// \brief Determine the model name without namespace
+  std::string TrimNamespace(const std::string &modelName)
   {
-    TrayID_t modelType(modelName);
-
     // Trim namespaces
-    size_t index = modelType.find_last_of('|');
-    modelType = modelType.substr(index + 1);
+    size_t index = modelName.find_last_of('|');
+    return modelName.substr(index + 1);
+  }
+
+  /// \brief Determine the type of a gazebo model from its name
+  std::string DetermineModelType(const std::string &modelName)
+  {
+    std::string modelType(TrimNamespace(modelName));
 
     // Trim trailing underscore and number caused by inserting multiple of the same model
-    index = modelType.find_last_not_of("0123456789");
+    size_t index = modelType.find_last_not_of("0123456789");
     if (modelType[index] == '_' && index > 1)
     {
       modelType = modelType.substr(0, index);
