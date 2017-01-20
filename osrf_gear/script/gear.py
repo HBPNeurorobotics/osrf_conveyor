@@ -402,6 +402,7 @@ def prepare_template_data(config_dict):
     options_dict = get_field_with_default(config_dict, 'options', {})
     template_data['options'].update(create_options_info(options_dict))
 
+    models_over_bins = {}
     for key, value in config_dict.items():
         if key == 'arm':
             template_data['arm'] = create_arm_info(value)
@@ -430,7 +431,7 @@ def prepare_template_data(config_dict):
     template_data['bins'] = create_bin_infos()
     template_data['material_locations'] = create_material_location_info(
         template_data['belt_parts'] or {},
-        models_over_bins or {},
+        models_over_bins,
     )
     return template_data
 
