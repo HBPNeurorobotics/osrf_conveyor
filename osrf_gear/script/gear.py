@@ -71,6 +71,8 @@ configurable_options = {
         'belt_model_type2': 'part2',
     },
 }
+default_time_limit = 300  # seconds
+global_model_count = {}  # the global count of how many times a model type has been created
 
 
 def prepare_arguments(parser):
@@ -396,7 +398,7 @@ def prepare_template_data(config_dict):
         'drops': {},
         'orders': {},
         'options': {},
-        'time_limit': None,
+        'time_limit': default_time_limit,
     }
     # Process the options first as they may affect the processing of the rest
     options_dict = get_field_with_default(config_dict, 'options', {})
