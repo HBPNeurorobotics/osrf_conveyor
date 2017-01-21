@@ -77,6 +77,8 @@ def prepare_arguments(parser):
     add = parser.add_argument
     add('-n', '--dry-run', action='store_true', default=False,
         help='print generated files to stdout, but do not write them to disk')
+    add('-v', '--verbose', action='store_true', default=False,
+        help='output additional logging to console')
     add('-o', '--output', default=os.getcwd(),
         help='directory in which to output the generated files')
     mex_group = parser.add_mutually_exclusive_group(required=False)
@@ -485,6 +487,9 @@ def main(sysargv=None):
         'world_path:=' + os.path.join(args.output, 'gear.world'),
         'gear_urdf_xacro:=' + os.path.join(args.output, 'gear.urdf.xacro'),
     ]
+    if args.verbose:
+        cmd += ['verbose:=true']
+
     print("Running command: " + ' '.join(cmd))
     if not args.dry_run:
         try:
