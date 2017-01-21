@@ -143,6 +143,7 @@ ariac::TrayScore AriacScorer::SubmitTray(const ariac::KitTray & tray)
   auto trayScore = ScoreTray(tray);
   gzdbg << "Score from tray '" << tray.trayID << "': " << trayScore.total() << std::endl;
   this->orderScore->trayScores[tray.trayID] = trayScore;
+  this->orderScore->trayScores[tray.trayID].isSubmitted = true;
   return trayScore;
 }
 
