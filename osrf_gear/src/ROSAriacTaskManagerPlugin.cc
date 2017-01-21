@@ -512,13 +512,13 @@ void ROSAriacTaskManagerPlugin::OnUpdate()
 
     if (this->dataPtr->ordersInProgress.empty() && this->dataPtr->ordersToAnnounce.empty())
     {
-      this->dataPtr->currentGameScore.totalProcessTime =
-        (currentSimTime - this->dataPtr->gameStartTime).Double();
-      this->dataPtr->currentState = "end_game";
+      gzdbg << "No more orders to process." << std::endl;
     }
   }
   else if (this->dataPtr->currentState == "end_game")
   {
+      this->dataPtr->currentGameScore.totalProcessTime =
+        (currentSimTime - this->dataPtr->gameStartTime).Double();
     std::ostringstream logMessage;
     logMessage << "End of trial. Final score: " << \
       this->dataPtr->currentGameScore.total() << "\nScore breakdown:\n" << \
