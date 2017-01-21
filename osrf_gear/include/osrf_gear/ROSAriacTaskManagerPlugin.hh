@@ -135,6 +135,10 @@ namespace gazebo
     public: bool HandleStartService(
       std_srvs::Trigger::Request & req, std_srvs::Trigger::Response & res);
 
+    /// \brief Callback received when the team requests the competition end.
+    public: bool HandleEndService(
+      std_srvs::Trigger::Request & req, std_srvs::Trigger::Response & res);
+
     /// \brief Callback for when a tray is submitted for inspection.
     public: bool HandleSubmitTrayService(
       osrf_gear::SubmitTray::Request & req, osrf_gear::SubmitTray::Response & res);

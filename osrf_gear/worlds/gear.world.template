@@ -461,7 +461,8 @@
     <!-- The NIST-ARIAC task manager -->
     <plugin filename="libROSAriacTaskManagerPlugin.so" name="task_manager">
       <robot_namespace>ariac</robot_namespace>
-      <team_start_service_name>/ariac/start_competition</team_start_service_name>
+      <start_competition_service_name>/ariac/start_competition</start_competition_service_name>
+      <end_competition_service_name>/ariac/end_competition</end_competition_service_name>
       <population_activate_topic>/ariac/populate_belt</population_activate_topic>
       <conveyor_control_topic>/ariac/conveyor/control</conveyor_control_topic>
       <submit_tray_service_name>/ariac/submit_tray</submit_tray_service_name>

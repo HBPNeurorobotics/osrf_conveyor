@@ -93,7 +93,10 @@ namespace gazebo
     public: ros::Publisher taskScorePub;
 
     /// \brief Service that allows the user to start the competition.
-    public: ros::ServiceServer teamStartServiceServer;
+    public: ros::ServiceServer compStartServiceServer;
+
+    /// \brief Service that allows the user to end the competition.
+    public: ros::ServiceServer compEndServiceServer;
 
     /// \brief Service that allows users to query the location of materials.
     public: ros::ServiceServer getMaterialLocationsServiceServer;
@@ -193,9 +196,13 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
       "robot_namespace")->Get<std::string>() + "/";
   }
 
-  std::string teamStartServiceName = "start";
-  if (_sdf->HasElement("team_start_service_name"))
-    teamStartServiceName = _sdf->Get<std::string>("team_start_service_name");
+  std::string compEndServiceName = "end_competition";
+  if (_sdf->HasElement("end_competition_service_name"))
+    compEndServiceName = _sdf->Get<std::string>("end_competition_service_name");
+
+  std::string compStartServiceName = "start_competition";
+  if (_sdf->HasElement("start_competition_service_name"))
+    compStartServiceName = _sdf->Get<std::string>("start_competition_service_name");
 
   std::string taskStateTopic = "competition_state";
   if (_sdf->HasElement("task_state_topic"))
@@ -392,9 +399,14 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
     std_msgs::Float32>(taskScoreTopic, 1000);
 
   // Service for starting the competition.
-  this->dataPtr->teamStartServiceServer =
-    this->dataPtr->rosnode->advertiseService(teamStartServiceName,
+  this->dataPtr->compStartServiceServer =
+    this->dataPtr->rosnode->advertiseService(compStartServiceName,
       &ROSAriacTaskManagerPlugin::HandleStartService, this);
+
+  // Service for starting the competition.
+  this->dataPtr->compEndServiceServer =
+    this->dataPtr->rosnode->advertiseService(compEndServiceName,
+      &ROSAriacTaskManagerPlugin::HandleEndService, this);
 
   // Service for submitting trays for inspection.
   this->dataPtr->submitTrayServiceServer =
@@ -508,7 +520,7 @@ void ROSAriacTaskManagerPlugin::OnUpdate()
   else if (this->dataPtr->currentState == "end_game")
   {
     std::ostringstream logMessage;
-    logMessage << "No more orders to process. Final score: " << \
+    logMessage << "End of trial. Final score: " << \
       this->dataPtr->currentGameScore.total() << "\nScore breakdown:\n" << \
       this->dataPtr->currentGameScore;
     ROS_INFO_STREAM(logMessage.str().c_str());
@@ -568,6 +580,25 @@ bool ROSAriacTaskManagerPlugin::HandleStartService(
   }
   res.success = false;
   res.message = "cannot start if not in 'init' state";
+  return true;
+}
+
+/////////////////////////////////////////////////
+bool ROSAriacTaskManagerPlugin::HandleEndService(
+  std_srvs::Trigger::Request & req,
+  std_srvs::Trigger::Response & res)
+{
+  (void)req;
+  std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
+
+  if (this->dataPtr->currentState == "go") {
+    this->dataPtr->currentState = "end_game";
+    res.success = true;
+    res.message = "competition ended successfully!";
+    return true;
+  }
+  res.success = false;
+  res.message = "cannot end if not in 'go' state";
   return true;
 }
 
