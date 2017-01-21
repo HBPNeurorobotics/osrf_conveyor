@@ -42,3 +42,5 @@ models_over_bins:
         rpy: [0, 0, 0]
         num_models_x: 4
         num_models_y: 5
+
+time_limit: -1

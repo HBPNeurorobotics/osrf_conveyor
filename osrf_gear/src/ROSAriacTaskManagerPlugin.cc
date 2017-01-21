@@ -125,6 +125,9 @@ namespace gazebo
     /// \brief The time specified in the object is relative to this time.
     public: common::Time gameStartTime;
 
+    /// \brief The time in seconds permitted to complete the trial.
+    public: double timeLimit;
+
     /// \brief The time in seconds that has been spent on the current order.
     public: double timeSpentOnCurrentOrder;
 
@@ -195,6 +198,10 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
     robotNamespace = _sdf->GetElement(
       "robot_namespace")->Get<std::string>() + "/";
   }
+
+  this->dataPtr->timeLimit = -1.0;
+  if (_sdf->HasElement("competition_time_limit"))
+    this->dataPtr->timeLimit = _sdf->Get<double>("competition_time_limit");
 
   std::string compEndServiceName = "end_competition";
   if (_sdf->HasElement("end_competition_service_name"))
@@ -454,6 +461,12 @@ void ROSAriacTaskManagerPlugin::OnUpdate()
   auto currentSimTime = this->dataPtr->world->GetSimTime();
 
   double elapsedTime = (currentSimTime - this->dataPtr->lastUpdateTime).Double();
+  if (this->dataPtr->timeLimit >= 0 && this->dataPtr->currentState == "go" &&
+    (currentSimTime - this->dataPtr->gameStartTime) > this->dataPtr->timeLimit)
+  {
+    this->dataPtr->currentState = "end_game";
+  }
+
   if (this->dataPtr->currentState == "ready")
   {
     this->dataPtr->gameStartTime = currentSimTime;
@@ -464,6 +477,7 @@ void ROSAriacTaskManagerPlugin::OnUpdate()
   }
   else if (this->dataPtr->currentState == "go")
   {
+
     // Update the order manager.
     this->ProcessOrdersToAnnounce();
 
@@ -513,6 +527,7 @@ void ROSAriacTaskManagerPlugin::OnUpdate()
     if (this->dataPtr->ordersInProgress.empty() && this->dataPtr->ordersToAnnounce.empty())
     {
       gzdbg << "No more orders to process." << std::endl;
+      this->dataPtr->currentState = "end_game";
     }
   }
   else if (this->dataPtr->currentState == "end_game")
