@@ -1,6 +1,6 @@
 # AGV Control
 
-std_msgs/String kit_type
+string kit_type
 
 ---
 bool success

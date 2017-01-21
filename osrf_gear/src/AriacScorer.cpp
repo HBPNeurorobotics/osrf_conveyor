@@ -273,7 +273,7 @@ void AriacScorer::OnTrayInfoReceived(const osrf_gear::KitTray::ConstPtr & trayMs
   boost::mutex::scoped_lock kitTraysLock(this->kitTraysMutex);
 
   // Get the ID of the tray that the message is from.
-  std::string trayID = trayMsg->tray.data;
+  std::string trayID = trayMsg->tray;
 
   if (this->kitTrays.find(trayID) == this->kitTrays.end())
   {
@@ -298,10 +298,10 @@ void AriacScorer::OnOrderReceived(const osrf_gear::Order::ConstPtr & orderMsg)
   this->newOrderReceived = true;
 
   ariac::Order order;
-  order.orderID = orderMsg->order_id.data;
+  order.orderID = orderMsg->order_id;
   for (const auto & kitMsg : orderMsg->kits)
   {
-    ariac::KitType_t kitType = kitMsg.kit_type.data;
+    ariac::KitType_t kitType = kitMsg.kit_type;
     ariac::Kit assignedKit;
     FillKitFromMsg(kitMsg, assignedKit);
     order.kits[kitType] = assignedKit;

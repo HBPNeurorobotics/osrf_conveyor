@@ -147,11 +147,11 @@ GZ_REGISTER_WORLD_PLUGIN(ROSAriacTaskManagerPlugin)
 static void fillOrderMsg(const ariac::Order &_order,
                         osrf_gear::Order &_msgOrder)
 {
-  _msgOrder.order_id.data = _order.orderID;
+  _msgOrder.order_id = _order.orderID;
   for (const auto item : _order.kits)
   {
     osrf_gear::Kit msgKit;
-    msgKit.kit_type.data = item.first;
+    msgKit.kit_type = item.first;
     for (const auto &obj : item.second.objects)
     {
       osrf_gear::KitObject msgObj;
@@ -632,13 +632,13 @@ bool ROSAriacTaskManagerPlugin::HandleSubmitTrayService(
   }
 
   ariac::KitTray kitTray;
-  gzdbg << "SubmitTray request received for tray: " << req.tray_id.data << std::endl;
-  if (!this->dataPtr->ariacScorer.GetTrayById(req.tray_id.data, kitTray))
+  gzdbg << "SubmitTray request received for tray: " << req.tray_id << std::endl;
+  if (!this->dataPtr->ariacScorer.GetTrayById(req.tray_id, kitTray))
   {
     res.success = false;
     return true;
   }
-  kitTray.currentKit.kitType = req.kit_type.data;
+  kitTray.currentKit.kitType = req.kit_type;
   res.success = true;
   res.inspection_result = this->dataPtr->ariacScorer.SubmitTray(kitTray).total();
   gzdbg << "Inspection result: " << res.inspection_result << std::endl;
