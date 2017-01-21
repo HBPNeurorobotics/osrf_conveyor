@@ -161,11 +161,13 @@ namespace ariac
             double total() const
             {
               double total = 0;
+              /*
               total += totalProcessTime;
               total += partTravelTime;
               total += planningTime;
               total += partTravelDistance;
               total += manipulatorTravelDistance;
+              */
 
               for (const auto & item : this->orderScores)
               {
