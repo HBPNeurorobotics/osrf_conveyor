@@ -201,7 +201,7 @@ void ROSLogicalCameraPlugin::OnImage(ConstLogicalCameraImagePtr &_msg)
       modelPose = math::Pose(modelPosition, modelOrientation);
       this->AddNoise(modelPose);
       this->AddModelToMsg(modelType, modelPose, imageMsg);
-      this->PublishTF(modelPose, this->name + "_frame", ariac::TrimNamespace(modelName));
+      this->PublishTF(modelPose, this->name + "_frame", ariac::TrimNamespace(modelName) + "_frame");
     }
 
     // Check any children models
@@ -221,7 +221,7 @@ void ROSLogicalCameraPlugin::OnImage(ConstLogicalCameraImagePtr &_msg)
       modelPose = (nestedModel->GetWorldPose()) - cameraPose;
       this->AddModelToMsg(modelType, modelPose, imageMsg);
       this->AddNoise(modelPose);
-      this->PublishTF(modelPose, this->name + "_frame", ariac::TrimNamespace(modelName));
+      this->PublishTF(modelPose, this->name + "_frame", ariac::TrimNamespace(modelName) + "_frame");
     }
   }
 
