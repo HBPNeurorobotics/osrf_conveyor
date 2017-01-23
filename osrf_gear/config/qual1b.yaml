@@ -7,8 +7,8 @@ options:
   insert_models_over_bins: true
   fill_demo_tray: false
   model_type_aliases:
-    order_part1: gasket_part
-    order_part2: piston_rod_part
+    order_part1: piston_rod_part
+    order_part2: gear_part
 
 orders:
   order_0:
@@ -17,12 +17,27 @@ orders:
       part_0:
         type: order_part1
         pose:
-          xyz: [0.1, -0.15, 0]
+          xyz: [0.1, -0.2, 0]
           rpy: [0, 0, 0]
       part_1:
+        type: order_part1
+        pose:
+          xyz: [-0.1, -0.2, 0]
+          rpy: [0, 0, 0]
+      part_2:
         type: order_part2
         pose:
-          xyz: [0.1, 0.15, 0]
+          xyz: [0.15, 0.15, 0]
+          rpy: [0, 0, 0]
+      part_3:
+        type: order_part2
+        pose:
+          xyz: [-0.15, 0.15, 0]
+          rpy: [0, 0, 0]
+      part_4:
+        type: order_part2
+        pose:
+          xyz: [0.0, 0.15, 0]
           rpy: [0, 0, 0]
 
 drops:
@@ -38,20 +53,74 @@ drops:
         xyz: [0.6, 3.1, 1.0]
 
 models_over_bins:
-  bin7:
+  bin1:
     models:
-      order_part1:
+      gear_part:
+        xyz_start: [0.1, 0.1, 0.0]
+        xyz_end: [0.5, 0.5, 0.0]
+        rpy: [0, 0, 0]
+        num_models_x: 5
+        num_models_y: 5
+
+  bin2:
+    models:
+      piston_rod_part:
+        xyz_start: [0.1, 0.1, 0.0]
+        xyz_end: [0.5, 0.5, 0.0]
+        rpy: [0, 0, 'pi/4']
+        num_models_x: 3
+        num_models_y: 4
+
+  bin3:
+    models:
+      pulley_part:
+        xyz_start: [0.15, 0.15, 0.0]
+        xyz_end: [0.45, 0.45, 0.0]
+        rpy: [0, 0, 0]
+        num_models_x: 2
+        num_models_y: 2
+
+  bin4:
+    models:
+       part4:
+        xyz_start: [0.1, 0.1, 0.0]
+        xyz_end: [0.5, 0.5, 0.0]
+        rpy: [0, 0, 0]
+        num_models_x: 4
+        num_models_y: 5
+
+  bin5:
+    models:
+      gasket_part:
         xyz_start: [0.15, 0.15, 0.0]
         xyz_end: [0.45, 0.45, 0.0]
         rpy: [0, 0, 'pi/4']
         num_models_x: 2
         num_models_y: 2
 
-  bin8:
+  bin6:
     models:
-       order_part2:
+      pulley_part:
+        xyz_start: [0.15, 0.15, 0.0]
+        xyz_end: [0.45, 0.45, 0.0]
+        rpy: [0, 0, 0]
+        num_models_x: 2
+        num_models_y: 2
+
+  bin7:
+    models:
+      piston_rod_part:
         xyz_start: [0.1, 0.1, 0.0]
         xyz_end: [0.5, 0.5, 0.0]
         rpy: [0, 0, 'pi/4']
         num_models_x: 3
         num_models_y: 4
+
+  bin8:
+    models:
+       gear_part:
+        xyz_start: [0.1, 0.1, 0.0]
+        xyz_end: [0.5, 0.5, 0.0]
+        rpy: [0, 0, 0]
+        num_models_x: 5
+        num_models_y: 5
