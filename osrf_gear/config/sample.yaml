@@ -4,18 +4,6 @@ options:
   insert_models_over_bins: true
   fill_demo_tray: false
 
-belt_parts:
-  part3:
-    3.0:
-      pose:
-        xyz: [0.0, 0.0, 0.1]
-        rpy: [0, 0, 'pi/2']
-  part4:
-    6.0:
-      pose:
-        xyz: [0.0, 0.0, 0.1]
-        rpy: [0, 0, 'pi/2']
-
 orders:
   order_0:
     announcement_time: 0.0
@@ -34,23 +22,14 @@ orders:
 models_over_bins:
   bin7:
     models:
-       part3:
+      piston_rod_part:
         xyz_start: [0.1, 0.1, 0.0]
         xyz_end: [0.5, 0.5, 0.0]
-        rpy: [0, 0, 0]
+        rpy: [0, 0, 'pi/4']
         num_models_x: 3
-        num_models_y: 3
+        num_models_y: 4
 
-  bin8:
-    models:
-       part4:
-        xyz_start: [0.1, 0.1, 0.0]
-        xyz_end: [0.5, 0.5, 0.0]
-        rpy: [0, 0, 0]
-        num_models_x: 4
-        num_models_y: 5
-
-time_limit: 300
+time_limit: -1
 
 
 # Competitor trial configuration options
@@ -69,7 +48,7 @@ sensors:
   proximity_sensor:
     type: proximity_sensor
     pose:
-      xyz: [0.8, 4.4, 1]
+      xyz: [0.88, 2.32, 0.94]
       rpy: [0, 0, 0]
   logical_camera:
     type: logical_camera
