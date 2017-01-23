@@ -370,6 +370,10 @@ install(DIRECTORY models/
 install(DIRECTORY launch/
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch)
 
+# Install all the rviz files
+install(DIRECTORY rviz/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/rviz)
+
 # Install all the vendor files from outside packages
 install(DIRECTORY vendor/
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/vendor)
