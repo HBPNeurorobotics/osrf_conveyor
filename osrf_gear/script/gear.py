@@ -71,6 +71,7 @@ configurable_options = {
         'belt_model_type2': 'part2',
     },
 }
+global_model_count = {}  # the global count of how many times a model type has been created
 
 
 def prepare_arguments(parser):
@@ -168,6 +169,16 @@ def replace_type_aliases(model_type):
     return model_type
 
 
+def model_count_post_increment(model_type):
+    global global_model_count
+    try:
+        count = global_model_count[model_type]
+    except KeyError:
+        count = 1
+    global_model_count[model_type] = count + 1
+    return count
+
+
 def create_arm_info(arm_dict):
     arm_type = get_required_field('arm', arm_dict, 'type')
     if arm_type not in arm_configs:
@@ -235,16 +246,14 @@ def create_models_to_spawn_infos(models_to_spawn_dict):
     models_to_spawn_infos = {}
     for reference_frame, reference_frame_data in models_to_spawn_dict.items():
         models = get_required_field(reference_frame, reference_frame_data, 'models')
-        model_count = 0
         for model_name, model_to_spawn_data in models.items():
             model_to_spawn_data['reference_frame'] = reference_frame
             model_info = create_model_info(model_name, model_to_spawn_data)
             # assign each model a unique name because gazebo can't do this
             # if the models all spawn at the same time
             scoped_model_name = reference_frame.replace('::', '|') + '|' + \
-              model_info.type + '_' + str(model_count)
+              model_info.type + '_' + str(model_count_post_increment(model_info.type))
             models_to_spawn_infos[scoped_model_name] = model_info
-            model_count += 1
     return models_to_spawn_infos
 
 
@@ -266,7 +275,6 @@ def create_models_over_bins_infos(models_over_bins_dict):
 
         models = get_required_field(bin_name, bin_dict, 'models') or {}
         for model_type, model_to_spawn_dict in models.items():
-            model_count = 0
             model_to_spawn_data = {}
             model_to_spawn_data['type'] = model_type
             model_to_spawn_data['reference_frame'] = 'world'
@@ -295,10 +303,9 @@ def create_models_over_bins_infos(models_over_bins_dict):
                     # assign each model a unique name because gazebo can't do this
                     # if the models all spawn at the same time
                     scoped_model_name = bin_name + '|' + \
-                        model_info.type + '_' + str(model_count)
+                        model_info.type + '_' + str(model_count_post_increment(model_type))
                     model_info.bin = bin_name
                     models_to_spawn_infos[scoped_model_name] = model_info
-                    model_count += 1
     return models_to_spawn_infos
 
 
