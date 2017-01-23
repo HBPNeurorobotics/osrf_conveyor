@@ -132,8 +132,8 @@ bool ROSAGVPlugin::OnCommand(
 
   // Make a service call to submit the tray for inspection.
   osrf_gear::SubmitTray srv;
-  srv.request.tray_id.data = this->agvName + "::kit_tray::tray";
-  srv.request.kit_type.data = _req.kit_type.data;
+  srv.request.tray_id = this->agvName + "::kit_tray::kit_tray::tray";
+  srv.request.kit_type = _req.kit_type;
   this->rosSubmitTrayClient.call(srv);
   if (!srv.response.success) {
     ROS_ERROR_STREAM("Failed to submit tray for inspection.");

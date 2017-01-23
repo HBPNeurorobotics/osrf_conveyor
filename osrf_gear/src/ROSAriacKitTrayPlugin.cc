@@ -114,7 +114,7 @@ void KitTrayPlugin::PublishKitMsg()
 {
   // Publish current kit
   osrf_gear::KitTray kitTrayMsg;
-  kitTrayMsg.tray.data = this->trayID;
+  kitTrayMsg.tray = this->trayID;
   for (const auto &obj : this->currentKit.objects)
   {
     osrf_gear::KitObject msgObj;

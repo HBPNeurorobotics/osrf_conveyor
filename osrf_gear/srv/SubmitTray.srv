@@ -1,5 +1,5 @@
-std_msgs/String tray_id
-std_msgs/String kit_type
+string tray_id
+string kit_type
 
 ---
 bool success

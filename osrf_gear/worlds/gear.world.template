@@ -302,10 +302,6 @@
 @[if belt_parts]@
 <!-- Simulation time at which the last object is spawned (per cycle) -->
 @{max_spawn_time = max([max(times.keys()) for times in belt_parts.values()])}@
-<!-- If 'time_limit' is not set, the default value is 300 segs -->
-@[if not time_limit]@
-@{time_limit = 300}
-@[end if]@
 <!-- Calculate the number of population cycles to run before the end.
      Equivalent to math.ceil(time_limit / max_spawn_time) (without math) -->
 @{belt_population_cycles = -(-time_limit // max_spawn_time)}
@@ -461,7 +457,9 @@
     <!-- The NIST-ARIAC task manager -->
     <plugin filename="libROSAriacTaskManagerPlugin.so" name="task_manager">
       <robot_namespace>ariac</robot_namespace>
-      <team_start_service_name>/ariac/start_competition</team_start_service_name>
+      <competition_time_limit>@(time_limit)</competition_time_limit>
+      <start_competition_service_name>/ariac/start_competition</start_competition_service_name>
+      <end_competition_service_name>/ariac/end_competition</end_competition_service_name>
       <population_activate_topic>/ariac/populate_belt</population_activate_topic>
       <conveyor_control_topic>/ariac/conveyor/control</conveyor_control_topic>
       <submit_tray_service_name>/ariac/submit_tray</submit_tray_service_name>

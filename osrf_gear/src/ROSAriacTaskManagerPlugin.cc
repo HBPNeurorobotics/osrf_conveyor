@@ -93,7 +93,10 @@ namespace gazebo
     public: ros::Publisher taskScorePub;
 
     /// \brief Service that allows the user to start the competition.
-    public: ros::ServiceServer teamStartServiceServer;
+    public: ros::ServiceServer compStartServiceServer;
+
+    /// \brief Service that allows the user to end the competition.
+    public: ros::ServiceServer compEndServiceServer;
 
     /// \brief Service that allows users to query the location of materials.
     public: ros::ServiceServer getMaterialLocationsServiceServer;
@@ -122,6 +125,9 @@ namespace gazebo
     /// \brief The time specified in the object is relative to this time.
     public: common::Time gameStartTime;
 
+    /// \brief The time in seconds permitted to complete the trial.
+    public: double timeLimit;
+
     /// \brief The time in seconds that has been spent on the current order.
     public: double timeSpentOnCurrentOrder;
 
@@ -141,11 +147,11 @@ GZ_REGISTER_WORLD_PLUGIN(ROSAriacTaskManagerPlugin)
 static void fillOrderMsg(const ariac::Order &_order,
                         osrf_gear::Order &_msgOrder)
 {
-  _msgOrder.order_id.data = _order.orderID;
+  _msgOrder.order_id = _order.orderID;
   for (const auto item : _order.kits)
   {
     osrf_gear::Kit msgKit;
-    msgKit.kit_type.data = item.first;
+    msgKit.kit_type = item.first;
     for (const auto &obj : item.second.objects)
     {
       osrf_gear::KitObject msgObj;
@@ -193,9 +199,17 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
       "robot_namespace")->Get<std::string>() + "/";
   }
 
-  std::string teamStartServiceName = "start";
-  if (_sdf->HasElement("team_start_service_name"))
-    teamStartServiceName = _sdf->Get<std::string>("team_start_service_name");
+  this->dataPtr->timeLimit = -1.0;
+  if (_sdf->HasElement("competition_time_limit"))
+    this->dataPtr->timeLimit = _sdf->Get<double>("competition_time_limit");
+
+  std::string compEndServiceName = "end_competition";
+  if (_sdf->HasElement("end_competition_service_name"))
+    compEndServiceName = _sdf->Get<std::string>("end_competition_service_name");
+
+  std::string compStartServiceName = "start_competition";
+  if (_sdf->HasElement("start_competition_service_name"))
+    compStartServiceName = _sdf->Get<std::string>("start_competition_service_name");
 
   std::string taskStateTopic = "competition_state";
   if (_sdf->HasElement("task_state_topic"))
@@ -392,9 +406,14 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
     std_msgs::Float32>(taskScoreTopic, 1000);
 
   // Service for starting the competition.
-  this->dataPtr->teamStartServiceServer =
-    this->dataPtr->rosnode->advertiseService(teamStartServiceName,
+  this->dataPtr->compStartServiceServer =
+    this->dataPtr->rosnode->advertiseService(compStartServiceName,
       &ROSAriacTaskManagerPlugin::HandleStartService, this);
+
+  // Service for starting the competition.
+  this->dataPtr->compEndServiceServer =
+    this->dataPtr->rosnode->advertiseService(compEndServiceName,
+      &ROSAriacTaskManagerPlugin::HandleEndService, this);
 
   // Service for submitting trays for inspection.
   this->dataPtr->submitTrayServiceServer =
@@ -442,6 +461,12 @@ void ROSAriacTaskManagerPlugin::OnUpdate()
   auto currentSimTime = this->dataPtr->world->GetSimTime();
 
   double elapsedTime = (currentSimTime - this->dataPtr->lastUpdateTime).Double();
+  if (this->dataPtr->timeLimit >= 0 && this->dataPtr->currentState == "go" &&
+    (currentSimTime - this->dataPtr->gameStartTime) > this->dataPtr->timeLimit)
+  {
+    this->dataPtr->currentState = "end_game";
+  }
+
   if (this->dataPtr->currentState == "ready")
   {
     this->dataPtr->gameStartTime = currentSimTime;
@@ -452,6 +477,7 @@ void ROSAriacTaskManagerPlugin::OnUpdate()
   }
   else if (this->dataPtr->currentState == "go")
   {
+
     // Update the order manager.
     this->ProcessOrdersToAnnounce();
 
@@ -500,15 +526,16 @@ void ROSAriacTaskManagerPlugin::OnUpdate()
 
     if (this->dataPtr->ordersInProgress.empty() && this->dataPtr->ordersToAnnounce.empty())
     {
-      this->dataPtr->currentGameScore.totalProcessTime =
-        (currentSimTime - this->dataPtr->gameStartTime).Double();
+      gzdbg << "No more orders to process." << std::endl;
       this->dataPtr->currentState = "end_game";
     }
   }
   else if (this->dataPtr->currentState == "end_game")
   {
+      this->dataPtr->currentGameScore.totalProcessTime =
+        (currentSimTime - this->dataPtr->gameStartTime).Double();
     std::ostringstream logMessage;
-    logMessage << "No more orders to process. Final score: " << \
+    logMessage << "End of trial. Final score: " << \
       this->dataPtr->currentGameScore.total() << "\nScore breakdown:\n" << \
       this->dataPtr->currentGameScore;
     ROS_INFO_STREAM(logMessage.str().c_str());
@@ -572,6 +599,25 @@ bool ROSAriacTaskManagerPlugin::HandleStartService(
 }
 
 /////////////////////////////////////////////////
+bool ROSAriacTaskManagerPlugin::HandleEndService(
+  std_srvs::Trigger::Request & req,
+  std_srvs::Trigger::Response & res)
+{
+  (void)req;
+  std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
+
+  if (this->dataPtr->currentState == "go") {
+    this->dataPtr->currentState = "end_game";
+    res.success = true;
+    res.message = "competition ended successfully!";
+    return true;
+  }
+  res.success = false;
+  res.message = "cannot end if not in 'go' state";
+  return true;
+}
+
+/////////////////////////////////////////////////
 bool ROSAriacTaskManagerPlugin::HandleSubmitTrayService(
   osrf_gear::SubmitTray::Request & req,
   osrf_gear::SubmitTray::Response & res)
@@ -586,13 +632,13 @@ bool ROSAriacTaskManagerPlugin::HandleSubmitTrayService(
   }
 
   ariac::KitTray kitTray;
-  gzdbg << "SubmitTray request received for tray: " << req.tray_id.data << std::endl;
-  if (!this->dataPtr->ariacScorer.GetTrayById(req.tray_id.data, kitTray))
+  gzdbg << "SubmitTray request received for tray: " << req.tray_id << std::endl;
+  if (!this->dataPtr->ariacScorer.GetTrayById(req.tray_id, kitTray))
   {
     res.success = false;
     return true;
   }
-  kitTray.currentKit.kitType = req.kit_type.data;
+  kitTray.currentKit.kitType = req.kit_type;
   res.success = true;
   res.inspection_result = this->dataPtr->ariacScorer.SubmitTray(kitTray).total();
   gzdbg << "Inspection result: " << res.inspection_result << std::endl;

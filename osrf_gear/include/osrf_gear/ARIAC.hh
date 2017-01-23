@@ -45,6 +45,7 @@ namespace ariac
       _out << "<tray_score " << _obj.trayID << ">" << std::endl;
       _out << "Total score: [" << _obj.total() << "]" << std::endl;
       _out << "Complete: [" << (_obj.isComplete ? "true" : "false") << "]" << std::endl;
+      _out << "Submitted: [" << (_obj.isSubmitted ? "true" : "false") << "]" << std::endl;
       _out << "Part presence score: [" << _obj.partPresence << "]" << std::endl;
       _out << "All parts bonus: [" << _obj.allPartsBonus << "]" << std::endl;
       _out << "Part pose score: [" << _obj.partPose << "]" << std::endl;
@@ -55,7 +56,8 @@ namespace ariac
             double partPresence = 0.0;
             double allPartsBonus = 0.0;
             double partPose = 0.0;
-            bool isComplete = false;
+            bool isComplete = false;  // all parts on the tray
+            bool isSubmitted = false;  // the tray has been submitted for evaluation
 
             /// \brief Calculate the total score.
             double total() const
@@ -96,14 +98,14 @@ namespace ariac
             double timeTaken = 0.0;
 
             /// \brief Calculate if the order is complete.
-            /// \return True if all trays are complete.
+            /// \return True if all trays have been submitted.
             ///   Will return false if there are no trays in the order.
             bool isComplete() const
             {
               bool isOrderComplete = !this->trayScores.empty();
               for (const auto & item : this->trayScores)
               {
-                isOrderComplete &= item.second.isComplete;
+                isOrderComplete &= item.second.isSubmitted;
                 if (!isOrderComplete)
                 {
                   break;
@@ -159,11 +161,13 @@ namespace ariac
             double total() const
             {
               double total = 0;
+              /*
               total += totalProcessTime;
               total += partTravelTime;
               total += planningTime;
               total += partTravelDistance;
               total += manipulatorTravelDistance;
+              */
 
               for (const auto & item : this->orderScores)
               {
