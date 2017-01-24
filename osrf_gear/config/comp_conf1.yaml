@@ -51,7 +51,7 @@
 
 options:
   insert_models_over_bins: true
-  spawn_extra_models: true
+  spawn_extra_models: false
   fill_demo_tray: false
 
   model_type_aliases:
@@ -161,21 +161,21 @@ models_over_bins:
 
   bin8:
     models:
-      part1:
-        xyz_start: [0.3, 0.1, 0.0]
-        xyz_end: [0.3, 0.5, 0.0]
+      pulley_part:
+        xyz_start: [0.15, 0.15, 0.0]
+        xyz_end: [0.45, 0.45, 0.0]
         rpy: [0, 0, 0]
-        num_models_x: 1
-        num_models_y: 4
+        num_models_x: 2
+        num_models_y: 2
 
   bin7:
     models:
-       part2:
+      piston_rod_part:
         xyz_start: [0.1, 0.1, 0.0]
         xyz_end: [0.5, 0.5, 0.0]
-        rpy: [0, 0, 0]
-        num_models_x: 5
-        num_models_y: 5
+        rpy: [0, 0, 'pi/4']
+        num_models_x: 3
+        num_models_y: 4
 
   bin6:
     models:
