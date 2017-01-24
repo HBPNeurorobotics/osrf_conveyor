@@ -4,20 +4,32 @@ options:
   insert_models_over_bins: true
   fill_demo_tray: false
 
+belt_parts:
+  piston_rod_part:
+    3.0:
+      pose:
+        xyz: [0.0, 0.0, 0.1]
+        rpy: [0, 0, 'pi/2']
+  part4:
+    6.0:
+      pose:
+        xyz: [0.0, 0.0, 0.1]
+        rpy: [0, 0, 'pi/2']
+
 orders:
   order_0:
     announcement_time: 0.0
     parts:
       part_0:
-        type: part3
+        type: piston_rod_part
         pose:
-          xyz: [0.1, -0.15, 0]
+          xyz: [0.1, 0, 0]
           rpy: [0, 0, 0]
       part_1:
-        type: part4
+        type: piston_rod_part
         pose:
-          xyz: [0.1, 0.15, 0]
-          rpy: [0, 0, 0]
+          xyz: [-0.1, 0, 0]
+          rpy: [0, 0, 'pi']
 
 models_over_bins:
   bin7:
