@@ -63,7 +63,7 @@
   <joint name="@(name)_joint" type="fixed">
     <parent link="world" />
     <child link="@(name)_frame" />
-    <origin xyz="@(' '.join(pose.xyz))" rpy="@(' '.join(pose.rpy))" />
+    <origin xyz="@(' '.join([pose.xyz[0], pose.xyz[1], str(bin_height)]))" rpy="@(' '.join(pose.rpy))" />
   </joint>
 @[end for]@
   <!-- agv load point frames -->
@@ -71,13 +71,19 @@
   <joint name="agv1_load_point_joint" type="fixed">
     <parent link="world" />
     <child link="agv1_load_point_frame" />
-    <origin xyz="0.3 3.3 0" rpy="0 0 3.1415" />
+    <origin xyz="0.3 3.3 0.75" rpy="0 0 3.1415" />
   </joint>
   <link name="agv2_load_point_frame" />
   <joint name="agv2_load_point_joint" type="fixed">
     <parent link="world" />
     <child link="agv2_load_point_frame" />
-    <origin xyz="0.3 -3.3 0" rpy="0 0 0" />
+    <origin xyz="0.3 -3.3 0.75" rpy="0 0 0" />
+  </joint>
+  <link name="belt_frame" />
+  <joint name="belt_joint" type="fixed">
+    <parent link="world" />
+    <child link="belt_frame" />
+    <origin xyz="1.24 0.15 0.91" rpy="0 0 0" />
   </joint>
 
 

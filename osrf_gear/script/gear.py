@@ -61,6 +61,8 @@ default_bin_origins = {
     'bin7': [-0.3, 0.23, 0],
     'bin8': [-0.3, 0.995, 0],
 }
+bin_width = 0.6
+bin_height = 0.72
 configurable_options = {
     'insert_models_over_bins': False,
     'disable_shadows': False,
@@ -260,14 +262,12 @@ def create_models_to_spawn_infos(models_to_spawn_dict):
 
 def create_models_over_bins_infos(models_over_bins_dict):
     models_to_spawn_infos = {}
-    bin_width = 0.6
-    bin_height = 0.75
     for bin_name, bin_dict in models_over_bins_dict.items():
         if bin_name in default_bin_origins:
             offset_xyz = [
                 default_bin_origins[bin_name][0] - bin_width / 2,
                 default_bin_origins[bin_name][1] - bin_width / 2,
-                bin_height]
+                bin_height + 0.03]
             # Allow the origin of the bin to be over-written
             if 'xyz' in bin_dict:
                 offset_xyz = bin_dict['xyz']
@@ -407,6 +407,7 @@ def prepare_template_data(config_dict):
         'orders': {},
         'options': {},
         'time_limit': default_time_limit,
+        'bin_height': bin_height,
     }
     # Process the options first as they may affect the processing of the rest
     options_dict = get_field_with_default(config_dict, 'options', {})
