@@ -81,7 +81,7 @@ def prepare_arguments(parser):
         help='print generated files to stdout, but do not write them to disk')
     add('-v', '--verbose', action='store_true', default=False,
         help='output additional logging to console')
-    add('-o', '--output', default=os.getcwd(),
+    add('-o', '--output', default='/tmp/ariac/',
         help='directory in which to output the generated files')
     mex_group = parser.add_mutually_exclusive_group(required=False)
     add = mex_group.add_argument
