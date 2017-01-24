@@ -60,13 +60,13 @@ options:
 
 belt_parts:
   belt_model_type1:
-    2.9:
+    0.9:
       pose:
-        xyz: [0.0, 0.1, 0.1]
+        xyz: [0.0, 0.175, 0.1]
         rpy: [0, 0, 'pi/2']
 
   belt_model_type2:
-    3.0:
+    1.9:
       pose:
         xyz: [0.0, -0.1, 0.1]
         rpy: [0, 0, 'pi/2']
