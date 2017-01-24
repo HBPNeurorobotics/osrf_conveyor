@@ -383,7 +383,7 @@
     <!-- an invisible conveyor belt -->
     <model name="conveyor_belt">
       <static>true</static>
-      <pose>1.21 5 0.81 0 0 1.57</pose>
+      <pose>1.21 5 0.8126 0 0 1.5708</pose>
       <plugin name="conveyor_belt_plugin" filename="libROSConveyorBeltPlugin.so">
         <robot_namespace>/ariac</robot_namespace>
         <belt_start_velocity>0.0</belt_start_velocity>
