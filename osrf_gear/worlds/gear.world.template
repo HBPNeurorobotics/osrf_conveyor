@@ -299,12 +299,13 @@
 
 
 
+@{belt_parts_loop = False}@
 @[if belt_parts]@
 <!-- Simulation time at which the last object is spawned (per cycle) -->
 @{max_spawn_time = max([max(times.keys()) for times in belt_parts.values()])}@
 <!-- Calculate the number of population cycles to run before the end.
      Equivalent to math.ceil(time_limit / max_spawn_time) (without math) -->
-@{belt_population_cycles = -(-time_limit // max_spawn_time)}
+@{belt_population_cycles = -(-time_limit // max_spawn_time) if belt_parts_loop else 1}
 @[for obj_type, spawn_times in belt_parts.items()]@
     <!-- Pool of @(obj_type) objects -->
     <population name="@(obj_type)_population">
@@ -437,7 +438,7 @@
       <activation_topic>/ariac/populate_belt</activation_topic>
       <control_topic>/ariac/population/control</control_topic>
       <state_topic>/ariac/population/state</state_topic>
-      <loop_forever>true</loop_forever>
+      <loop_forever>@("true" if belt_parts_loop else "false")</loop_forever>
       <frame>conveyor_belt</frame>
       <object_sequence>
 @[for part_name, spawn_times in belt_parts.items()]@
