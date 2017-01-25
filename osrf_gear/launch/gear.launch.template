@@ -18,7 +18,7 @@
   <node name="startup_ariac" pkg="osrf_gear" type="startup.sh" output="screen" />
 
   <!-- startup simulated world -->
-  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+  <include file="$(find osrf_gear)/launch/empty_world.launch">
     <arg name="world_name" default="$(arg world_path)"/>
     <!-- Always start paused because the arm spawn needs it that way. -->
     <arg name="paused" value="true"/>

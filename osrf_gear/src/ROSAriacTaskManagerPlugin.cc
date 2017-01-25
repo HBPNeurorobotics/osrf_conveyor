@@ -119,6 +119,9 @@ namespace gazebo
     /// \brief Connection event.
     public: event::ConnectionPtr connection;
 
+    /// \brief Publish Gazebo server control messages.
+    public: transport::PublisherPtr serverControlPub;
+
     /// \brief The time the last update was called.
     public: common::Time lastUpdateTime;
 
@@ -450,6 +453,9 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
 
   this->dataPtr->gameStartTime = this->dataPtr->world->GetSimTime();
 
+  this->dataPtr->serverControlPub =
+    this->dataPtr->node->Advertise<msgs::ServerControl>("/gazebo/server/control");
+
   this->dataPtr->connection = event::Events::ConnectWorldUpdateEnd(
     boost::bind(&ROSAriacTaskManagerPlugin::OnUpdate, this));
 }
@@ -542,6 +548,15 @@ void ROSAriacTaskManagerPlugin::OnUpdate()
     ROS_INFO_STREAM(logMessage.str().c_str());
     gzdbg << logMessage.str() << std::endl;
     this->dataPtr->currentState = "done";
+
+    auto v = std::getenv("ARIAC_EXIT_ON_COMPLETION");
+    if (v)
+    {
+      msgs::ServerControl msg;
+      msg.set_stop(true);
+      this->dataPtr->serverControlPub->Publish(msg);
+      gazebo::shutdown();
+    }
   }
 
   this->dataPtr->lastUpdateTime = currentSimTime;
