@@ -116,8 +116,12 @@ bool ROSAGVPlugin::OnCommand(
   osrf_gear::AGVControl::Request &_req,
   osrf_gear::AGVControl::Response &_res)
 {
+  bool triggerAnim = false;
+  // TODO(dhood): re-enable animation once items don't fall off tray
+  /*
   bool triggerAnim = this->agvName == "agv1" &&
     (anim->GetTime() <= 0.0 || anim->GetTime() >= anim->GetLength());
+  */
 
   if (triggerAnim)
   {
