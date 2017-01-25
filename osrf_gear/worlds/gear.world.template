@@ -250,9 +250,11 @@
         <sensor name="laser_profiler" type="ray">
           <pose>0 0 0.06 0 0 0</pose>
           <plugin name="proximity_ray_plugin" filename="libgazebo_ros_laser.so" >
-            <robotNamespace>ariac</robotNamespace>
+            <!-- If the namespace is set to ariac, the frame will also be namespaced -->
+            <!-- So, we manually namespace the topic only -->
+            <robotNamespace>/</robotNamespace>
             <frameName>@(name)_frame</frameName>
-            <topicName>@(name)</topicName>
+            <topicName>ariac/@(name)</topicName>
           </plugin>
           <ray>
             <range>
