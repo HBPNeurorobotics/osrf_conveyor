@@ -83,7 +83,7 @@ def main():
     comp_class = MyCompetitionClass()
     order_sub = rospy.Subscriber("/ariac/orders", Order, comp_class.order_callback)
     joint_state_sub = rospy.Subscriber(
-        "/joint_states", JointState, comp_class.joint_state_callback)
+        "/ariac/joint_states", JointState, comp_class.joint_state_callback)
 
     rospy.loginfo("Setup complete.")
     start_competition()

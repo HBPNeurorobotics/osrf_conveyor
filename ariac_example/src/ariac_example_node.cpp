@@ -198,14 +198,14 @@ int main(int argc, char ** argv) {
     &MyCompetitionClass::joint_state_callback, &comp_class);
 
   // %Tag(SUB_FUNC)%
-  // Subscribe to the '/ariac/proximity_sensor_1_changed' topic.
+  // Subscribe to the '/ariac/proximity_sensor_1_change' topic.
   ros::Subscriber proximity_sensor_subscriber = node.subscribe(
-    "/ariac/proximity_sensor_1_changed", 10, proximity_sensor_callback);
+    "/ariac/proximity_sensor_1_change", 10, proximity_sensor_callback);
   // %EndTag(SUB_FUNC)%
 
-  // Subscribe to the '/ariac/break_beam_1_changed' topic.
+  // Subscribe to the '/ariac/break_beam_1_change' topic.
   ros::Subscriber break_beam_subscriber = node.subscribe(
-    "/ariac/break_beam_1_changed", 10,
+    "/ariac/break_beam_1_change", 10,
     &MyCompetitionClass::break_beam_callback, &comp_class);
 
   // Subscribe to the '/ariac/logical_camera_1' topic.
