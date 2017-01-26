@@ -113,13 +113,22 @@ public:
   void send_arm_to_zero_state() {
     // Create a message to send.
     trajectory_msgs::JointTrajectory msg;
-    // Copy the joint names from the msg off the '/ariac/joint_states' topic.
-    msg.joint_names = current_joint_states_.name;
+
+    // Fill the names of the joints to be controlled.
+    // Note that the vacuum_gripper_joint is not controllable.
+    msg.joint_names.clear();
+    msg.joint_names.push_back("elbow_joint");
+    msg.joint_names.push_back("linear_arm_actuator_joint");
+    msg.joint_names.push_back("shoulder_lift_joint");
+    msg.joint_names.push_back("shoulder_pan_joint");
+    msg.joint_names.push_back("wrist_1_joint");
+    msg.joint_names.push_back("wrist_2_joint");
+    msg.joint_names.push_back("wrist_3_joint");
     // Create one point in the trajectory.
     msg.points.resize(1);
     // Resize the vector to the same length as the joint names.
     // Values are initialized to 0.
-    msg.points[0].positions.resize(current_joint_states_.name.size(), 0.0);
+    msg.points[0].positions.resize(msg.joint_names.size(), 0.0);
     // How long to take getting to the point (floating point seconds).
     msg.points[0].time_from_start = ros::Duration(0.001);
     ROS_INFO_STREAM("Sending command:\n" << msg);
