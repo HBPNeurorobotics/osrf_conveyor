@@ -68,5 +68,5 @@ sensors:
   laser_profiler:
     type: laser_profiler
     pose:
-      xyz: [1.21816, 4, 1.265]
+      xyz: [1.21, 4, 1.64]
       rpy: ['-pi', 'pi/2', 'pi/2']
