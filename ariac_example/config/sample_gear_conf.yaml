@@ -1,7 +1,5 @@
 arm:
   type: ur10
-  initial_joint_states:
-    linear_arm_actuator_joint: 1
 sensors:
   break_beam_1:
     type: break_beam

@@ -37,12 +37,3 @@ models_to_spawn:
         pose:
           xyz: [0.1, 2.5, 1.6]
           rpy: [0, 0, 0]
-
-# Competitor trial configuration options
-
-arm:
-  type: ur10
-  initial_joint_states:
-    wrist_1_joint: 1.3
-    linear_arm_actuator_joint: 1.85
-    shoulder_pan_joint: 1.63

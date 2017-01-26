@@ -188,18 +188,12 @@ def create_arm_info(arm_dict):
         print("Error: arm type '{0}' is not one of the valid arm entries: {1}"
               .format(arm_type, arm_configs), file=sys.stderr)
         sys.exit(1)
-    default_joint_states = arm_configs[arm_type]['default_initial_joint_states']
-    merged_initial_joint_states = dict(default_joint_states)
-    if 'initial_joint_states' in arm_dict:
-        initial_joint_states = arm_dict['initial_joint_states']
-        for k, v in initial_joint_states.items():
-            if k not in merged_initial_joint_states:
-                print("Error: given joint name '{0}' is not one of the known joint "
-                    "states for the '{1}' type arm: {2}".format(k, arm_type, default_joint_states),
-                    file=sys.stderr)
-                sys.exit(1)
-            merged_initial_joint_states[k] = v
-    return ArmInfo(arm_type, merged_initial_joint_states)
+    for key in arm_dict:
+        if key != 'type':
+            print("Warning: ignoring unknown entry in '{0}': {1}"
+                    .format('arm', key), file=sys.stderr)
+    initial_joint_states = arm_configs[arm_type]['default_initial_joint_states']
+    return ArmInfo(arm_type, initial_joint_states)
 
 
 def create_pose_info(pose_dict):
