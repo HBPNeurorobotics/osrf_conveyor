@@ -101,5 +101,10 @@
       </visual>
     </link>
 
+    <joint name="joint" type="fixed">
+      <parent>link</parent>
+      <child>asymmetric_mark</child>
+    </joint>
+
   </model>
 </sdf>
