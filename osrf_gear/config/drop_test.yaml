@@ -1,39 +1,47 @@
 # Competition configuration options
 
 drops:
-  drop_region:
-    min:
-      xyz: [0.0, 2.7, 0.6]
-    max:
-      xyz: [0.6, 3.5, 2.0]
-  dropped_parts:
+  drop_regions:
     unreachable:
-      part_type_to_drop: order_part1
+      min:
+        xyz: [0.0, 2.7, 0.6]
+      max:
+        xyz: [0.6, 3.5, 2.0]
       destination:
         xyz: [0.6, 3.1, 1.0]
+      part_type_to_drop: order_part1
     reachable:
-      part_type_to_drop: order_part2
+      min:
+        xyz: [0.0, 2.7, 0.6]
+      max:
+        xyz: [0.6, 3.5, 2.0]
       destination:
         xyz: [0.9, 2.8, 0.9]
         rpy: [0, 0, 0.5]
+      part_type_to_drop: order_part2
     impeding:
-      part_type_to_drop: order_part3
+      min:
+        xyz: [0.0, 2.7, 0.6]
+      max:
+        xyz: [0.6, 3.5, 2.0]
       destination:
         xyz: [0.2, 3.0, 0.9]
         rpy: [0, 0, 0.5]
+      part_type_to_drop: order_part3
 
 options:
-  spawn_extra_models: true # start with part in gripper
+  insert_models_over_bins: true
   model_type_aliases:
     order_part1: part4
-    order_part2: part3
-    order_part3: part4
+    order_part3: piston_rod_part
+    order_part2: part4
 
-models_to_spawn:
-  world:
+models_over_bins:
+  bin7:
     models:
-      part_to_drop:
-        type: order_part1
-        pose:
-          xyz: [0.1, 2.5, 1.6]
-          rpy: [0, 0, 0]
+      piston_rod_part:
+        xyz_start: [0.1, 0.1, 0.0]
+        xyz_end: [0.5, 0.5, 0.0]
+        rpy: [0, 0, 'pi/4']
+        num_models_x: 3
+        num_models_y: 4

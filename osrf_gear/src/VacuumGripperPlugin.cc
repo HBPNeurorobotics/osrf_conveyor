@@ -45,15 +45,20 @@ namespace gazebo
   /// \brief Private data for the VacuumGripperPlugin class
   struct VacuumGripperPluginPrivate
   {
-    /// \brief Class to store information about each object to be dropped.
-    public: class Object
+    /// \brief Class to store information about an object to be dropped.
+    /// If the attached object is scheduled to be dropped, the drop will
+    /// occur when the object enters inside the dropRegion. The object will
+    /// be relocated to the respective pose.
+    public: class DropObject
             {
               /// \brief Equality operator, result = this == _obj
               /// \param[in] _obj Object to check for equality
               /// \return true if this == _obj
-              public: bool operator ==(const Object &_obj) const
+              public: bool operator ==(const DropObject &_obj) const
               {
-                return this->type == _obj.type;
+                return this->type == _obj.type && \
+                  this->dropRegion == _obj.dropRegion && \
+                  this->destination == _obj.destination;
               }
 
               /// \brief Stream insertion operator.
@@ -61,9 +66,10 @@ namespace gazebo
               /// \param[in] _obj object to output
               /// \return The output stream
               public: friend std::ostream &operator<<(std::ostream &_out,
-                                                      const Object &_obj)
+                                                      const DropObject &_obj)
               {
                 _out << _obj.type << std::endl;
+                _out << _obj.dropRegion << std::endl;
                 _out << "  Dst: [" << _obj.destination << "]" << std::endl;
                 return _out;
               }
@@ -71,12 +77,18 @@ namespace gazebo
               /// \brief Object type.
               public: std::string type;
 
-              /// \brief Destination where the object is teleported after a drop
+              /// \brief Object type.
+              public: math::Box dropRegion;
+
+              /// \brief Destination where objects are teleported to after a drop
               public: math::Pose destination;
             };
 
+    /// \brief Collection of objects that have been dropped.
+    public: std::vector<std::string> droppedObjects;
+
     /// \brief Collection of objects to be dropped.
-    public: std::vector<Object> drops;
+    public: std::vector<DropObject> objectsToDrop;
 
     /// \brief Model that contains this gripper.
     public: physics::ModelPtr model;
@@ -143,15 +155,11 @@ namespace gazebo
     /// \brief Whether there's an ongoing drop.
     public: bool dropPending = false;
 
+    /// \brief Attached model type.
+    public: std::string attachedObjType;
+
     /// \brief Attached model to be dropped.
     public: physics::ModelPtr dropAttachedModel;
-
-    /// \brief If the attached object is scheduled to be dropped, the drop will
-    /// occur when the object enters inside this box.
-    public: math::Box dropRegion;
-
-    /// \brief The current object scheduled for dropping.
-    public: Object dropCurrentObject;
   };
 }
 
@@ -217,76 +225,69 @@ void VacuumGripperPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   {
     sdf::ElementPtr dropsElem = _sdf->GetElement("drops");
 
-    if (!dropsElem->HasElement("drop_region"))
+    if (!dropsElem->HasElement("drop_regions"))
     {
-      gzerr << "VacuumGripperPlugin: Unable to find <drop_region> elements in "
+      gzerr << "VacuumGripperPlugin: Unable to find <drop_regions> element in "
             << "the <drops> section\n";
       return;
     }
 
-    sdf::ElementPtr dropRegionElem = dropsElem->GetElement("drop_region");
-
-    if (!dropRegionElem->HasElement("min"))
+    sdf::ElementPtr dropRegionsElem = dropsElem->GetElement("drop_regions");
+    sdf::ElementPtr dropRegionElem = NULL;
+    if (dropRegionsElem->HasElement("drop_region"))
     {
-      gzerr << "VacuumGripperPlugin: Unable to find <min> elements in "
-            << "the <drop_region> section\n";
-      return;
+      dropRegionElem = dropRegionsElem->GetElement("drop_region");
     }
-
-    sdf::ElementPtr minElem = dropRegionElem->GetElement("min");
-    gazebo::math::Vector3 min = dropRegionElem->Get<math::Vector3>("min");
-
-    if (!dropRegionElem->HasElement("max"))
+    while (dropRegionElem)
     {
-      gzerr << "VacuumGripperPlugin: Unable to find <max> elements in "
-            << "the <drop_region> section\n";
-      return;
-    }
-
-    sdf::ElementPtr maxElem = dropRegionElem->GetElement("max");
-    gazebo::math::Vector3 max = dropRegionElem->Get<math::Vector3>("max");
-
-    this->dataPtr->dropRegion.min = min;
-    this->dataPtr->dropRegion.max = max;
-
-    if (!dropsElem->HasElement("object"))
-    {
-      gzerr << "VacuumGripperPlugin: Unable to find <object> elements in the "
-            << "<drops> section\n";
-    }
-    else
-    {
-      sdf::ElementPtr objectElem = dropsElem->GetElement("object");
-      while (objectElem)
+        if (!dropRegionElem->HasElement("min"))
       {
-        // Parse the object type.
-        if (!objectElem->HasElement("type"))
-        {
-          gzerr << "VacuumGripperPlugin: Unable to find <type> in object.\n";
-          objectElem = objectElem->GetNextElement("object");
-          continue;
-        }
-        sdf::ElementPtr typeElement = objectElem->GetElement("type");
-        std::string type = typeElement->Get<std::string>();
-
-        // Parse the destination.
-        if (!objectElem->HasElement("destination"))
-        {
-          gzerr << "VacuumGripperPlugin: Unable to find <destination> in "
-                << "object\n";
-          objectElem = objectElem->GetNextElement("destination");
-          continue;
-        }
-        sdf::ElementPtr dstElement = objectElem->GetElement("destination");
-        math::Pose destination = dstElement->Get<math::Pose>();
-
-        // Add the object to the set.
-        VacuumGripperPluginPrivate::Object obj = {type, destination};
-        this->dataPtr->drops.push_back(obj);
-
-        objectElem = objectElem->GetNextElement("object");
+        gzerr << "VacuumGripperPlugin: Unable to find <min> elements in "
+              << "the <drop_region> section\n";
+        return;
       }
+
+      sdf::ElementPtr minElem = dropRegionElem->GetElement("min");
+      gazebo::math::Vector3 min = dropRegionElem->Get<math::Vector3>("min");
+
+      if (!dropRegionElem->HasElement("max"))
+      {
+        gzerr << "VacuumGripperPlugin: Unable to find <max> elements in "
+              << "the <drop_region> section\n";
+        return;
+      }
+
+      sdf::ElementPtr maxElem = dropRegionElem->GetElement("max");
+      gazebo::math::Vector3 max = dropRegionElem->Get<math::Vector3>("max");
+
+      // Parse the destination.
+      if (!dropRegionElem->HasElement("destination"))
+      {
+        gzerr << "VacuumGripperPlugin: Unable to find <destination> in "
+              << "drop region\n";
+        dropRegionElem = dropRegionElem->GetNextElement("drop_region");
+        continue;
+      }
+      sdf::ElementPtr dstElement = dropRegionElem->GetElement("destination");
+
+      // Parse the object type.
+      if (!dropRegionElem->HasElement("type"))
+      {
+        gzerr << "VacuumGripperPlugin: Unable to find <type> in object.\n";
+        dropRegionElem = dropRegionElem->GetNextElement("drop_region");
+        continue;
+      }
+      sdf::ElementPtr typeElement = dropRegionElem->GetElement("type");
+      std::string type = typeElement->Get<std::string>();
+
+      math::Box dropRegion = math::Box(min, max);
+      math::Pose destination = dstElement->Get<math::Pose>();
+      VacuumGripperPluginPrivate::DropObject dropObject {type, dropRegion, destination};
+      this->dataPtr->objectsToDrop.push_back(dropObject);
+
+      dropRegionElem = dropRegionElem->GetNextElement("drop_region");
     }
+
   }
 
   // Find out the collision elements of the suction cup
@@ -399,17 +400,24 @@ void VacuumGripperPlugin::OnUpdate()
   if (this->dataPtr->attached && this->dataPtr->dropPending)
   {
     auto objPose = this->dataPtr->dropAttachedModel->GetWorldPose();
-    if (this->dataPtr->dropRegion.Contains(objPose.pos))
+    for (const auto dropObject : this->dataPtr->objectsToDrop)
     {
-      // Drop the object.
-      this->HandleDetach();
+      if (dropObject.type == this->dataPtr->attachedObjType && \
+        dropObject.dropRegion.Contains(objPose.pos))
+      {
+        // Drop the object.
+        this->HandleDetach();
 
-      // Teleport it to the destination.
-      this->dataPtr->dropAttachedModel->SetWorldPose(
-        this->dataPtr->dropCurrentObject.destination);
+        // Teleport it to the destination.
+        this->dataPtr->dropAttachedModel->SetWorldPose(
+          dropObject.destination);
 
-      this->dataPtr->dropPending = false;
-      gzdbg << "Object dropped and teleported" << std::endl;
+        this->dataPtr->droppedObjects.push_back(this->dataPtr->attachedObjType);
+
+        this->dataPtr->dropPending = false;
+        gzdbg << "Object dropped and teleported" << std::endl;
+        break;
+      }
     }
   }
 
@@ -491,19 +499,12 @@ void VacuumGripperPlugin::HandleAttach()
 
         // Check if the object should drop.
         auto name = cc[iter->first]->GetLink()->GetModel()->GetName();
-        auto type = ariac::DetermineModelType(name);
-        math::Pose dst;
-        VacuumGripperPluginPrivate::Object attachedObj = {type, dst};
-        auto found = std::find(std::begin(this->dataPtr->drops),
-                               std::end(this->dataPtr->drops), attachedObj);
-        if (found != std::end(this->dataPtr->drops))
+        this->dataPtr->attachedObjType = ariac::DetermineModelType(name);
+        auto found = std::find(std::begin(this->dataPtr->droppedObjects),
+                       std::end(this->dataPtr->droppedObjects), this->dataPtr->attachedObjType);
+        bool alreadyDropped = found != std::end(this->dataPtr->droppedObjects);
+        if (!alreadyDropped)
         {
-          // Save the object that is scheduled for dropping.
-          this->dataPtr->dropCurrentObject = *found;
-
-          // Remove obj from drops.
-          this->dataPtr->drops.erase(found);
-
           this->dataPtr->dropPending = true;
           this->dataPtr->dropAttachedModel =
             cc[iter->first]->GetLink()->GetModel();

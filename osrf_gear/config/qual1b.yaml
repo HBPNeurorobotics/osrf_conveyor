@@ -41,16 +41,15 @@ orders:
           rpy: [0, 0, 0]
 
 drops:
-  drop_region:
-    min:
-      xyz: [0.0, 2.7, 0.6]
-    max:
-      xyz: [0.6, 3.5, 2.0]
-  dropped_parts:
-    drop1:
-      part_type_to_drop: order_part1
+  drop_regions:
+    agv1:
+      min:
+        xyz: [0.0, 2.7, 0.6]
+      max:
+        xyz: [0.6, 3.5, 2.0]
       destination:
         xyz: [0.6, 3.1, 1.0]
+      part_type_to_drop: order_part1
 
 models_over_bins:
   bin1:

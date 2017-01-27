@@ -139,15 +139,11 @@ class PoseInfo:
 
 
 class DropRegionInfo:
-    def __init__(self, drop_region_min, drop_region_max):
+    def __init__(self, drop_region_min, drop_region_max, destination, model_type):
         self.min = [str(f) for f in drop_region_min]
         self.max = [str(f) for f in drop_region_max]
-
-
-class DroppedPartInfo:
-    def __init__(self, model_type, destination):
-        self.type = model_type
         self.destination = destination
+        self.type = model_type
 
 
 def get_field_with_default(data_dict, entry, default_value):
@@ -318,23 +314,19 @@ def create_belt_part_infos(belt_parts_dict):
 
 def create_drops_info(drops_dict):
     drops_info = {}
-    drop_region = get_required_field('drops', drops_dict, 'drop_region')
-    drop_region_min = get_required_field('drop_region', drop_region, 'min')
-    drop_region_min_xyz = get_required_field('min', drop_region_min, 'xyz')
-    drop_region_max = get_required_field('drop_region', drop_region, 'max')
-    drop_region_max_xyz = get_required_field('max', drop_region_max, 'xyz')
-
-    drops_info['drop_region'] = DropRegionInfo(drop_region_min_xyz, drop_region_max_xyz)
-
-    drops_dict = get_required_field('drops', drops_dict, 'dropped_parts')
-    dropped_part_infos = {}
-    for drop_name, dropped_part_dict in drops_dict.items():
-        part_type = get_required_field(drop_name, dropped_part_dict, 'part_type_to_drop')
-        part_type = replace_type_aliases(part_type)
-        destination_info = get_required_field(drop_name, dropped_part_dict, 'destination')
+    drop_region_infos = []
+    drop_regions_dict = get_required_field('drops', drops_dict, 'drop_regions')
+    for drop_name, drop_region_dict in drop_regions_dict.items():
+        drop_region_min = get_required_field('drop_region', drop_region_dict, 'min')
+        drop_region_min_xyz = get_required_field('min', drop_region_min, 'xyz')
+        drop_region_max = get_required_field('drop_region', drop_region_dict, 'max')
+        drop_region_max_xyz = get_required_field('max', drop_region_max, 'xyz')
+        destination_info = get_required_field('drop_region', drop_region_dict, 'destination')
         destination = create_pose_info(destination_info)
-        dropped_part_infos[drop_name] = DroppedPartInfo(part_type, destination)
-    drops_info['dropped_parts'] = dropped_part_infos
+        part_type = get_required_field('drop_region', drop_region_dict, 'part_type_to_drop')
+        part_type = replace_type_aliases(part_type)
+        drop_region_infos.append(DropRegionInfo(drop_region_min_xyz, drop_region_max_xyz, destination, part_type))
+    drops_info['drop_regions'] = drop_region_infos
     return drops_info
 
 
