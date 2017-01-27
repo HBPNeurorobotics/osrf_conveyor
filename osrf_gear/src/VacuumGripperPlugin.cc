@@ -380,6 +380,10 @@ void VacuumGripperPlugin::OnUpdate()
   }
 
   // @todo: should package the decision into a function
+  if (this->dataPtr->contacts.size() > 0)
+  {
+    gzdbg << "Number of points in contact with gripper: " << this->dataPtr->contacts.size() << std::endl;
+  }
   if (this->dataPtr->contacts.size() >= this->dataPtr->minContactCount)
   {
     this->dataPtr->posCount++;
