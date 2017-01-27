@@ -451,8 +451,6 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
     "/ariac/gripper/state", 10, &AriacScorer::OnGripperStateReceived,
     &this->dataPtr->ariacScorer);
 
-  this->dataPtr->gameStartTime = this->dataPtr->world->GetSimTime();
-
   this->dataPtr->serverControlPub =
     this->dataPtr->node->Advertise<msgs::ServerControl>("/gazebo/server/control");
 
@@ -539,8 +537,11 @@ void ROSAriacTaskManagerPlugin::OnUpdate()
   }
   else if (this->dataPtr->currentState == "end_game")
   {
+    if (this->dataPtr->gameStartTime != common::Time())
+    {
       this->dataPtr->currentGameScore.totalProcessTime =
         (currentSimTime - this->dataPtr->gameStartTime).Double();
+    }
     std::ostringstream logMessage;
     logMessage << "End of trial. Final score: " << \
       this->dataPtr->currentGameScore.total() << "\nScore breakdown:\n" << \
@@ -622,14 +623,9 @@ bool ROSAriacTaskManagerPlugin::HandleEndService(
   (void)req;
   std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
 
-  if (this->dataPtr->currentState == "go") {
-    this->dataPtr->currentState = "end_game";
-    res.success = true;
-    res.message = "competition ended successfully!";
-    return true;
-  }
-  res.success = false;
-  res.message = "cannot end if not in 'go' state";
+  this->dataPtr->currentState = "end_game";
+  res.success = true;
+  res.message = "competition ended successfully!";
   return true;
 }
 
