@@ -60,60 +60,6 @@ drops:
       part_type_to_drop: order_part1
 
 models_over_bins:
-  bin1:
-    models:
-      gear_part:
-        xyz_start: [0.1, 0.1, 0.0]
-        xyz_end: [0.5, 0.5, 0.0]
-        rpy: [0, 0, 0]
-        num_models_x: 5
-        num_models_y: 5
-
-  bin2:
-    models:
-      piston_rod_part:
-        xyz_start: [0.1, 0.1, 0.0]
-        xyz_end: [0.5, 0.5, 0.0]
-        rpy: [0, 0, 'pi/4']
-        num_models_x: 3
-        num_models_y: 4
-
-  bin3:
-    models:
-      pulley_part:
-        xyz_start: [0.15, 0.15, 0.0]
-        xyz_end: [0.45, 0.45, 0.0]
-        rpy: [0, 0, 0]
-        num_models_x: 2
-        num_models_y: 2
-
-  bin4:
-    models:
-       part4:
-        xyz_start: [0.1, 0.1, 0.0]
-        xyz_end: [0.5, 0.5, 0.0]
-        rpy: [0, 0, 0]
-        num_models_x: 4
-        num_models_y: 5
-
-  bin5:
-    models:
-      gasket_part:
-        xyz_start: [0.15, 0.15, 0.0]
-        xyz_end: [0.45, 0.45, 0.0]
-        rpy: [0, 0, 'pi/4']
-        num_models_x: 2
-        num_models_y: 2
-
-  bin6:
-    models:
-      pulley_part:
-        xyz_start: [0.15, 0.15, 0.0]
-        xyz_end: [0.45, 0.45, 0.0]
-        rpy: [0, 0, 0]
-        num_models_x: 2
-        num_models_y: 2
-
   bin7:
     models:
       piston_rod_part:
@@ -129,7 +75,7 @@ models_over_bins:
         xyz_start: [0.1, 0.1, 0.0]
         xyz_end: [0.5, 0.5, 0.0]
         rpy: [0, 0, 0]
-        num_models_x: 5
-        num_models_y: 5
+        num_models_x: 4
+        num_models_y: 4
 
 time_limit: -1
