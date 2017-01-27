@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <sdf version="1.6">
-  <model name="laser-profiler-cognex-ds1101">
+  <model name="laser-profiler-cognex-ds1300">
     <link name="link">
       <visual name="body">
         <geometry>
@@ -18,16 +18,16 @@
         </plugin>
         <ray>
           <range>
-            <min>0.135</min>
-            <max>0.355</max>
+            <min>0.181</min>
+            <max>0.725</max>
             <resolution>0.001</resolution>
           </range>
           <scan>
             <horizontal>
               <samples>100</samples>
               <resolution>1</resolution>
-              <min_angle>-0.235</min_angle>
-              <max_angle>0.235</max_angle>
+              <min_angle>-0.251</min_angle>
+              <max_angle>0.251</max_angle>
             </horizontal>
           </scan>
 
