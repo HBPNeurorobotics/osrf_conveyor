@@ -5,6 +5,7 @@
 options:
   insert_models_over_bins: true
   fill_demo_tray: false
+  gazebo_state_logging: true
   model_type_aliases:
     order_part1: piston_rod_part
     order_part2: gear_part
