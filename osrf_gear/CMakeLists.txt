@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
   std_srvs
+  tf
   geometry_msgs
   message_generation
 )
@@ -53,7 +54,10 @@ generate_messages(
 )
 
 catkin_package(
-  CATKIN_DEPENDS message_runtime std_srvs
+  CATKIN_DEPENDS
+  message_runtime
+  std_srvs
+  tf
 )
 
 ###########
@@ -271,7 +275,7 @@ set(ros_logical_camera_plugin_name ROSLogicalCameraPlugin)
 add_library(${ros_logical_camera_plugin_name} src/ROSLogicalCameraPlugin.cc)
 target_link_libraries(${ros_logical_camera_plugin_name}
   ${GAZEBO_LIBRARIES}
-  ${roscpp_LIBRARIES}
+  ${catkin_LIBRARIES}
 )
 add_dependencies(${ros_logical_camera_plugin_name}
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
