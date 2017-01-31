@@ -20,7 +20,6 @@
 #include "osrf_gear/ARIAC.hh"
 #include "osrf_gear/LogicalCameraImage.h"
 
-#include <gazebo/math/Pose.hh>
 #include <gazebo/physics/Link.hh>
 #include <gazebo/physics/Model.hh>
 #include "gazebo/sensors/Noise.hh"

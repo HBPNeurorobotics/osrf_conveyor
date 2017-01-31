@@ -23,6 +23,7 @@
 
 #include <sdf/sdf.hh>
 
+#include "gazebo/math/Pose.hh"
 #include "gazebo/common/Plugin.hh"
 #include "gazebo/common/UpdateInfo.hh"
 #include "gazebo/msgs/logical_camera_image.pb.h"
