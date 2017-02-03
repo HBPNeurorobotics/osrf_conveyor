@@ -41,9 +41,7 @@ namespace gazebo
     /// \param[in] _sdf Pointer to the SDF element of the plugin.
     public: void Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf);
 
-    /// \brief Receives requests on the conveyor belt's topic.
-    /// \param[in] _req The desired state of the conveyor belt.
-    /// \param[in] _res If the service succeeded or not.
+    /// \brief Receives requests on the AGV's control topic.
     public: bool OnCommand(
       osrf_gear::AGVControl::Request &_req,
       osrf_gear::AGVControl::Response &_res);
@@ -62,6 +60,9 @@ namespace gazebo
 
     /// \brief Client for submitting trays for inspection
     private: ros::ServiceClient rosSubmitTrayClient;
+
+    /// \brief Client for clearing this AGV's tray
+    private: ros::ServiceClient rosClearTrayClient;
 
     /// \brief Robot animation
     private: gazebo::common::PoseAnimationPtr anim;

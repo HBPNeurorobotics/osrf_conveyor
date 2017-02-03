@@ -414,7 +414,7 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
     this->dataPtr->rosnode->advertiseService(compStartServiceName,
       &ROSAriacTaskManagerPlugin::HandleStartService, this);
 
-  // Service for starting the competition.
+  // Service for ending the competition.
   this->dataPtr->compEndServiceServer =
     this->dataPtr->rosnode->advertiseService(compEndServiceName,
       &ROSAriacTaskManagerPlugin::HandleEndService, this);

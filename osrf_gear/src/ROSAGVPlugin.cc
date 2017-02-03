@@ -14,10 +14,12 @@
  * limitations under the License.
  *
 */
+#include "ROSAGVPlugin.hh"
+
 #include <gazebo/common/common.hh>
 #include <ignition/math.hh>
 #include <osrf_gear/SubmitTray.h>
-#include "ROSAGVPlugin.hh"
+#include <std_srvs/Trigger.h>
 
 #include <string>
 
@@ -77,6 +79,11 @@ void ROSAGVPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf)
     submitTrayTopic = _sdf->Get<std::string>("submit_tray_service_name");
   ROS_DEBUG_STREAM("Using submit tray service topic: " << submitTrayTopic);
 
+  std::string clearTrayServiceName = "clear_tray";
+  if (_sdf->HasElement("clear_tray_service_name"))
+    clearTrayServiceName = _sdf->Get<std::string>("clear_tray_service_name");
+  ROS_DEBUG_STREAM("Using clear tray service topic: " << clearTrayServiceName);
+
   this->rosnode = new ros::NodeHandle(this->robotNamespace);
 
   this->anim.reset(new gazebo::common::PoseAnimation(this->agvName, 22, false));
@@ -109,6 +116,10 @@ void ROSAGVPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf)
   // Client for submitting trays for inspection.
   this->rosSubmitTrayClient =
     this->rosnode->serviceClient<osrf_gear::SubmitTray>(submitTrayTopic);
+
+  // Client for clearing trays.
+  this->rosClearTrayClient =
+    this->rosnode->serviceClient<std_srvs::Trigger>(clearTrayServiceName);
 }
 
 /////////////////////////////////////////////////
@@ -116,12 +127,8 @@ bool ROSAGVPlugin::OnCommand(
   osrf_gear::AGVControl::Request &_req,
   osrf_gear::AGVControl::Response &_res)
 {
-  bool triggerAnim = false;
-  // TODO(dhood): re-enable animation once items don't fall off tray
-  /*
   bool triggerAnim = this->agvName == "agv1" &&
     (anim->GetTime() <= 0.0 || anim->GetTime() >= anim->GetLength());
-  */
 
   if (triggerAnim)
   {
@@ -146,6 +153,14 @@ bool ROSAGVPlugin::OnCommand(
   }
   ROS_INFO_STREAM("Result of inspection: " << srv.response.inspection_result);
   _res.success = true;
+
+  if (!this->rosClearTrayClient.exists())
+  {
+    this->rosClearTrayClient.waitForExistence();
+  }
+  std_srvs::Trigger clear_srv;
+  this->rosClearTrayClient.call(clear_srv);
+
 
   return true;
 }

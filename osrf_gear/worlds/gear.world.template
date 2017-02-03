@@ -336,6 +336,7 @@
       </include>
       <plugin name="agv_plugin" filename="libROSAGVPlugin.so">
         <submit_tray_service_name>/ariac/submit_tray</submit_tray_service_name>
+        <clear_tray_service_name>/ariac/agv1/clear_tray</clear_tray_service_name>
         <index>1</index>
       </plugin>
 
