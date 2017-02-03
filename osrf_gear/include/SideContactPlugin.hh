@@ -112,6 +112,9 @@ namespace gazebo
     /// \brief Determine which models are in contact with the side of the parent link
     protected: virtual void CalculateContactingModels();
 
+    /// \brief Teleport all contacting models to a predetermined location
+    protected: virtual void ClearContactingModels();
+
     /// \brief Determine whether is time to give the plugin an update based on
     /// the plugin's update rate.
     protected: bool TimeToExecute();

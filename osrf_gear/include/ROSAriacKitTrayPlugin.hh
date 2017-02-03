@@ -24,6 +24,7 @@
 #include <string>
 
 #include <ros/ros.h>
+#include <std_srvs/Trigger.h>
 
 #include <gazebo/common/Plugin.hh>
 #include <gazebo/msgs/msgs.hh>
@@ -64,6 +65,10 @@ namespace gazebo
     /// \brief Publish the Kit ROS message
     protected: void PublishKitMsg();
 
+    /// \brief Service for clearing the tray
+    protected: bool HandleClearService(
+      std_srvs::Trigger::Request & req, std_srvs::Trigger::Response & res);
+
     /// \brief Kit which is currently on the tray
     protected: ariac::Kit currentKit;
 
@@ -76,9 +81,12 @@ namespace gazebo
     /// \brief Publisher for the kit state
     protected: ros::Publisher currentKitPub;
 
-    /// \brief Whether or not publish to the Kit ROS topic is enabled
+    /// \brief Whether or not the Kit ROS topic is enabled
     /// If unpermitted subscribers connect during the competition, publishing is disabled
     protected: bool publishingEnabled;
+
+    /// \brief Service that clears the tray
+    public: ros::ServiceServer clearTrayServer;
   };
 }
 #endif
