@@ -17,6 +17,8 @@
 #ifndef ROS_AGV_PLUGIN_HH_
 #define ROS_AGV_PLUGIN_HH_
 
+#include <memory>
+
 #include <sdf/sdf.hh>
 #include <gazebo/physics/physics.hh>
 #include <gazebo/common/Plugin.hh>
@@ -27,6 +29,9 @@
 
 namespace gazebo
 {
+  // Forward declare private data class
+  class ROSAGVPluginPrivate;
+
   /// \brief ROS implementation of the ConveyorBeltPlugin plugin
   class ROSAGVPlugin : public ModelPlugin
   {
@@ -46,29 +51,8 @@ namespace gazebo
       osrf_gear::AGVControl::Request &_req,
       osrf_gear::AGVControl::Response &_res);
 
-    /// \brief Name of the AGV
-    private: std::string agvName;
-
-    /// \brief for setting ROS name space
-    private: std::string robotNamespace;
-
-    /// \brief ros node handle
-    private: ros::NodeHandle *rosnode;
-
-    /// \brief Receives service calls for controlling the AGV
-    private: ros::ServiceServer rosService;
-
-    /// \brief Client for submitting trays for inspection
-    private: ros::ServiceClient rosSubmitTrayClient;
-
-    /// \brief Client for clearing this AGV's tray
-    private: ros::ServiceClient rosClearTrayClient;
-
-    /// \brief Robot animation
-    private: gazebo::common::PoseAnimationPtr anim;
-
-    /// \brief Pointer to the model
-    private: gazebo::physics::ModelPtr model;
+    /// \brief Private data pointer.
+    private: std::unique_ptr<ROSAGVPluginPrivate> dataPtr;
   };
 }
 #endif

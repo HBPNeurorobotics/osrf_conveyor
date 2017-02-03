@@ -23,19 +23,52 @@
 
 #include <string>
 
+namespace gazebo
+{
+  /// \internal
+  /// \brief Private data for the ROSAGVPlugin class.
+  struct ROSAGVPluginPrivate
+  {
+    /// \brief Name of the AGV
+    public: std::string agvName;
+
+    /// \brief for setting ROS name space
+    public: std::string robotNamespace;
+
+    /// \brief ros node handle
+    public: ros::NodeHandle *rosnode;
+
+    /// \brief Receives service calls for controlling the AGV
+    public: ros::ServiceServer rosService;
+
+    /// \brief Client for submitting trays for inspection
+    public: ros::ServiceClient rosSubmitTrayClient;
+
+    /// \brief Client for clearing this AGV's tray
+    public: ros::ServiceClient rosClearTrayClient;
+
+    /// \brief Robot animation
+    public: gazebo::common::PoseAnimationPtr anim;
+
+    /// \brief Pointer to the model
+    public: gazebo::physics::ModelPtr model;
+  };
+}
+
 using namespace gazebo;
 
 GZ_REGISTER_MODEL_PLUGIN(ROSAGVPlugin);
 
 /////////////////////////////////////////////////
 ROSAGVPlugin::ROSAGVPlugin()
+  : dataPtr(new ROSAGVPluginPrivate)
 {
 }
 
 /////////////////////////////////////////////////
 ROSAGVPlugin::~ROSAGVPlugin()
 {
-  this->rosnode->shutdown();
+  this->dataPtr->rosnode->shutdown();
 }
 
 /////////////////////////////////////////////////
@@ -53,10 +86,10 @@ void ROSAGVPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf)
   }
 
   // load parameters
-  this->robotNamespace = "";
+  this->dataPtr->robotNamespace = "";
   if (_sdf->HasElement("robotNamespace"))
   {
-    this->robotNamespace = _sdf->GetElement(
+    this->dataPtr->robotNamespace = _sdf->GetElement(
         "robotNamespace")->Get<std::string>() + "/";
   }
 
@@ -69,9 +102,9 @@ void ROSAGVPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf)
     return;
   }
 
-  this->agvName = std::string("agv") + index;
+  this->dataPtr->agvName = std::string("agv") + index;
 
-  std::string agvControlTopic = "/ariac/" + this->agvName;
+  std::string agvControlTopic = "/ariac/" + this->dataPtr->agvName;
   ROS_DEBUG_STREAM("Using AGV control service topic: " << agvControlTopic);
 
   std::string submitTrayTopic = "submit_tray";
@@ -84,42 +117,42 @@ void ROSAGVPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf)
     clearTrayServiceName = _sdf->Get<std::string>("clear_tray_service_name");
   ROS_DEBUG_STREAM("Using clear tray service topic: " << clearTrayServiceName);
 
-  this->rosnode = new ros::NodeHandle(this->robotNamespace);
+  this->dataPtr->rosnode = new ros::NodeHandle(this->dataPtr->robotNamespace);
 
-  this->anim.reset(new gazebo::common::PoseAnimation(this->agvName, 22, false));
+  this->dataPtr->anim.reset(new gazebo::common::PoseAnimation(this->dataPtr->agvName, 22, false));
 
-  gazebo::common::PoseKeyFrame *key = anim->CreateKeyFrame(0);
+  gazebo::common::PoseKeyFrame *key = this->dataPtr->anim->CreateKeyFrame(0);
   key->Translation(ignition::math::Vector3d(0.3, 3.3, 0));
   key->Rotation(ignition::math::Quaterniond(0, 0, 3.1415));
 
-  key = anim->CreateKeyFrame(4);
+  key = this->dataPtr->anim->CreateKeyFrame(4);
   key->Translation(ignition::math::Vector3d(-4.2, 3.8, 0));
   key->Rotation(ignition::math::Quaterniond(0, 0, 3.1415));
 
-  key = anim->CreateKeyFrame(10);
+  key = this->dataPtr->anim->CreateKeyFrame(10);
   key->Translation(ignition::math::Vector3d(-4.2, 9.45, 0));
   key->Rotation(ignition::math::Quaterniond(0, 0, 3.1415));
 
-  key = anim->CreateKeyFrame(16);
+  key = this->dataPtr->anim->CreateKeyFrame(16);
   key->Translation(ignition::math::Vector3d(-4.2, 3.8, 0));
   key->Rotation(ignition::math::Quaterniond(0, 0, 3.1415));
 
-  key = anim->CreateKeyFrame(22);
+  key = this->dataPtr->anim->CreateKeyFrame(22);
   key->Translation(ignition::math::Vector3d(0.3, 3.3, 0));
   key->Rotation(ignition::math::Quaterniond(0, 0, 3.1415));
 
-  this->model = _parent;
+  this->dataPtr->model = _parent;
 
-  this->rosService = this->rosnode->advertiseService(agvControlTopic,
+  this->dataPtr->rosService = this->dataPtr->rosnode->advertiseService(agvControlTopic,
       &ROSAGVPlugin::OnCommand, this);
 
   // Client for submitting trays for inspection.
-  this->rosSubmitTrayClient =
-    this->rosnode->serviceClient<osrf_gear::SubmitTray>(submitTrayTopic);
+  this->dataPtr->rosSubmitTrayClient =
+    this->dataPtr->rosnode->serviceClient<osrf_gear::SubmitTray>(submitTrayTopic);
 
   // Client for clearing trays.
-  this->rosClearTrayClient =
-    this->rosnode->serviceClient<std_srvs::Trigger>(clearTrayServiceName);
+  this->dataPtr->rosClearTrayClient =
+    this->dataPtr->rosnode->serviceClient<std_srvs::Trigger>(clearTrayServiceName);
 }
 
 /////////////////////////////////////////////////
@@ -127,25 +160,25 @@ bool ROSAGVPlugin::OnCommand(
   osrf_gear::AGVControl::Request &_req,
   osrf_gear::AGVControl::Response &_res)
 {
-  bool triggerAnim = this->agvName == "agv1" &&
-    (anim->GetTime() <= 0.0 || anim->GetTime() >= anim->GetLength());
+  bool triggerAnim = this->dataPtr->agvName == "agv1" &&
+    (this->dataPtr->anim->GetTime() <= 0.0 || this->dataPtr->anim->GetTime() >= this->dataPtr->anim->GetLength());
 
   if (triggerAnim)
   {
-    anim->SetTime(0);
-    this->model->SetAnimation(anim);
+    this->dataPtr->anim->SetTime(0);
+    this->dataPtr->model->SetAnimation(this->dataPtr->anim);
   }
 
-  if (!this->rosSubmitTrayClient.exists())
+  if (!this->dataPtr->rosSubmitTrayClient.exists())
   {
-    this->rosSubmitTrayClient.waitForExistence();
+    this->dataPtr->rosSubmitTrayClient.waitForExistence();
   }
 
   // Make a service call to submit the tray for inspection.
   osrf_gear::SubmitTray srv;
-  srv.request.tray_id = this->agvName + "::kit_tray::kit_tray::tray";
+  srv.request.tray_id = this->dataPtr->agvName + "::kit_tray::kit_tray::tray";
   srv.request.kit_type = _req.kit_type;
-  this->rosSubmitTrayClient.call(srv);
+  this->dataPtr->rosSubmitTrayClient.call(srv);
   if (!srv.response.success) {
     ROS_ERROR_STREAM("Failed to submit tray for inspection.");
     _res.success = false;
@@ -154,13 +187,12 @@ bool ROSAGVPlugin::OnCommand(
   ROS_INFO_STREAM("Result of inspection: " << srv.response.inspection_result);
   _res.success = true;
 
-  if (!this->rosClearTrayClient.exists())
+  if (!this->dataPtr->rosClearTrayClient.exists())
   {
-    this->rosClearTrayClient.waitForExistence();
+    this->dataPtr->rosClearTrayClient.waitForExistence();
   }
   std_srvs::Trigger clear_srv;
-  this->rosClearTrayClient.call(clear_srv);
-
+  this->dataPtr->rosClearTrayClient.call(clear_srv);
 
   return true;
 }
