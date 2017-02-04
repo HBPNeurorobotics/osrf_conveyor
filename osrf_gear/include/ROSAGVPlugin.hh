@@ -51,6 +51,10 @@ namespace gazebo
       osrf_gear::AGVControl::Request &_req,
       osrf_gear::AGVControl::Response &_res);
 
+    /// \brief Called when world update events are received
+    /// \param[in] _info Update information provided by the server.
+    protected: virtual void OnUpdate(const common::UpdateInfo &_info);
+
     /// \brief Private data pointer.
     private: std::unique_ptr<ROSAGVPluginPrivate> dataPtr;
   };
