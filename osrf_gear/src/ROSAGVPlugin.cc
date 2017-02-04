@@ -143,30 +143,31 @@ void ROSAGVPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf)
 
   this->dataPtr->deliverTrayAnimation.reset(new gazebo::common::PoseAnimation(this->dataPtr->agvName, 10, false));
 
+  float sign = index == "1" ? 1.0 : -1.0;
   gazebo::common::PoseKeyFrame *key = this->dataPtr->deliverTrayAnimation->CreateKeyFrame(0);
-  key->Translation(ignition::math::Vector3d(0.3, 3.3, 0));
+  key->Translation(ignition::math::Vector3d(0.3, 3.3*sign, 0));
   key->Rotation(ignition::math::Quaterniond(0, 0, 3.1415));
 
   key = this->dataPtr->deliverTrayAnimation->CreateKeyFrame(4);
-  key->Translation(ignition::math::Vector3d(-4.2, 3.8, 0));
+  key->Translation(ignition::math::Vector3d(-4.2, 3.8*sign, 0));
   key->Rotation(ignition::math::Quaterniond(0, 0, 3.1415));
 
   key = this->dataPtr->deliverTrayAnimation->CreateKeyFrame(10);
-  key->Translation(ignition::math::Vector3d(-4.2, 9.45, 0));
+  key->Translation(ignition::math::Vector3d(-4.2, 8.3*sign, 0));
   key->Rotation(ignition::math::Quaterniond(0, 0, 3.1415));
 
   this->dataPtr->returnAnimation.reset(new gazebo::common::PoseAnimation(this->dataPtr->agvName, 12, false));
 
   key = this->dataPtr->returnAnimation->CreateKeyFrame(0);
-  key->Translation(ignition::math::Vector3d(-4.2, 9.45, 0));
+  key->Translation(ignition::math::Vector3d(-4.2, 8.3*sign, 0));
   key->Rotation(ignition::math::Quaterniond(0, 0, 3.1415));
 
   key = this->dataPtr->returnAnimation->CreateKeyFrame(6);
-  key->Translation(ignition::math::Vector3d(-4.2, 3.8, 0));
+  key->Translation(ignition::math::Vector3d(-4.2, 3.8*sign, 0));
   key->Rotation(ignition::math::Quaterniond(0, 0, 3.1415));
 
   key = this->dataPtr->returnAnimation->CreateKeyFrame(12);
-  key->Translation(ignition::math::Vector3d(0.3, 3.3, 0));
+  key->Translation(ignition::math::Vector3d(0.3, 3.3*sign, 0));
   key->Rotation(ignition::math::Quaterniond(0, 0, 3.1415));
 
   this->dataPtr->model = _parent;

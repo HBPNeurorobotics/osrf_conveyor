@@ -370,6 +370,7 @@
       <plugin name="agv_plugin" filename="libROSAGVPlugin.so">
         <index>2</index>
         <submit_tray_service_name>/ariac/submit_tray</submit_tray_service_name>
+        <clear_tray_service_name>/ariac/agv2/clear_tray</clear_tray_service_name>
       </plugin>
 
       <!-- a tray for building kits -->
