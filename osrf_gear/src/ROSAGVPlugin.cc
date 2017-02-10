@@ -72,6 +72,9 @@ namespace gazebo
 
     /// \brief The time the last tray was delivered
     public: common::Time deliveryTime;
+
+    /// \brief Whether or not gravity of the AGV has been disabled
+    public: bool gravityDisabled;
   };
 }
 
@@ -141,32 +144,79 @@ void ROSAGVPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf)
 
   this->dataPtr->rosnode = new ros::NodeHandle(this->dataPtr->robotNamespace);
 
-  this->dataPtr->deliverTrayAnimation.reset(new gazebo::common::PoseAnimation(this->dataPtr->agvName, 10, false));
+  double speedFactor = 1.2;
+  this->dataPtr->deliverTrayAnimation.reset(
+    new gazebo::common::PoseAnimation(this->dataPtr->agvName, 10/speedFactor, false));
 
   float sign = index == "1" ? 1.0 : -1.0;
   gazebo::common::PoseKeyFrame *key = this->dataPtr->deliverTrayAnimation->CreateKeyFrame(0);
   key->Translation(ignition::math::Vector3d(0.3, 3.3*sign, 0));
   key->Rotation(ignition::math::Quaterniond(0, 0, 3.1415));
 
-  key = this->dataPtr->deliverTrayAnimation->CreateKeyFrame(4);
-  key->Translation(ignition::math::Vector3d(-4.2, 3.8*sign, 0));
+  key = this->dataPtr->deliverTrayAnimation->CreateKeyFrame(1.5/speedFactor);
+  key->Translation(ignition::math::Vector3d(-0.76, 3.3*sign, 0));
   key->Rotation(ignition::math::Quaterniond(0, 0, 3.1415));
 
-  key = this->dataPtr->deliverTrayAnimation->CreateKeyFrame(10);
+  key = this->dataPtr->deliverTrayAnimation->CreateKeyFrame(3.0/speedFactor);
+  key->Translation(ignition::math::Vector3d(-2.73, 3.3*sign, 0));
+  key->Rotation(ignition::math::Quaterniond(0, 0, 3.1415));
+
+  key = this->dataPtr->deliverTrayAnimation->CreateKeyFrame(4/speedFactor);
+  key->Translation(ignition::math::Vector3d(-3.94, 3.6*sign, 0));
+  key->Rotation(ignition::math::Quaterniond(0, 0, 3.1415));
+
+  key = this->dataPtr->deliverTrayAnimation->CreateKeyFrame(5.3/speedFactor);
+  key->Translation(ignition::math::Vector3d(-4.5, 4.4*sign, 0));
+  key->Rotation(ignition::math::Quaterniond(0, 0, 3.1415));
+
+  key = this->dataPtr->deliverTrayAnimation->CreateKeyFrame(6.5/speedFactor);
+  key->Translation(ignition::math::Vector3d(-4.5, 5.3*sign, 0));
+  key->Rotation(ignition::math::Quaterniond(0, 0, 3.1415));
+
+  key = this->dataPtr->deliverTrayAnimation->CreateKeyFrame(7.7/speedFactor);
+  key->Translation(ignition::math::Vector3d(-4.5, 6.3*sign, 0));
+  key->Rotation(ignition::math::Quaterniond(0, 0, 3.1415));
+
+  key = this->dataPtr->deliverTrayAnimation->CreateKeyFrame(9.0/speedFactor);
+  key->Translation(ignition::math::Vector3d(-4.2, 8.0*sign, 0));
+  key->Rotation(ignition::math::Quaterniond(0, 0, 3.1415));
+
+  key = this->dataPtr->deliverTrayAnimation->CreateKeyFrame(10/speedFactor);
   key->Translation(ignition::math::Vector3d(-4.2, 8.3*sign, 0));
   key->Rotation(ignition::math::Quaterniond(0, 0, 3.1415));
 
-  this->dataPtr->returnAnimation.reset(new gazebo::common::PoseAnimation(this->dataPtr->agvName, 12, false));
+  this->dataPtr->returnAnimation.reset(
+    new gazebo::common::PoseAnimation(this->dataPtr->agvName, 12/speedFactor, false));
 
   key = this->dataPtr->returnAnimation->CreateKeyFrame(0);
   key->Translation(ignition::math::Vector3d(-4.2, 8.3*sign, 0));
   key->Rotation(ignition::math::Quaterniond(0, 0, 3.1415));
 
-  key = this->dataPtr->returnAnimation->CreateKeyFrame(6);
-  key->Translation(ignition::math::Vector3d(-4.2, 3.8*sign, 0));
+  key = this->dataPtr->returnAnimation->CreateKeyFrame(2.6/speedFactor);
+  key->Translation(ignition::math::Vector3d(-4.4, 6.4*sign, 0));
   key->Rotation(ignition::math::Quaterniond(0, 0, 3.1415));
 
-  key = this->dataPtr->returnAnimation->CreateKeyFrame(12);
+  key = this->dataPtr->returnAnimation->CreateKeyFrame(3.8/speedFactor);
+  key->Translation(ignition::math::Vector3d(-4.5, 5.2*sign, 0));
+  key->Rotation(ignition::math::Quaterniond(0, 0, 3.1415));
+
+  key = this->dataPtr->returnAnimation->CreateKeyFrame(5.4/speedFactor);
+  key->Translation(ignition::math::Vector3d(-4.4, 4.1*sign, 0));
+  key->Rotation(ignition::math::Quaterniond(0, 0, 3.1415));
+
+  key = this->dataPtr->returnAnimation->CreateKeyFrame(6.8/speedFactor);
+  key->Translation(ignition::math::Vector3d(-3.8, 3.5*sign, 0));
+  key->Rotation(ignition::math::Quaterniond(0, 0, 3.1415));
+
+  key = this->dataPtr->returnAnimation->CreateKeyFrame(7.9/speedFactor);
+  key->Translation(ignition::math::Vector3d(-2.8, 3.3*sign, 0));
+  key->Rotation(ignition::math::Quaterniond(0, 0, 3.1415));
+
+  key = this->dataPtr->returnAnimation->CreateKeyFrame(9.4/speedFactor);
+  key->Translation(ignition::math::Vector3d(-1.6, 3.3*sign, 0));
+  key->Rotation(ignition::math::Quaterniond(0, 0, 3.1415));
+
+  key = this->dataPtr->returnAnimation->CreateKeyFrame(12/speedFactor);
   key->Translation(ignition::math::Vector3d(0.3, 3.3*sign, 0));
   key->Rotation(ignition::math::Quaterniond(0, 0, 3.1415));
 
@@ -195,9 +245,23 @@ void ROSAGVPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf)
 void ROSAGVPlugin::OnUpdate(const common::UpdateInfo &/*_info*/)
 {
   auto currentSimTime = this->dataPtr->world->GetSimTime();
+  if (this->dataPtr->currentState == "ready_to_deliver")
+  {
+    this->dataPtr->model->StopAnimation();
+  }
   if (this->dataPtr->currentState == "delivering")
   {
-    if (this->dataPtr->deliverTrayAnimation->GetTime() >= this->dataPtr->deliverTrayAnimation->GetLength())
+    // Wait until AGV is away from potential user interference
+    if (!this->dataPtr->gravityDisabled && this->dataPtr->deliverTrayAnimation->GetTime() >= 0.5)
+    {
+      // Parts will fall through the tray during the animation unless gravity is disabled on the AGV
+      gzdbg << "Disabling gravity on model: " << this->dataPtr->agvName << std::endl;
+      this->dataPtr->model->SetGravityMode(false);
+      this->dataPtr->gravityDisabled = true;
+    }
+    bool deliverTrayAnimationDone = this->dataPtr->deliverTrayAnimation->GetTime() >= \
+      this->dataPtr->deliverTrayAnimation->GetLength();
+    if (deliverTrayAnimationDone)
     {
       gzdbg << "Delivery animation finished." << std::endl;
       this->dataPtr->deliveryTime = currentSimTime;
@@ -206,9 +270,6 @@ void ROSAGVPlugin::OnUpdate(const common::UpdateInfo &/*_info*/)
   }
   if (this->dataPtr->currentState == "delivered")
   {
-    if ((currentSimTime - this->dataPtr->deliveryTime) < 2.0)
-      return;
-
     // Make a service call to submit the tray for inspection.
     if (!this->dataPtr->rosSubmitTrayClient.exists())
     {
@@ -242,6 +303,8 @@ void ROSAGVPlugin::OnUpdate(const common::UpdateInfo &/*_info*/)
     {
       ROS_INFO_STREAM("Tray successfully cleared.");
     }
+    this->dataPtr->model->SetGravityMode(true);
+    this->dataPtr->gravityDisabled = false;
 
     // Trigger the return animation.
     this->dataPtr->returnAnimation->SetTime(0);
@@ -250,7 +313,9 @@ void ROSAGVPlugin::OnUpdate(const common::UpdateInfo &/*_info*/)
   }
   if (this->dataPtr->currentState == "returning")
   {
-    if (this->dataPtr->returnAnimation->GetTime() >= this->dataPtr->returnAnimation->GetLength())
+    bool returnAnimationDone = this->dataPtr->returnAnimation->GetTime() >= \
+      this->dataPtr->returnAnimation->GetLength();
+    if (returnAnimationDone)
     {
       gzdbg << "Return animation finished." << std::endl;
       this->dataPtr->currentState = "ready_to_deliver";

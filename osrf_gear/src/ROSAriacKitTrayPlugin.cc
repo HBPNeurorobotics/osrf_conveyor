@@ -203,43 +203,26 @@ void KitTrayPlugin::LockContactingModels()
   // Create the joint that will attach the models
   fixedJoint = this->world->GetPhysicsEngine()->CreateJoint(
         "fixed", this->model);
-        std::cout << this->parentLink->GetName() << std::endl;
-        std::cout << this->model->GetName() << std::endl;
   auto jointName = this->model->GetName() + "_" + model->GetName() + "__joint__";
   gzdbg << "Creating fixed joint: " << jointName << std::endl;
   fixedJoint->SetName(jointName);
-  /*
-  std::ostringstream newJointStr;
-  newJointStr <<
-    "<sdf version='" << "1.6" << "'>\n"
-    "    <joint name=" << jointName << " type='fixed'>\n"
-    "    <parent>" << this->parentLink->GetName() << "</parent>\n"
-    "    <child>" << model->GetName() << "::link</child>\n"
-    "  </joint>\n"
-    "</sdf>\n";
-    sdf::Element jointSdf;
-    std::cout << newJointStr.str() << std::endl;
-    sdf::ElementPtr sdf(new sdf::Element());
-    sdf::initFile("joint.sdf", sdf);
-    sdf::readString(newJointStr.str(), sdf);
-    fixedJoint->Load(sdf);
-    std::cout << fixedJoint->GetChild()->GetScopedName() << std::endl;
-    */
 
   model->SetGravityMode(false);
   model->GetLink(model->GetName()+"::link")->SetGravityMode(false);
+
+  // Lift the part slightly because it will fall through the tray if the tray is animated
   model->SetWorldPose(model->GetWorldPose() + math::Pose(0,0,0.01,0,0,0));
+
   auto link = model->GetLink(model->GetName() + "::link");
   if (link == NULL)
   {
     gzwarn << "Couldn't find link to make joint with";
     continue;
   }
-    std::cout << link->GetScopedName() << std::endl;
-    fixedJoint->Load(link, this->parentLink, math::Pose());
-    fixedJoint->Attach(this->parentLink, link);
-    fixedJoint->Init();
-    this->fixedJoints.push_back(fixedJoint);
+  fixedJoint->Load(link, this->parentLink, math::Pose());
+  fixedJoint->Attach(this->parentLink, link);
+  fixedJoint->Init();
+  this->fixedJoints.push_back(fixedJoint);
   model->SetAutoDisable(true);
   }
 }
