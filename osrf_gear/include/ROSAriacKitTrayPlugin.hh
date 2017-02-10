@@ -28,6 +28,7 @@
 
 #include <gazebo/common/Plugin.hh>
 #include <gazebo/msgs/msgs.hh>
+#include <gazebo/physics/PhysicsTypes.hh>
 #include <gazebo/sensors/sensors.hh>
 #include <gazebo/util/system.hh>
 #include <osrf_gear/ARIAC.hh>
@@ -55,6 +56,12 @@ namespace gazebo
     /// \brief Update the kit based on which models are in contact
     protected: void ProcessContactingModels();
 
+    /// \brief Create a fixed joint to all contacting models
+    protected: virtual void LockContactingModels();
+
+    /// \brief Remove any fixed joints to contacting models
+    protected: virtual void UnlockContactingModels();
+
     /// \brief Update the kit based on which models are in contact
     public: std::string DetermineModelType(const std::string &modelName);
 
@@ -64,6 +71,10 @@ namespace gazebo
 
     /// \brief Publish the Kit ROS message
     protected: void PublishKitMsg();
+
+    /// \brief Service for locking the models to the tray and disabling updates
+    protected: bool HandleLockModelsService(
+      std_srvs::Trigger::Request & req, std_srvs::Trigger::Response & res);
 
     /// \brief Service for clearing the tray
     protected: bool HandleClearService(
@@ -75,6 +86,9 @@ namespace gazebo
     /// \brief ID of tray
     protected: std::string trayID;
 
+    /// \brief Fixed joints to lock contacting models
+    protected: std::vector<physics::JointPtr> fixedJoints;
+
     /// \brief ROS node handle
     protected: ros::NodeHandle *rosNode;
 
@@ -84,6 +98,9 @@ namespace gazebo
     /// \brief Whether or not the Kit ROS topic is enabled
     /// If unpermitted subscribers connect during the competition, publishing is disabled
     protected: bool publishingEnabled;
+
+    /// \brief Service that locks models to the tray
+    public: ros::ServiceServer lockModelsServer;
 
     /// \brief Service that clears the tray
     public: ros::ServiceServer clearTrayServer;

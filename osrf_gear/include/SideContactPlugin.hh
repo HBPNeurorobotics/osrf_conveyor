@@ -24,6 +24,7 @@
 #include <gazebo/common/Plugin.hh>
 #include <gazebo/common/Time.hh>
 #include <gazebo/common/UpdateInfo.hh>
+#include <gazebo/physics/PhysicsTypes.hh>
 #include <gazebo/sensors/sensors.hh>
 #include <gazebo/transport/Node.hh>
 #include <gazebo/transport/Publisher.hh>

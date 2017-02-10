@@ -208,7 +208,8 @@ void SideContactPlugin::ClearContactingModels()
   boost::mutex::scoped_lock lock(this->mutex);
   for (auto model : this->contactingModels)
   {
-    model->SetWorldPose(math::Pose(0,0,-1,0,0,0));
+    gzdbg << "Teleporting model: " << model->GetScopedName() << std::endl;
+    model->SetWorldPose(math::Pose(0, 0, -1, 0, 0, 0));
   }
 }
 

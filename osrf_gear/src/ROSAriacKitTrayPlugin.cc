@@ -63,6 +63,13 @@ void KitTrayPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
     "/ariac/trays", 1000, boost::bind(&KitTrayPlugin::OnSubscriberConnect, this, _1));
   this->publishingEnabled = true;
 
+  // Service for locking models to the tray
+  std::string lockModelsServiceName = "lock_models";
+  if (_sdf->HasElement("lock_models_service_name"))
+    lockModelsServiceName = _sdf->Get<std::string>("lock_models_service_name");
+  this->lockModelsServer =
+    this->rosNode->advertiseService(lockModelsServiceName, &KitTrayPlugin::HandleLockModelsService, this);
+
   // Service for clearing the tray
   std::string clearServiceName = "clear";
   if (_sdf->HasElement("clear_tray_service_name"))
@@ -77,7 +84,9 @@ void KitTrayPlugin::OnUpdate(const common::UpdateInfo &/*_info*/)
   // If we're using a custom update rate value we have to check if it's time to
   // update the plugin or not.
   if (!this->TimeToExecute())
+  {
     return;
+  }
 
   if (!this->newMsg)
   {
@@ -100,6 +109,14 @@ void KitTrayPlugin::OnUpdate(const common::UpdateInfo &/*_info*/)
 /////////////////////////////////////////////////
 void KitTrayPlugin::ProcessContactingModels()
 {
+  // Make sure that models fixed to the tray are included in the contacting models,
+  // even if they aren't contacting the tray anymore.
+  for (auto fixedJoint : this->fixedJoints)
+  {
+    auto link = fixedJoint->GetChild();
+    this->contactingLinks.insert(link);
+    this->contactingModels.insert(link->GetParentModel());
+  }
   this->currentKit.objects.clear();
   auto trayPose = this->parentLink->GetWorldPose().Ign();
   for (auto model : this->contactingModels) {
@@ -165,11 +182,86 @@ void KitTrayPlugin::PublishKitMsg()
 }
 
 /////////////////////////////////////////////////
+void KitTrayPlugin::UnlockContactingModels()
+{
+  boost::mutex::scoped_lock lock(this->mutex);
+  physics::JointPtr fixedJoint;
+  for (auto fixedJoint : this->fixedJoints)
+  {
+    fixedJoint->Detach();
+  }
+  this->fixedJoints.clear();
+}
+
+/////////////////////////////////////////////////
+void KitTrayPlugin::LockContactingModels()
+{
+  boost::mutex::scoped_lock lock(this->mutex);
+  physics::JointPtr fixedJoint;
+  for (auto model : this->contactingModels)
+  {
+  // Create the joint that will attach the models
+  fixedJoint = this->world->GetPhysicsEngine()->CreateJoint(
+        "fixed", this->model);
+        std::cout << this->parentLink->GetName() << std::endl;
+        std::cout << this->model->GetName() << std::endl;
+  auto jointName = this->model->GetName() + "_" + model->GetName() + "__joint__";
+  gzdbg << "Creating fixed joint: " << jointName << std::endl;
+  fixedJoint->SetName(jointName);
+  /*
+  std::ostringstream newJointStr;
+  newJointStr <<
+    "<sdf version='" << "1.6" << "'>\n"
+    "    <joint name=" << jointName << " type='fixed'>\n"
+    "    <parent>" << this->parentLink->GetName() << "</parent>\n"
+    "    <child>" << model->GetName() << "::link</child>\n"
+    "  </joint>\n"
+    "</sdf>\n";
+    sdf::Element jointSdf;
+    std::cout << newJointStr.str() << std::endl;
+    sdf::ElementPtr sdf(new sdf::Element());
+    sdf::initFile("joint.sdf", sdf);
+    sdf::readString(newJointStr.str(), sdf);
+    fixedJoint->Load(sdf);
+    std::cout << fixedJoint->GetChild()->GetScopedName() << std::endl;
+    */
+
+  model->SetGravityMode(false);
+  model->GetLink(model->GetName()+"::link")->SetGravityMode(false);
+  model->SetWorldPose(model->GetWorldPose() + math::Pose(0,0,0.01,0,0,0));
+  auto link = model->GetLink(model->GetName() + "::link");
+  if (link == NULL)
+  {
+    gzwarn << "Couldn't find link to make joint with";
+    continue;
+  }
+    std::cout << link->GetScopedName() << std::endl;
+    fixedJoint->Load(link, this->parentLink, math::Pose());
+    fixedJoint->Attach(this->parentLink, link);
+    fixedJoint->Init();
+    this->fixedJoints.push_back(fixedJoint);
+  model->SetAutoDisable(true);
+  }
+}
+
+/////////////////////////////////////////////////
+bool KitTrayPlugin::HandleLockModelsService(
+  std_srvs::Trigger::Request & req,
+  std_srvs::Trigger::Response & res)
+{
+  (void)req;
+  this->LockContactingModels();
+  res.success = true;
+  return true;
+}
+
+/////////////////////////////////////////////////
 bool KitTrayPlugin::HandleClearService(
   std_srvs::Trigger::Request & req,
   std_srvs::Trigger::Response & res)
 {
   (void)req;
+  this->UnlockContactingModels();
   this->ClearContactingModels();
   res.success = true;
   return true;
