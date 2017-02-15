@@ -19,11 +19,12 @@
 from __future__ import print_function
 
 import argparse
-import em
 import math
 import os
 import subprocess
 import sys
+
+import em
 import yaml
 
 this_dir = os.path.abspath(os.path.dirname(__file__))
@@ -91,7 +92,7 @@ def prepare_arguments(parser):
     add('config', nargs="?", metavar="CONFIG",
         help='yaml string that is the configuration')
     add('-f', '--file', nargs='+', help='list of paths to yaml files that contain the '
-    'configuration (contents will be concatenated)')
+        'configuration (contents will be concatenated)')
 
 
 eval_local_vars = {n: getattr(math, n) for n in dir(math) if not n.startswith('__')}
@@ -125,6 +126,7 @@ class ModelInfo:
         self.type = model_type
         self.pose = pose
         self.reference_frame = reference_frame
+
 
 class SensorInfo:
     def __init__(self, name, sensor_type, pose):
@@ -187,8 +189,9 @@ def create_arm_info(arm_dict):
         sys.exit(1)
     for key in arm_dict:
         if key != 'type':
-            print("Warning: ignoring unknown entry in '{0}': {1}"
-                    .format('arm', key), file=sys.stderr)
+            print(
+                "Warning: ignoring unknown entry in '{0}': {1}"
+                .format('arm', key), file=sys.stderr)
     initial_joint_states = arm_configs[arm_type]['default_initial_joint_states']
     return ArmInfo(arm_type, initial_joint_states)
 
@@ -246,7 +249,7 @@ def create_models_to_spawn_infos(models_to_spawn_dict):
             # assign each model a unique name because gazebo can't do this
             # if the models all spawn at the same time
             scoped_model_name = reference_frame.replace('::', '|') + '|' + \
-              model_info.type + '_' + str(model_count_post_increment(model_info.type))
+                model_info.type + '_' + str(model_count_post_increment(model_info.type))
             models_to_spawn_infos[scoped_model_name] = model_info
     return models_to_spawn_infos
 
@@ -306,7 +309,7 @@ def create_belt_part_infos(belt_parts_dict):
     for obj_type, spawn_times in belt_parts_dict.items():
         for spawn_time, belt_part_dict in spawn_times.items():
             obj_type = replace_type_aliases(obj_type)
-            if not obj_type in belt_part_infos:
+            if obj_type not in belt_part_infos:
                 belt_part_infos[obj_type] = {}
             belt_part_dict['type'] = obj_type
             belt_part_infos[obj_type][spawn_time] = create_model_info('belt_part', belt_part_dict)
@@ -326,7 +329,8 @@ def create_drops_info(drops_dict):
         destination = create_pose_info(destination_info)
         part_type = get_required_field('drop_region', drop_region_dict, 'part_type_to_drop')
         part_type = replace_type_aliases(part_type)
-        drop_region_infos.append(DropRegionInfo(drop_region_min_xyz, drop_region_max_xyz, destination, part_type))
+        drop_region_infos.append(
+            DropRegionInfo(drop_region_min_xyz, drop_region_max_xyz, destination, part_type))
     drops_info['drop_regions'] = drop_region_infos
     return drops_info
 
@@ -496,6 +500,7 @@ def main(sysargv=None):
         finally:
             p.wait()
         return p.returncode
+
 
 if __name__ == '__main__':
     # Filter out any special ROS remapping arguments.
