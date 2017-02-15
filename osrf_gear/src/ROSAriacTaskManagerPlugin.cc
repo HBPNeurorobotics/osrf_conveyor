@@ -494,7 +494,7 @@ void ROSAriacTaskManagerPlugin::OnUpdate()
     {
       std::ostringstream logMessage;
       logMessage << "Current game score: " << gameScore.total();
-      ROS_INFO_STREAM(logMessage.str().c_str());
+      ROS_DEBUG_STREAM(logMessage.str().c_str());
       gzdbg << logMessage.str() << std::endl;
       this->dataPtr->currentGameScore = gameScore;
     }

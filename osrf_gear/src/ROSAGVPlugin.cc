@@ -88,6 +88,9 @@ namespace gazebo
 
     /// \brief Flag for triggering tray delivery from the service callback
     public: bool deliveryTriggered = false;
+
+    /// \brief Evaluation result of the tray (negative means that the tray was invalid)
+    public: int inspectionResult = -1;
   };
 }
 
@@ -274,6 +277,22 @@ void ROSAGVPlugin::OnUpdate(const common::UpdateInfo &/*_info*/)
   {
     if (this->dataPtr->deliveryTriggered)
     {
+      // Make a service call to submit the tray for inspection.
+      // Do this immediately in case the assigned goal changes as the AGV is moving.
+      if (!this->dataPtr->rosSubmitTrayClient.exists())
+      {
+        this->dataPtr->rosSubmitTrayClient.waitForExistence();
+      }
+      osrf_gear::SubmitTray submit_srv;
+      submit_srv.request.tray_id = this->dataPtr->trayLinkName;
+      submit_srv.request.kit_type = this->dataPtr->kitType;
+      this->dataPtr->rosSubmitTrayClient.call(submit_srv);
+      this->dataPtr->inspectionResult = -1;
+      if (submit_srv.response.success)
+      {
+        this->dataPtr->inspectionResult = submit_srv.response.inspection_result;
+      }
+
       // Make a request to lock the models to the tray
       gazebo::msgs::GzString lock_msg;
       lock_msg.set_data("lock");
@@ -308,22 +327,14 @@ void ROSAGVPlugin::OnUpdate(const common::UpdateInfo &/*_info*/)
   }
   if (this->dataPtr->currentState == "delivered")
   {
-    // Make a service call to submit the tray for inspection.
-    if (!this->dataPtr->rosSubmitTrayClient.exists())
-    {
-      this->dataPtr->rosSubmitTrayClient.waitForExistence();
-    }
-    osrf_gear::SubmitTray submit_srv;
-    submit_srv.request.tray_id = this->dataPtr->trayLinkName;
-    submit_srv.request.kit_type = this->dataPtr->kitType;
-    this->dataPtr->rosSubmitTrayClient.call(submit_srv);
-    if (!submit_srv.response.success)
+    // Report the result of the previously-performed tray inspection.
+    if (this->dataPtr->inspectionResult < 0)
     {
       ROS_ERROR_STREAM("Failed to submit tray for inspection.");
     }
     else
     {
-      ROS_INFO_STREAM("Result of inspection: " << submit_srv.response.inspection_result);
+      ROS_INFO_STREAM("Result of inspection: " << this->dataPtr->inspectionResult);
     }
 
     // Make a service call to clear the tray.
