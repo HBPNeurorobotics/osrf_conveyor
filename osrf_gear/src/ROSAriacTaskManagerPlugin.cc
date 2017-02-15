@@ -424,7 +424,7 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
     this->dataPtr->rosnode->advertiseService(submitTrayServiceName,
       &ROSAriacTaskManagerPlugin::HandleSubmitTrayService, this);
 
-  // Service for submitting trays for inspection.
+  // Service for querying material storage locations.
   this->dataPtr->getMaterialLocationsServiceServer =
     this->dataPtr->rosnode->advertiseService(getMaterialLocationsServiceName,
       &ROSAriacTaskManagerPlugin::HandleGetMaterialLocationsService, this);

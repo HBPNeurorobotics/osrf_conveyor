@@ -338,7 +338,8 @@
       </include>
       <plugin name="agv_plugin" filename="libROSAGVPlugin.so">
         <submit_tray_service_name>/ariac/submit_tray</submit_tray_service_name>
-        <clear_tray_service_name>/ariac/agv@(str(agv_id))/clear_tray</clear_tray_service_name>
+        <clear_tray_service_name>/ariac/kit_tray_@(str(agv_id))/clear_tray</clear_tray_service_name>
+        <lock_tray_service_name>/ariac/kit_tray_@(str(agv_id))/lock_models</lock_tray_service_name>
         <index>@(str(agv_id))</index>
       </plugin>
 

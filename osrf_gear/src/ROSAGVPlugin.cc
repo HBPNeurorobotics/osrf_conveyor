@@ -55,6 +55,9 @@ namespace gazebo
     /// \brief Client for submitting trays for inspection
     public: ros::ServiceClient rosSubmitTrayClient;
 
+    /// \brief Client for locking parts to this AGV's tray
+    public: ros::ServiceClient rosLockTrayClient;
+
     /// \brief Client for clearing this AGV's tray
     public: ros::ServiceClient rosClearTrayClient;
 
@@ -78,6 +81,9 @@ namespace gazebo
 
     /// \brief Whether or not gravity of the AGV has been disabled
     public: bool gravityDisabled;
+
+    /// \brief Flag for triggering tray delivery from the service callback
+    public: bool deliveryTriggered = false;
   };
 }
 
@@ -140,6 +146,11 @@ void ROSAGVPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf)
   if (_sdf->HasElement("submit_tray_service_name"))
     submitTrayTopic = _sdf->Get<std::string>("submit_tray_service_name");
   ROS_DEBUG_STREAM("Using submit tray service topic: " << submitTrayTopic);
+
+  std::string lockTrayServiceName = "lock_tray_models";
+  if (_sdf->HasElement("lock_tray_service_name"))
+    lockTrayServiceName = _sdf->Get<std::string>("lock_tray_service_name");
+  ROS_DEBUG_STREAM("Using lock tray service topic: " << lockTrayServiceName);
 
   std::string clearTrayServiceName = "clear_tray";
   if (_sdf->HasElement("clear_tray_service_name"))
@@ -233,6 +244,10 @@ void ROSAGVPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf)
   this->dataPtr->rosSubmitTrayClient =
     this->dataPtr->rosnode->serviceClient<osrf_gear::SubmitTray>(submitTrayTopic);
 
+  // Client for locking parts to trays.
+  this->dataPtr->rosLockTrayClient =
+    this->dataPtr->rosnode->serviceClient<std_srvs::Trigger>(lockTrayServiceName);
+
   // Client for clearing trays.
   this->dataPtr->rosClearTrayClient =
     this->dataPtr->rosnode->serviceClient<std_srvs::Trigger>(clearTrayServiceName);
@@ -251,7 +266,32 @@ void ROSAGVPlugin::OnUpdate(const common::UpdateInfo &/*_info*/)
   auto currentSimTime = this->dataPtr->world->GetSimTime();
   if (this->dataPtr->currentState == "ready_to_deliver")
   {
-    this->dataPtr->model->StopAnimation();
+    if (this->dataPtr->deliveryTriggered)
+    {
+      // Make a service call to lock the models to the tray
+      // TODO(dhood): disable this service for users
+      if (!this->dataPtr->rosLockTrayClient.exists())
+      {
+        this->dataPtr->rosLockTrayClient.waitForExistence();
+      }
+      std_srvs::Trigger lock_srv;
+      this->dataPtr->rosLockTrayClient.call(lock_srv);
+      if (!lock_srv.response.success)
+      {
+        ROS_ERROR_STREAM("Failed to lock tray models.");
+      }
+      else
+      {
+        ROS_DEBUG_STREAM("Models successfully locked to the tray.");
+      }
+
+      // Trigger the tray delivery animation
+      this->dataPtr->deliverTrayAnimation->SetTime(0);
+      this->dataPtr->model->SetAnimation(this->dataPtr->deliverTrayAnimation);
+      ROS_INFO_STREAM("AGV successfully triggered.");
+      this->dataPtr->currentState = "delivering";
+    }
+    this->dataPtr->deliveryTriggered = false;
   }
   if (this->dataPtr->currentState == "delivering")
   {
@@ -305,7 +345,7 @@ void ROSAGVPlugin::OnUpdate(const common::UpdateInfo &/*_info*/)
     }
     else
     {
-      ROS_INFO_STREAM("Tray successfully cleared.");
+      ROS_DEBUG_STREAM("Tray successfully cleared.");
     }
     this->dataPtr->model->SetGravityMode(true);
     this->dataPtr->gravityDisabled = false;
@@ -339,14 +379,8 @@ bool ROSAGVPlugin::OnCommand(
     _res.success = false;
     return true;
   }
-
-  // Trigger the tray delivery animation
-  this->dataPtr->deliverTrayAnimation->SetTime(0);
-  this->dataPtr->model->SetAnimation(this->dataPtr->deliverTrayAnimation);
   this->dataPtr->kitType = _req.kit_type;
-  ROS_INFO_STREAM("AGV successfully triggered.");
+  this->dataPtr->deliveryTriggered = true;
   _res.success = true;
-  this->dataPtr->currentState = "delivering";
-
   return true;
 }
