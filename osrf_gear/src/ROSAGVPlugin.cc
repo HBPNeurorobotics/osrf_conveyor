@@ -19,6 +19,7 @@
 #include <gazebo/common/common.hh>
 #include <gazebo/common/UpdateInfo.hh>
 #include <gazebo/common/Time.hh>
+#include <gazebo/transport/transport.hh>
 #include <ignition/math.hh>
 #include <osrf_gear/SubmitTray.h>
 #include <std_srvs/Trigger.h>
@@ -55,8 +56,11 @@ namespace gazebo
     /// \brief Client for submitting trays for inspection
     public: ros::ServiceClient rosSubmitTrayClient;
 
-    /// \brief Client for locking parts to this AGV's tray
-    public: ros::ServiceClient rosLockTrayClient;
+    /// \brief Transportation node.
+    public: transport::NodePtr gzNode;
+
+    /// \brief Gazebo publish for locking parts to this AGV's tray
+    public: transport::PublisherPtr lockTrayModelsPub;
 
     /// \brief Client for clearing this AGV's tray
     public: ros::ServiceClient rosClearTrayClient;
@@ -159,6 +163,12 @@ void ROSAGVPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf)
 
   this->dataPtr->rosnode = new ros::NodeHandle(this->dataPtr->robotNamespace);
 
+  // Initialize Gazebo transport
+  this->dataPtr->gzNode = transport::NodePtr(new transport::Node());
+  this->dataPtr->gzNode->Init();
+  this->dataPtr->lockTrayModelsPub =
+    this->dataPtr->gzNode->Advertise<msgs::GzString>(lockTrayServiceName);
+
   double speedFactor = 1.2;
   this->dataPtr->deliverTrayAnimation.reset(
     new gazebo::common::PoseAnimation(this->dataPtr->agvName, 10/speedFactor, false));
@@ -244,10 +254,6 @@ void ROSAGVPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf)
   this->dataPtr->rosSubmitTrayClient =
     this->dataPtr->rosnode->serviceClient<osrf_gear::SubmitTray>(submitTrayTopic);
 
-  // Client for locking parts to trays.
-  this->dataPtr->rosLockTrayClient =
-    this->dataPtr->rosnode->serviceClient<std_srvs::Trigger>(lockTrayServiceName);
-
   // Client for clearing trays.
   this->dataPtr->rosClearTrayClient =
     this->dataPtr->rosnode->serviceClient<std_srvs::Trigger>(clearTrayServiceName);
@@ -268,22 +274,10 @@ void ROSAGVPlugin::OnUpdate(const common::UpdateInfo &/*_info*/)
   {
     if (this->dataPtr->deliveryTriggered)
     {
-      // Make a service call to lock the models to the tray
-      // TODO(dhood): disable this service for users
-      if (!this->dataPtr->rosLockTrayClient.exists())
-      {
-        this->dataPtr->rosLockTrayClient.waitForExistence();
-      }
-      std_srvs::Trigger lock_srv;
-      this->dataPtr->rosLockTrayClient.call(lock_srv);
-      if (!lock_srv.response.success)
-      {
-        ROS_ERROR_STREAM("Failed to lock tray models.");
-      }
-      else
-      {
-        ROS_DEBUG_STREAM("Models successfully locked to the tray.");
-      }
+      // Make a request to lock the models to the tray
+      gazebo::msgs::GzString lock_msg;
+      lock_msg.set_data("lock");
+      this->dataPtr->lockTrayModelsPub->Publish(lock_msg);
 
       // Trigger the tray delivery animation
       this->dataPtr->deliverTrayAnimation->SetTime(0);

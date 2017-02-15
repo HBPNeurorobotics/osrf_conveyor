@@ -63,19 +63,23 @@ void KitTrayPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
     "/ariac/trays", 1000, boost::bind(&KitTrayPlugin::OnSubscriberConnect, this, _1));
   this->publishingEnabled = true;
 
-  // Service for locking models to the tray
-  std::string lockModelsServiceName = "lock_models";
-  if (_sdf->HasElement("lock_models_service_name"))
-    lockModelsServiceName = _sdf->Get<std::string>("lock_models_service_name");
-  this->lockModelsServer =
-    this->rosNode->advertiseService(lockModelsServiceName, &KitTrayPlugin::HandleLockModelsService, this);
-
-  // Service for clearing the tray
+  // ROS service for clearing the tray
   std::string clearServiceName = "clear";
   if (_sdf->HasElement("clear_tray_service_name"))
     clearServiceName = _sdf->Get<std::string>("clear_tray_service_name");
   this->clearTrayServer =
     this->rosNode->advertiseService(clearServiceName, &KitTrayPlugin::HandleClearService, this);
+
+  // Initialize Gazebo transport
+  this->gzNode = transport::NodePtr(new transport::Node());
+  this->gzNode->Init();
+
+  // Gazebo subscription for the lock trays topic
+  std::string lockModelsServiceName = "lock_models";
+  if (_sdf->HasElement("lock_models_service_name"))
+    lockModelsServiceName = _sdf->Get<std::string>("lock_models_service_name");
+  this->lockModelsSub = this->gzNode->Subscribe(
+    lockModelsServiceName, &KitTrayPlugin::HandleLockModelsRequest, this);
 }
 
 /////////////////////////////////////////////////
@@ -228,14 +232,10 @@ void KitTrayPlugin::LockContactingModels()
 }
 
 /////////////////////////////////////////////////
-bool KitTrayPlugin::HandleLockModelsService(
-  std_srvs::Trigger::Request & req,
-  std_srvs::Trigger::Response & res)
+void KitTrayPlugin::HandleLockModelsRequest(ConstGzStringPtr &_msg)
 {
-  (void)req;
+  (void)_msg;
   this->LockContactingModels();
-  res.success = true;
-  return true;
 }
 
 /////////////////////////////////////////////////

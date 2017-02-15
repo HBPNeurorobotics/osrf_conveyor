@@ -73,8 +73,7 @@ namespace gazebo
     protected: void PublishKitMsg();
 
     /// \brief Service for locking the models to the tray and disabling updates
-    protected: bool HandleLockModelsService(
-      std_srvs::Trigger::Request & req, std_srvs::Trigger::Response & res);
+    protected: void HandleLockModelsRequest(ConstGzStringPtr &_msg);
 
     /// \brief Service for clearing the tray
     protected: bool HandleClearService(
@@ -92,6 +91,9 @@ namespace gazebo
     /// \brief ROS node handle
     protected: ros::NodeHandle *rosNode;
 
+    /// \brief Gazebo node for communication
+    protected: transport::NodePtr gzNode;
+
     /// \brief Publisher for the kit state
     protected: ros::Publisher currentKitPub;
 
@@ -102,8 +104,11 @@ namespace gazebo
     /// \brief Service that locks models to the tray
     public: ros::ServiceServer lockModelsServer;
 
-    /// \brief Service that clears the tray
+    /// \brief ROS service that clears the tray
     public: ros::ServiceServer clearTrayServer;
+
+    /// \brief Gazebo subscriber to the lock models topic
+    protected: transport::SubscriberPtr lockModelsSub;
   };
 }
 #endif
