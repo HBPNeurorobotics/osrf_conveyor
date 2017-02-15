@@ -498,4 +498,9 @@ def main(sysargv=None):
         return p.returncode
 
 if __name__ == '__main__':
-    sys.exit(main())
+    # Filter out any special ROS remapping arguments.
+    # This is necessary if the script is being run from a ROS launch file.
+    import rospy
+    filtered_argv = rospy.myargv(sys.argv)
+
+    sys.exit(main(filtered_argv[1:]))
