@@ -240,10 +240,24 @@ void KitTrayPlugin::HandleLockModelsRequest(ConstGzStringPtr &_msg)
 
 /////////////////////////////////////////////////
 bool KitTrayPlugin::HandleClearService(
-  std_srvs::Trigger::Request & req,
-  std_srvs::Trigger::Response & res)
+  ros::ServiceEvent<std_srvs::Trigger::Request, std_srvs::Trigger::Response>& event)
 {
-  (void)req;
+  std_srvs::Trigger::Response& res = event.getResponse();
+
+  const std::string& callerName = event.getCallerName();
+  gzdbg << this->trayID << ": Handle clear tray service called by: " << callerName << std::endl;
+
+  // During the competition, this environment variable will be set.
+  auto compRunning = std::getenv("ARIAC_COMPETITION");
+  if (compRunning && callerName.compare("/gazebo") != 0)
+  {
+    std::string errStr = "Competition is running so this service is not enabled.";
+    gzerr << errStr << std::endl;
+    ROS_ERROR_STREAM(errStr);
+    res.success = false;
+    return true;
+  }
+
   this->UnlockContactingModels();
   this->ClearContactingModels();
   res.success = true;

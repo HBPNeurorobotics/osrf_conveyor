@@ -77,7 +77,7 @@ namespace gazebo
 
     /// \brief Service for clearing the tray
     protected: bool HandleClearService(
-      std_srvs::Trigger::Request & req, std_srvs::Trigger::Response & res);
+      ros::ServiceEvent<std_srvs::Trigger::Request, std_srvs::Trigger::Response>& event);
 
     /// \brief Kit which is currently on the tray
     protected: ariac::Kit currentKit;
