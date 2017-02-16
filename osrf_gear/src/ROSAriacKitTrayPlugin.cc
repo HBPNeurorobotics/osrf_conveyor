@@ -15,6 +15,7 @@
  *
 */
 
+#include <cstdlib>
 #include <string>
 
 #include <osrf_gear/KitTray.h>
@@ -59,7 +60,7 @@ void KitTrayPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 
   this->rosNode = new ros::NodeHandle("");
   this->currentKitPub = this->rosNode->advertise<osrf_gear::KitTray>(
-    "/ariac/trays", 1000);
+    "/ariac/trays", 1000, boost::bind(&KitTrayPlugin::OnSubscriberConnect, this, _1));
 }
 
 /////////////////////////////////////////////////
@@ -106,6 +107,23 @@ void KitTrayPlugin::ProcessContactingModels()
 
       this->currentKit.objects.push_back(object);
     }
+  }
+}
+
+/////////////////////////////////////////////////
+void KitTrayPlugin::OnSubscriberConnect(const ros::SingleSubscriberPublisher& pub)
+{
+  auto subscriberName = pub.getSubscriberName();
+  gzdbg << this->trayID << ": New subscription from node: " << subscriberName << std::endl;
+
+  // During the competition, this environment variable will be set.
+  auto compRunning = std::getenv("ARIAC_COMPETITION");
+  if (compRunning && subscriberName.compare("/gazebo") != 0)
+  {
+    std::string errStr = "Competition is running so subscribing to this topic is not permitted.";
+    gzerr << errStr << std::endl;
+    ROS_ERROR_STREAM(errStr);
+    gazebo::shutdown();
   }
 }
 
