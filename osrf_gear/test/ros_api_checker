@@ -1,13 +1,16 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
-import unittest
-import rostest
+
+import re
 import subprocess
 import sys
 import time
-import re
+import unittest
+
 import rospy
+import rostest
+
 
 class Tester(unittest.TestCase):
 
@@ -15,7 +18,8 @@ class Tester(unittest.TestCase):
         cmd = ['rostopic', 'list']
         po = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = po.communicate()
-        self.assertEqual(po.returncode, 0, 'rostopic failed (%s). stdout: %s stderr: %s'%(cmd, out, err))
+        self.assertEqual(
+            po.returncode, 0, 'rostopic failed (%s). stdout: %s stderr: %s' % (cmd, out, err))
         topics_actual = set(out.split('\n')) - set([''])
         topics_expected = set([x['topic'] for x in topics])
         topics_extra = topics_actual - topics_expected
@@ -25,7 +29,8 @@ class Tester(unittest.TestCase):
         cmd = ['rosservice', 'list']
         po = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = po.communicate()
-        self.assertEqual(po.returncode, 0, 'rosservice failed (%s). stdout: %s stderr: %s'%(cmd, out, err))
+        self.assertEqual(
+            po.returncode, 0, 'rosservice failed (%s). stdout: %s stderr: %s' % (cmd, out, err))
         services_actual = set(out.split('\n')) - set([''])
         services_expected = set([x['service'] for x in services])
         services_extra = services_actual - services_expected
@@ -40,7 +45,8 @@ class Tester(unittest.TestCase):
         cmd = ['rostopic', 'info', t['topic']]
         po = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = po.communicate()
-        self.assertEqual(po.returncode, 0, 'rostopic failed (%s). stdout: %s stderr: %s'%(cmd, out, err))
+        self.assertEqual(
+            po.returncode, 0, 'rostopic failed (%s). stdout: %s stderr: %s' % (cmd, out, err))
         self._parse_rostopic(t, out)
 
     def _parse_rostopic(self, t, out):
@@ -55,11 +61,11 @@ class Tester(unittest.TestCase):
         sub_start_re = re.compile('Subscribers:.*')
         pub_sub_re = re.compile(' *\* *([^ ]*).*')
 
-        # Step 1: check type
+        # Step 1: check type1
         m = type_re.match(outsplit[0])
         self.assertEqual(len(m.groups()), 1)
         self.assertEqual(m.groups()[0], t['type'])
-       
+
         # Step 2: check num_publishers and num_subscribers
         state = None
         pubs = 0
@@ -88,7 +94,8 @@ class Tester(unittest.TestCase):
         cmd = ['rosservice', 'info', s['service']]
         po = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = po.communicate()
-        self.assertEqual(po.returncode, 0, 'rosservice failed (%s). stdout: %s stderr: %s'%(cmd, out, err))
+        self.assertEqual(
+            po.returncode, 0, 'rosservice failed (%s). stdout: %s stderr: %s' % (cmd, out, err))
         self._parse_rosservice(s, out)
 
     def _parse_rosservice(self, s, out):
@@ -104,7 +111,8 @@ class Tester(unittest.TestCase):
         m = type_re.match(outsplit[2])
         self.assertEqual(len(m.groups()), 1)
         self.assertEqual(m.groups()[0], s['type'])
-       
+
+
 def load_config(files):
     import yaml
     topics = []
@@ -129,34 +137,39 @@ def load_config(files):
             strict = True
     return topics, services, strict
 
+
 def generate_topic_test(t):
     def test_func(self):
         self._test_topic(t)
     return test_func
+
 
 def generate_service_test(t):
     def test_func(self):
         self._test_service(t)
     return test_func
 
+
 def generate_test_extra_topics(topics):
     def test_func(self):
         self._test_extra_topics(topics)
     return test_func
+
 
 def generate_test_extra_services(services):
     def test_func(self):
         self._test_extra_services(services)
     return test_func
 
+
 def add_tests(topics, services, strict):
     for t in topics:
         test_func = generate_topic_test(t)
-        test_name = "test_topic_%s"%(t['topic'].replace('/','_'))
+        test_name = "test_topic_%s" % (t['topic'].replace('/', '_'))
         setattr(Tester, test_name, test_func)
     for s in services:
         test_func = generate_service_test(s)
-        test_name = "test_service_%s"%(s['service'].replace('/','_'))
+        test_name = "test_service_%s" % (s['service'].replace('/', '_'))
         setattr(Tester, test_name, test_func)
     if strict:
         test_func = generate_test_extra_topics(topics)
@@ -166,14 +179,15 @@ def add_tests(topics, services, strict):
         test_name = "test_extra_services"
         setattr(Tester, test_name, test_func)
 
+
 if __name__ == '__main__':
     rospy.init_node('rosapi_checker', anonymous=True)
     # Dynamically generate test cases and stuff them into the Tester class
     topics, services, strict = load_config(sys.argv[1:])
     # The rostest node itself will advertise a couple of services
-    services.append({'service': '%s/get_loggers'%(rospy.get_name()),
+    services.append({'service': '%s/get_loggers' % (rospy.get_name()),
                      'type': 'roscpp/GetLoggers'})
-    services.append({'service': '%s/set_logger_level'%(rospy.get_name()),
+    services.append({'service': '%s/set_logger_level' % (rospy.get_name()),
                      'type': 'roscpp/SetLoggerLevel'})
     add_tests(topics, services, strict)
 
