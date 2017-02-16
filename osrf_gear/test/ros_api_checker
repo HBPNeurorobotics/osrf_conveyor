@@ -90,19 +90,24 @@ class Tester(unittest.TestCase):
             num_publishers = t['num_publishers']
         if not operator and num_publishers >= 0:
             self.assertEqual(pubs, num_publishers)
+            self.assertEqual(
+                pubs, num_publishers, "Expected %i publishers for topic '%s' but found %i" %
+                (num_publishers, t['topic'], pubs))
         elif operator == '>':
             self.assertTrue(
-                pubs > num_publishers, "Expected %s%i publishers for topic '%s' but counted %i" %
+                pubs > num_publishers, "Expected %s%i publishers for topic '%s' but found %i" %
                 (operator, num_publishers, t['topic'], pubs))
         elif operator == '<':
             self.assertTrue(pubs < num_publishers)
             self.assertTrue(
-                pubs > num_publishers, "Expected %s%i publishers for topic '%s' but counted %i" %
+                pubs > num_publishers, "Expected %s%i publishers for topic '%s' but found %i" %
                 (operator, num_publishers, t['topic'], pubs))
         elif operator:
             raise RuntimeError('Invalid specification: %s' % str(t))
         if t['num_subscribers'] >= 0:
-            self.assertEqual(subs, t['num_subscribers'])
+            self.assertEqual(
+                subs, t['num_subscribers'], "Expected %i subscribers for topic '%s' but found %i" %
+                (t['num_subscribers'], t['topic'], subs) + "\n" + out)
 
     def _test_service(self, s):
         self.assertIn('service', s)
