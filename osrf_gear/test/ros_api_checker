@@ -82,8 +82,25 @@ class Tester(unittest.TestCase):
                         pubs += 1
                     elif state == 'in_subs':
                         subs += 1
-        if t['num_publishers'] >= 0:
-            self.assertEqual(pubs, t['num_publishers'])
+        operator = None
+        if isinstance(t['num_publishers'], basestring):
+            operator = t['num_publishers'][0]
+            num_publishers = int(t['num_publishers'][1:])
+        else:
+            num_publishers = t['num_publishers']
+        if not operator and num_publishers >= 0:
+            self.assertEqual(pubs, num_publishers)
+        elif operator == '>':
+            self.assertTrue(
+                pubs > num_publishers, "Expected %s%i publishers for topic '%s' but counted %i" %
+                (operator, num_publishers, t['topic'], pubs))
+        elif operator == '<':
+            self.assertTrue(pubs < num_publishers)
+            self.assertTrue(
+                pubs > num_publishers, "Expected %s%i publishers for topic '%s' but counted %i" %
+                (operator, num_publishers, t['topic'], pubs))
+        elif operator:
+            raise RuntimeError('Invalid specification: %s' % str(t))
         if t['num_subscribers'] >= 0:
             self.assertEqual(subs, t['num_subscribers'])
 
