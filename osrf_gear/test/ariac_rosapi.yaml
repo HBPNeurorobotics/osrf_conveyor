@@ -1,0 +1,80 @@
+strict: true
+topics:
+
+  ##########################################################
+  # Published topics
+
+  #####################################
+  # System
+  - topic: /clock
+    type: rosgraph_msgs/Clock
+    num_publishers: 1
+    num_subscribers: -1
+
+  - topic: /rosout
+    type: rosgraph_msgs/Log
+    num_publishers: -1
+    num_subscribers: 1
+
+  - topic: /rosout_agg
+    type: rosgraph_msgs/Log
+    num_publishers: 1
+    num_subscribers: -1
+
+  - topic: /tf
+    type: tf/tfMessage
+    num_publishers: -1
+    num_subscribers: 1
+
+#  - topic: /tf_static
+#    type: tf2_msgs/TFMessage
+#    num_publishers: -1
+#    num_subscribers: 1
+
+  #####################################
+  # Arm
+  #  - topic: /ariac/controller_statistics
+  #    type: atlas_msgs/ControllerStatistics
+  #    num_publishers: 1
+  #    num_subscribers: -1
+  #
+  #  - topic: /atlas/force_torque_sensors
+  #    type: atlas_msgs/ForceTorqueSensors
+  #    num_publishers: 1
+  #    num_subscribers: -1
+  #
+  #  - topic: /atlas/imu
+  #    type: sensor_msgs/Imu
+  #    num_publishers: 1
+  #    num_subscribers: -1
+  #
+  #  - topic: /atlas/joint_states
+  #    type: sensor_msgs/JointState
+  #    num_publishers: 1
+  #    num_subscribers: -1
+  #  
+  #  - topic: /atlas/atlas_state
+  #    type: atlas_msgs/AtlasState
+  #    num_publishers: 1
+  #    num_subscribers: -1
+  #
+  #  - topic: /atlas/atlas_sim_interface_state
+  #    type: atlas_msgs/AtlasSimInterfaceState
+  #    num_publishers: 1
+  #    num_subscribers: -1
+  #
+  #  - topic: /atlas/synchronization_statistics
+  #    type: atlas_msgs/SynchronizationStatistics
+  #    num_publishers: 1
+  #    num_subscribers: -1    
+
+  ##########################################################
+  # Subscribed topics
+
+  #####################################
+  # Atlas
+
+  #services:
+
+    #  - service: /atlas/atlas_filters
+    #    type: atlas_msgs/AtlasFilters

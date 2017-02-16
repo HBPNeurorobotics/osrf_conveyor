@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(osrf_gear)
 
+# Used by test/
+set(ROS_PACKAGE_NAME osrf_gear)
+
 if(NOT WIN32)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra")
 endif()
@@ -386,3 +389,6 @@ install(DIRECTORY vendor/
 catkin_add_env_hooks(99_osrf_gear_setup
   DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/cmake
   SHELLS sh)
+
+# Include test subdirectory
+add_subdirectory(test)
