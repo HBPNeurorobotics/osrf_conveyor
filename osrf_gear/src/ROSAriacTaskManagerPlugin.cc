@@ -16,6 +16,7 @@
 */
 
 #include <algorithm>
+#include <cstdlib>
 #include <limits>
 #include <mutex>
 #include <ostream>
@@ -631,10 +632,25 @@ bool ROSAriacTaskManagerPlugin::HandleEndService(
 
 /////////////////////////////////////////////////
 bool ROSAriacTaskManagerPlugin::HandleSubmitTrayService(
-  osrf_gear::SubmitTray::Request & req,
-  osrf_gear::SubmitTray::Response & res)
+  ros::ServiceEvent<osrf_gear::SubmitTray::Request, osrf_gear::SubmitTray::Response> & event)
 {
   std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
+  const osrf_gear::SubmitTray::Request& req = event.getRequest();
+  osrf_gear::SubmitTray::Response& res = event.getResponse();
+
+  const std::string& callerName = event.getCallerName();
+  gzdbg << "Submit tray service called by: " << callerName << std::endl;
+
+  // During the competition, this environment variable will be set.
+  auto compRunning = std::getenv("ARIAC_COMPETITION");
+  if (compRunning && callerName.compare("/gazebo") != 0)
+  {
+    std::string errStr = "Competition is running so this service is not enabled.";
+    gzerr << errStr << std::endl;
+    ROS_ERROR_STREAM(errStr);
+    res.success = false;
+    return true;
+  }
 
   if (this->dataPtr->currentState != "go") {
     std::string errStr = "Competition is not running so trays cannot be submitted.";
