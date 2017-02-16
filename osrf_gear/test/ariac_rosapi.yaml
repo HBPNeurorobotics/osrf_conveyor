@@ -1,8 +1,8 @@
 strict: false
-topics:
 
-  ##########################################################
-  # Published topics
+##########################################################
+# Topics
+topics:
 
   #####################################
   # System
@@ -32,49 +32,54 @@ topics:
     num_subscribers: -1
 
   #####################################
-  # Arm
-  #  - topic: /ariac/controller_statistics
-  #    type: atlas_msgs/ControllerStatistics
-  #    num_publishers: 1
-  #    num_subscribers: -1
-  #
-  #  - topic: /atlas/force_torque_sensors
-  #    type: atlas_msgs/ForceTorqueSensors
-  #    num_publishers: 1
-  #    num_subscribers: -1
-  #
-  #  - topic: /atlas/imu
-  #    type: sensor_msgs/Imu
-  #    num_publishers: 1
-  #    num_subscribers: -1
-  #
-  #  - topic: /atlas/joint_states
-  #    type: sensor_msgs/JointState
-  #    num_publishers: 1
-  #    num_subscribers: -1
-  #
-  #  - topic: /atlas/atlas_state
-  #    type: atlas_msgs/AtlasState
-  #    num_publishers: 1
-  #    num_subscribers: -1
-  #
-  #  - topic: /atlas/atlas_sim_interface_state
-  #    type: atlas_msgs/AtlasSimInterfaceState
-  #    num_publishers: 1
-  #    num_subscribers: -1
-  #
-  #  - topic: /atlas/synchronization_statistics
-  #    type: atlas_msgs/SynchronizationStatistics
-  #    num_publishers: 1
-  #    num_subscribers: -1
+  # Competition control
+  - topic: /ariac/orders
+    type: osrf_gear/Order
+    num_publishers: 1
+    num_subscribers: -1
 
-  ##########################################################
-  # Subscribed topics
 
   #####################################
-  # Atlas
+  # Arm + move_group
+  - topic: /ariac/arm/command
+    type: trajectory_msgs/JointTrajectory
+    num_publishers: -1
+    num_subscribers: 1
 
-  #services:
+  - topic: /ariac/joint_states
+    type: sensor_msgs/JointState
+    num_publishers: 1
+    num_subscribers: 1
 
-    #  - service: /atlas/atlas_filters
-    #    type: atlas_msgs/AtlasFilters
+  - topic: /ariac/arm/state
+    type: control_msgs/JointTrajectoryControllerState
+    num_publishers: 1
+    num_subscribers: 0
+
+  - topic: /ariac/gripper/state
+    type: osrf_gear/VacuumGripperState
+    num_publishers: 1
+    num_subscribers: -1
+
+##########################################################
+# Services
+services:
+
+  #####################################
+  # Competition control
+  - service: /ariac/start_competition
+    type: std_srvs/Trigger
+
+  - service: /ariac/material_locations
+    type: osrf_gear/GetMaterialLocations
+
+  - service: /ariac/agv1
+    type: osrf_gear/AGVControl
+
+  - service: /ariac/agv2
+    type: osrf_gear/AGVControl
+
+  #####################################
+  # Arm
+  - service: /ariac/gripper/control
+    type: osrf_gear/VacuumGripperControl
