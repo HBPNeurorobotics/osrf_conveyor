@@ -1,6 +1,10 @@
 <launch>
   <node name="ariac_sim" pkg="osrf_gear" type="gear.py"
-        args="-f $(find osrf_gear)/config/sample.yaml --verbose" output="screen"/>
+        args="-f
+              $(find osrf_gear)/config/sample_user_config.yaml
+              $(find osrf_gear)/config/comp_conf1.yaml
+              --verbose"
+        output="screen"/>
   <test pkg="osrf_gear" type="ros_api_checker" test-name="ariac_rosapi"
         args="$(find osrf_gear)/test/ariac_rosapi.yaml"
         time-limit="60.0"/>
