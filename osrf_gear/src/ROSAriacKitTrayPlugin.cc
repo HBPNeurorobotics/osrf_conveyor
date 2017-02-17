@@ -61,6 +61,7 @@ void KitTrayPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   this->rosNode = new ros::NodeHandle("");
   this->currentKitPub = this->rosNode->advertise<osrf_gear::KitTray>(
     "/ariac/trays", 1000, boost::bind(&KitTrayPlugin::OnSubscriberConnect, this, _1));
+  this->publishingEnabled = true;
 }
 
 /////////////////////////////////////////////////
@@ -83,7 +84,10 @@ void KitTrayPlugin::OnUpdate(const common::UpdateInfo &/*_info*/)
       << this->contactingModels.size());
   }
   this->ProcessContactingModels();
-  this->PublishKitMsg();
+  if (this->publishingEnabled)
+  {
+    this->PublishKitMsg();
+  }
 }
 
 /////////////////////////////////////////////////
@@ -123,7 +127,9 @@ void KitTrayPlugin::OnSubscriberConnect(const ros::SingleSubscriberPublisher& pu
     std::string errStr = "Competition is running so subscribing to this topic is not permitted.";
     gzerr << errStr << std::endl;
     ROS_ERROR_STREAM(errStr);
-    gazebo::shutdown();
+    // Disable publishing of kit messages.
+    // This will break the scoring but ensure competitors can't cheat.
+    this->publishingEnabled = false;
   }
 }
 

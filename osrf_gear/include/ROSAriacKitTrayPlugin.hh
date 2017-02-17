@@ -75,6 +75,10 @@ namespace gazebo
 
     /// \brief Publisher for the kit state
     protected: ros::Publisher currentKitPub;
+
+    /// \brief Whether or not publish to the Kit ROS topic is enabled
+    /// If unpermitted subscribers connect during the competition, publishing is disabled
+    protected: bool publishingEnabled;
   };
 }
 #endif
