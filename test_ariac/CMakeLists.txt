@@ -1,5 +1,26 @@
+cmake_minimum_required(VERSION 2.8.3)
+project(test_ariac)
+
+if(NOT WIN32)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra")
+endif()
+
+find_package(catkin REQUIRED COMPONENTS
+  ariac_example
+  osrf_gear
+)
+
+# Used by test/
+set(ROS_PACKAGE_NAME osrf_gear)
+catkin_package(
+  CATKIN_DEPENDS
+  osrf_gear
+  ariac_example
+)
+
 set(rostests
   ariac_rosapi.test
+  ariac_example.test
 )
 
 foreach(rostest ${rostests})
@@ -22,5 +43,6 @@ install(FILES
 
 install(PROGRAMS
   ros_api_checker
+  test_example_node.py
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/test
 )
