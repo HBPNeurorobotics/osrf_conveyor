@@ -3,7 +3,6 @@
         args="-f
               $(find osrf_gear)/config/sample.yaml
               --verbose"/>
-  <node name="ariac_example_node" pkg="ariac_example" type="example_node"/>
-  <test pkg="osrf_gear" type="test_example_node.py" test-name="ariac_example"
+  <test pkg="test_ariac" type="test_example_node.py" test-name="ariac_example"
         time-limit="60.0"/>
 </launch>

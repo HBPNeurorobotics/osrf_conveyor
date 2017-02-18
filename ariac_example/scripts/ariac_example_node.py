@@ -37,11 +37,12 @@ def start_competition():
         response = start()
     except rospy.ServiceException as exc:
         rospy.logerr("Failed to start the competition: %s" % exc)
-        return
+        return False
     if not response.success:
         rospy.logerr("Failed to start the competition: %s" % response)
     else:
         rospy.loginfo("Competition started!")
+    return response.success
 
 
 class MyCompetitionClass:
@@ -55,6 +56,7 @@ class MyCompetitionClass:
 
     def order_callback(self, msg):
         rospy.loginfo("Received order:\n" + str(msg))
+        self.received_orders.append(msg)
 
     def joint_state_callback(self, msg):
         if time.time() - self.last_joint_state_print >= 10:
@@ -77,13 +79,17 @@ class MyCompetitionClass:
         self.joint_trajectory_publisher.publish(msg)
 
 
+def connect_callbacks(comp_class):
+    order_sub = rospy.Subscriber("/ariac/orders", Order, comp_class.order_callback)
+    joint_state_sub = rospy.Subscriber(
+        "/ariac/joint_states", JointState, comp_class.joint_state_callback)
+
+
 def main():
     rospy.init_node("ariac_example_node")
 
     comp_class = MyCompetitionClass()
-    order_sub = rospy.Subscriber("/ariac/orders", Order, comp_class.order_callback)
-    joint_state_sub = rospy.Subscriber(
-        "/ariac/joint_states", JointState, comp_class.joint_state_callback)
+    connect_callbacks(comp_class)
 
     rospy.loginfo("Setup complete.")
     start_competition()
