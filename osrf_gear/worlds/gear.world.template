@@ -345,7 +345,7 @@
 
       <!-- a tray for building kits -->
       <!-- (this has to be in a model tag so logical cameras can detect it as a nested model) -->
-      <model name="kit_trays">
+      <model name="kit_tray_@(str(agv_id))">
         <pose>0.0 0.15 0.75 0 0 0</pose>
         <include>
           <name>kit_tray_@(str(agv_id))</name>
@@ -362,7 +362,7 @@
       <!-- join the tray and agv -->
       <joint name="agv_tray" type="fixed">
           <parent>agv@(str(agv_id))::link</parent>
-          <child>kit_trays::kit_tray_@(str(agv_id))::tray</child>
+          <child>kit_tray_@(str(agv_id))::kit_tray_@(str(agv_id))::tray</child>
       </joint>
     </model>
 
@@ -492,7 +492,7 @@ count = {}
     <plugin filename="libPopulationPlugin.so" name="populate_kit_tray_1">
       <activation_topic>/ariac/populate_belt</activation_topic>
       <loop_forever>false</loop_forever>
-      <frame>agv1::kit_trays::kit_tray_1::tray</frame>
+      <frame>agv1::kit_tray_1::kit_tray_1::tray</frame>
       <object_sequence>
 @[for part in order['parts']]@
         <object>

@@ -144,7 +144,8 @@ void ROSAGVPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf)
   }
 
   this->dataPtr->agvName = std::string("agv") + index;
-  this->dataPtr->trayLinkName = this->dataPtr->agvName + "::kit_trays::kit_tray_" + index + "::tray";
+  this->dataPtr->trayLinkName =
+    this->dataPtr->agvName + "::kit_tray_" + index + "::kit_tray_" + index + "::tray";
 
   std::string agvControlTopic = "/ariac/" + this->dataPtr->agvName;
   ROS_DEBUG_STREAM("Using AGV control service topic: " << agvControlTopic);
