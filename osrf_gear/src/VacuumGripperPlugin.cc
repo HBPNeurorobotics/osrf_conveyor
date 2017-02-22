@@ -382,10 +382,11 @@ void VacuumGripperPlugin::OnUpdate()
   // @todo: should package the decision into a function
   if (this->dataPtr->contacts.size() > 0)
   {
-    gzdbg << "Number of points in contact with gripper: " << this->dataPtr->contacts.size() << std::endl;
+    gzdbg << "Number of collisions with gripper: " << this->dataPtr->contacts.size() << std::endl;
   }
   if (this->dataPtr->contacts.size() >= this->dataPtr->minContactCount)
   {
+    gzdbg << "More collisions than the minContactCount: " << this->dataPtr->minContactCount << std::endl;
     this->dataPtr->posCount++;
     this->dataPtr->zeroCount = 0;
   }
@@ -431,7 +432,6 @@ void VacuumGripperPlugin::OnUpdate()
   //   this->HandleDetach();
   // }
 
-  this->dataPtr->contacts.clear();
   this->dataPtr->prevUpdateTime = common::Time::GetWallTime();
 }
 
@@ -439,6 +439,7 @@ void VacuumGripperPlugin::OnUpdate()
 void VacuumGripperPlugin::OnContacts(ConstContactsPtr &_msg)
 {
   std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
+  this->dataPtr->contacts.clear();
   for (int i = 0; i < _msg->contact_size(); ++i)
   {
     CollisionPtr collision1 = boost::dynamic_pointer_cast<Collision>(
