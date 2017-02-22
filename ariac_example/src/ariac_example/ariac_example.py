@@ -91,17 +91,3 @@ def connect_callbacks(comp_class):
     order_sub = rospy.Subscriber("/ariac/orders", Order, comp_class.order_callback)
     joint_state_sub = rospy.Subscriber(
         "/ariac/joint_states", JointState, comp_class.joint_state_callback)
-
-
-def main():
-    rospy.init_node("ariac_example_node")
-
-    comp_class = MyCompetitionClass()
-    connect_callbacks(comp_class)
-
-    rospy.loginfo("Setup complete.")
-    start_competition()
-    rospy.spin()
-
-if __name__ == '__main__':
-    main()

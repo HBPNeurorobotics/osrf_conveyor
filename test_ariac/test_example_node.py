@@ -6,7 +6,7 @@ import sys
 import time
 import unittest
 
-import ariac_example_node
+from ariac_example import ariac_example
 import rospy
 import rostest
 
@@ -14,15 +14,14 @@ import rostest
 class Tester(unittest.TestCase):
 
     def test_example_node(self):
-        self.comp_class = ariac_example_node.MyCompetitionClass()
-        time.sleep(5.0)
-        ariac_example_node.connect_callbacks(self.comp_class)
+        self.comp_class = ariac_example.MyCompetitionClass()
+        ariac_example.connect_callbacks(self.comp_class)
         self._test_start_comp()
         time.sleep(1.0)
         self._test_order_reception()
 
     def _test_start_comp(self):
-        success = ariac_example_node.start_competition()
+        success = ariac_example.start_competition()
         self.assertTrue(success, 'Failed to start the competition')
 
     def _test_order_reception(self):
