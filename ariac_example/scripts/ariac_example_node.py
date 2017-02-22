@@ -70,7 +70,15 @@ class MyCompetitionClass:
 
     def send_arm_to_zero_state(self):
         msg = JointTrajectory()
-        msg.joint_names = self.current_joint_state.name
+        msg.joint_names = [
+            'elbow_joint',
+            'linear_arm_actuator_joint',
+            'shoulder_lift_joint',
+            'shoulder_pan_joint',
+            'wrist_1_joint',
+            'wrist_2_joint',
+            'wrist_3_joint',
+        ]
         point = JointTrajectoryPoint()
         point.positions = [0] * len(msg.joint_names)
         point.time_from_start = rospy.Duration(1.0)
