@@ -19,6 +19,7 @@ class Tester(unittest.TestCase):
         self._test_start_comp()
         time.sleep(1.0)
         self._test_order_reception()
+        self._test_send_arm_to_zero_state()
 
     def _test_start_comp(self):
         success = ariac_example.start_competition()
@@ -26,6 +27,14 @@ class Tester(unittest.TestCase):
 
     def _test_order_reception(self):
         self.assertEqual(len(self.comp_class.received_orders), 1)
+
+    def _test_send_arm_to_zero_state(self):
+        self.comp_class.send_arm_to_zero_state()
+        time.sleep(1.5)
+        error = 0
+        for position in self.comp_class.current_joint_state.position:
+            error += abs(position - 0.0)
+        self.assertTrue(error < 0.5, 'Arm was not properly sent to zero state')
 
 
 if __name__ == '__main__':
