@@ -20,6 +20,8 @@ import time
 import rospy
 
 from osrf_gear.msg import Order
+from osrf_gear.msg import VacuumGripperState
+from osrf_gear.srv import VacuumGripperControl
 from sensor_msgs.msg import JointState
 from std_srvs.srv import Trigger
 from trajectory_msgs.msg import JointTrajectory
@@ -45,14 +47,44 @@ def start_competition():
     return response.success
 
 
+def control_gripper(enabled):
+    rospy.loginfo("Waiting for gripper control to be ready...")
+    rospy.wait_for_service('/ariac/gripper/control')
+    rospy.loginfo("Gripper control is now ready.")
+    rospy.loginfo("Requesting gripper control...")
+
+    try:
+        gripper_control = rospy.ServiceProxy('/ariac/gripper/control', VacuumGripperControl)
+        response = gripper_control(enabled)
+    except rospy.ServiceException as exc:
+        rospy.logerr("Failed to control the gripper: %s" % exc)
+        return False
+    if not response.success:
+        rospy.logerr("Failed to control the gripper: %s" % response)
+    else:
+        rospy.loginfo("Gripper controlled successfully")
+    return response.success
+
+
 class MyCompetitionClass:
     def __init__(self):
         self.joint_trajectory_publisher = \
             rospy.Publisher("/ariac/arm/command", JointTrajectory, queue_size=10)
         self.received_orders = []
         self.current_joint_state = None
+        self.current_gripper_state = None
         self.last_joint_state_print = time.time()
+        self.last_gripper_state_print = time.time()
         self.has_been_zeroed = False
+        self.arm_joint_names = [
+            'elbow_joint',
+            'linear_arm_actuator_joint',
+            'shoulder_lift_joint',
+            'shoulder_pan_joint',
+            'wrist_1_joint',
+            'wrist_2_joint',
+            'wrist_3_joint',
+        ]
 
     def order_callback(self, msg):
         rospy.loginfo("Received order:\n" + str(msg))
@@ -63,24 +95,18 @@ class MyCompetitionClass:
             rospy.loginfo("Current Joint States (throttled to 0.1 Hz):\n" + str(msg))
             self.last_joint_state_print = time.time()
         self.current_joint_state = msg
-        if not self.has_been_zeroed:
-            self.has_been_zeroed = True
-            rospy.loginfo("Sending arm to zero joint positions...")
-            self.send_arm_to_zero_state()
 
-    def send_arm_to_zero_state(self):
+    def gripper_state_callback(self, msg):
+        if time.time() - self.last_gripper_state_print >= 10:
+            rospy.loginfo("Current gripper state (throttled to 0.1 Hz):\n" + str(msg))
+            self.last_gripper_state_print = time.time()
+        self.current_gripper_state = msg
+
+    def send_arm_to_state(self, positions):
         msg = JointTrajectory()
-        msg.joint_names = [
-            'elbow_joint',
-            'linear_arm_actuator_joint',
-            'shoulder_lift_joint',
-            'shoulder_pan_joint',
-            'wrist_1_joint',
-            'wrist_2_joint',
-            'wrist_3_joint',
-        ]
+        msg.joint_names = self.arm_joint_names
         point = JointTrajectoryPoint()
-        point.positions = [0] * len(msg.joint_names)
+        point.positions = positions
         point.time_from_start = rospy.Duration(1.0)
         msg.points = [point]
         rospy.loginfo("Sending command:\n" + str(msg))
@@ -91,3 +117,5 @@ def connect_callbacks(comp_class):
     order_sub = rospy.Subscriber("/ariac/orders", Order, comp_class.order_callback)
     joint_state_sub = rospy.Subscriber(
         "/ariac/joint_states", JointState, comp_class.joint_state_callback)
+    gripper_state_sub = rospy.Subscriber(
+        "/ariac/gripper/state", VacuumGripperState, comp_class.gripper_state_callback)

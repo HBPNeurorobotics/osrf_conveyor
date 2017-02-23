@@ -29,7 +29,7 @@ class Tester(unittest.TestCase):
         self.assertEqual(len(self.comp_class.received_orders), 1)
 
     def _test_send_arm_to_zero_state(self):
-        self.comp_class.send_arm_to_zero_state()
+        self.comp_class.send_arm_to_state([0] * len(self.comp_class.arm_joint_names))
         time.sleep(1.5)
         error = 0
         for position in self.comp_class.current_joint_state.position:

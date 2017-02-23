@@ -21,6 +21,7 @@ catkin_package(
 set(rostests
   ariac_rosapi.test
   ariac_example.test
+  gripper.test
 )
 
 foreach(rostest ${rostests})
@@ -44,5 +45,6 @@ install(FILES
 install(PROGRAMS
   ros_api_checker
   test_example_node.py
+  test_gripper.py
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/test
 )
