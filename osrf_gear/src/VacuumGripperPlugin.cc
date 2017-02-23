@@ -458,10 +458,9 @@ void VacuumGripperPlugin::OnContacts(ConstContactsPtr &_msg)
 /////////////////////////////////////////////////
 void VacuumGripperPlugin::HandleAttach()
 {
-  std::map<std::string, physics::CollisionPtr> cc;
-  std::map<std::string, int> contactCounts;
-  std::map<std::string, int>::iterator iter;
+  physics::CollisionPtr collisionPtr;
 
+  // Get the pointer to the collision that's not the gripper's.
   // This function is only called from the OnUpdate function so
   // the call to contacts.clear() is not going to happen in
   // parallel with the reads in the following code, no mutex needed.
@@ -469,55 +468,50 @@ void VacuumGripperPlugin::HandleAttach()
   {
     std::string name1 = this->dataPtr->contacts[i].collision1();
     std::string name2 = this->dataPtr->contacts[i].collision2();
+    gzdbg << "Collision between '" << name1 << "' and '" << name2 << "'\n";
 
     if (this->dataPtr->collisions.find(name1) ==
         this->dataPtr->collisions.end())
     {
-      cc[name1] = boost::dynamic_pointer_cast<Collision>(
+      collisionPtr = boost::dynamic_pointer_cast<Collision>(
           this->dataPtr->world->GetEntity(name1));
-      contactCounts[name1] += 1;
     }
 
     if (this->dataPtr->collisions.find(name2) ==
         this->dataPtr->collisions.end())
     {
-      cc[name2] = boost::dynamic_pointer_cast<Collision>(
+      collisionPtr = boost::dynamic_pointer_cast<Collision>(
           this->dataPtr->world->GetEntity(name2));
-      contactCounts[name2] += 1;
     }
   }
 
-  iter = contactCounts.begin();
-  while (iter != contactCounts.end())
+  if (!collisionPtr)
   {
-    if (iter->second < 2)
-      contactCounts.erase(iter++);
-    else
+    gzdbg << "Somehow the gripper was in collision with itself.\n";
+    return;
+  }
+
+  if (!this->dataPtr->attached)
+  {
+    this->dataPtr->attached = true;
+
+    this->dataPtr->fixedJoint->Load(this->dataPtr->suctionCupLink,
+        collisionPtr->GetLink(), math::Pose());
+    this->dataPtr->fixedJoint->Init();
+
+    // Check if the object should drop.
+    auto modelPtr = collisionPtr->GetLink()->GetModel();
+    auto name = modelPtr->GetName();
+    gzdbg << "Part attached to gripper: " << name << std::endl;
+    this->dataPtr->attachedObjType = ariac::DetermineModelType(name);
+    auto found = std::find(std::begin(this->dataPtr->droppedObjects),
+                   std::end(this->dataPtr->droppedObjects), this->dataPtr->attachedObjType);
+    bool alreadyDropped = found != std::end(this->dataPtr->droppedObjects);
+    if (!alreadyDropped)
     {
-      if (!this->dataPtr->attached && cc[iter->first])
-      {
-        this->dataPtr->attached = true;
-
-        this->dataPtr->fixedJoint->Load(this->dataPtr->suctionCupLink,
-            cc[iter->first]->GetLink(), math::Pose());
-        this->dataPtr->fixedJoint->Init();
-
-        // Check if the object should drop.
-        auto name = cc[iter->first]->GetLink()->GetModel()->GetName();
-        this->dataPtr->attachedObjType = ariac::DetermineModelType(name);
-        auto found = std::find(std::begin(this->dataPtr->droppedObjects),
-                       std::end(this->dataPtr->droppedObjects), this->dataPtr->attachedObjType);
-        bool alreadyDropped = found != std::end(this->dataPtr->droppedObjects);
-        if (!alreadyDropped)
-        {
-          this->dataPtr->dropPending = true;
-          this->dataPtr->dropAttachedModel =
-            cc[iter->first]->GetLink()->GetModel();
-
-          gzdbg << "Drop scheduled" << std::endl;
-        }
-      }
-      ++iter;
+      this->dataPtr->dropPending = true;
+      this->dataPtr->dropAttachedModel = modelPtr;
+      gzdbg << "Drop scheduled" << std::endl;
     }
   }
 }
