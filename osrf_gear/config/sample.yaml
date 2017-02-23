@@ -8,12 +8,12 @@ belt_parts:
   piston_rod_part:
     3.0:
       pose:
-        xyz: [0.0, 0.0, 0.1]
+        xyz: [-7.0, 0.0, 0.1]
         rpy: [0, 0, 'pi/2']
   part4:
     6.0:
       pose:
-        xyz: [0.0, 0.0, 0.1]
+        xyz: [-7.0, 0.0, 0.1]
         rpy: [0, 0, 'pi/2']
 
 orders:
