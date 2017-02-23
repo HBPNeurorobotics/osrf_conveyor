@@ -175,7 +175,7 @@ VacuumGripperPlugin::VacuumGripperPlugin()
   gzmsg << "VacuumGripper plugin loaded" << std::endl;
 
   this->dataPtr->attached = false;
-  this->dataPtr->updateRate = common::Time(0, common::Time::SecToNano(0.75));
+  this->dataPtr->updateRate = common::Time(0, common::Time::SecToNano(0.1));
 }
 
 /////////////////////////////////////////////////
