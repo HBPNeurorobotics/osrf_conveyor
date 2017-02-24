@@ -103,9 +103,8 @@ void AriacScorer::ScoreCurrentState()
     }
     else
     {
-      for (const auto & item : this->currentOrder.kits)
+      for (const auto & kit : this->currentOrder.kits)
       {
-        auto kit = item.second;
         auto orderKitType = kit.kitType;
         tray.currentKit.kitType = orderKitType;
         auto trayScore = ScoreTray(tray);
@@ -153,18 +152,22 @@ ariac::TrayScore AriacScorer::ScoreTray(const ariac::KitTray & tray)
   ariac::Kit kit = tray.currentKit;
   ariac::KitType_t kitType = tray.currentKit.kitType;
   ariac::TrayScore score;
-  if (this->currentOrder.kits.find(kitType) == this->currentOrder.kits.end())
+  auto it = find_if(this->currentOrder.kits.begin(), this->currentOrder.kits.end(),
+    [&kitType](const ariac::Kit& kit) {
+      return kit.kitType == kitType;
+    });
+  if (it == this->currentOrder.kits.end())
   {
     gzdbg << "No known kit type: " << kitType << std::endl;
     gzdbg << "Known kit types: " << std::endl;
-    for (auto item : this->currentOrder.kits)
+    for (const ariac::Kit & kit : this->currentOrder.kits)
     {
-      gzdbg << item.first << std::endl;
+      gzdbg << kit << std::endl;
     }
     gzdbg << "Current order: " << this->currentOrder << std::endl;
     return score;
   }
-  ariac::Kit assignedKit = this->currentOrder.kits[kitType];
+  ariac::Kit assignedKit = *it;
   auto numAssignedObjects = assignedKit.objects.size();
   gzdbg << "Comparing the " << numAssignedObjects << " assigned objects with the current " << \
     kit.objects.size() << " objects" << std::endl;
@@ -304,7 +307,7 @@ void AriacScorer::OnOrderReceived(const osrf_gear::Order::ConstPtr & orderMsg)
     ariac::KitType_t kitType = kitMsg.kit_type;
     ariac::Kit assignedKit;
     FillKitFromMsg(kitMsg, assignedKit);
-    order.kits[kitType] = assignedKit;
+    order.kits.push_back(assignedKit);
   }
   this->newOrder = order;
 }

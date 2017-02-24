@@ -325,7 +325,7 @@ namespace ariac
       _out << "Kits:" << std::endl;
       for (const auto & item : _order.kits)
       {
-        _out << item.second << std::endl;
+        _out << item << std::endl;
       }
       _out << "</order>" << std::endl;
 
@@ -343,7 +343,7 @@ namespace ariac
     public: double allowedTime;
 
     /// \brief An order is composed of multiple kits of different types.
-    public: std::map<KitType_t, Kit> kits;
+    public: std::vector<Kit> kits;
 
     /// \brief Simulation time in seconds spent on this order.
     public: double timeTaken;

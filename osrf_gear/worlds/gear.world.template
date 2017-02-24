@@ -480,6 +480,15 @@
           </object>
 @[end for]@
         </kit>
+        <kit>
+          <kit_type>@(order_name)</kit_type>
+@[for part in order['parts']]@
+          <object>
+            <type>@(part.type)</type>
+            <pose>@(' '.join(part.pose.xyz)) @(' '.join(part.pose.rpy))</pose>
+          </object>
+@[end for]@
+        </kit>
       </order>
 @[end for]@
       <material_locations>
