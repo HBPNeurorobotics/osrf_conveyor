@@ -82,6 +82,12 @@ namespace gazebo
 
               /// \brief Destination where objects are teleported to after a drop
               public: math::Pose destination;
+
+              /// \brief Getter for the type of object to drop
+              public: std::string getType() const
+              {
+                return this->type;
+              };
             };
 
     /// \brief Collection of objects that have been dropped.
@@ -491,28 +497,41 @@ void VacuumGripperPlugin::HandleAttach()
     return;
   }
 
-  if (!this->dataPtr->attached)
+  if (this->dataPtr->attached)
   {
-    this->dataPtr->attached = true;
+    return;
+  }
+  this->dataPtr->attached = true;
 
-    this->dataPtr->fixedJoint->Load(this->dataPtr->suctionCupLink,
-        collisionPtr->GetLink(), math::Pose());
-    this->dataPtr->fixedJoint->Init();
+  this->dataPtr->fixedJoint->Load(this->dataPtr->suctionCupLink,
+      collisionPtr->GetLink(), math::Pose());
+  this->dataPtr->fixedJoint->Init();
 
-    // Check if the object should drop.
-    auto modelPtr = collisionPtr->GetLink()->GetModel();
-    auto name = modelPtr->GetName();
-    gzdbg << "Part attached to gripper: " << name << std::endl;
-    this->dataPtr->attachedObjType = ariac::DetermineModelType(name);
-    auto found = std::find(std::begin(this->dataPtr->droppedObjects),
-                   std::end(this->dataPtr->droppedObjects), this->dataPtr->attachedObjType);
-    bool alreadyDropped = found != std::end(this->dataPtr->droppedObjects);
-    if (!alreadyDropped)
-    {
-      this->dataPtr->dropPending = true;
-      this->dataPtr->dropAttachedModel = modelPtr;
-      gzdbg << "Drop scheduled" << std::endl;
-    }
+  auto modelPtr = collisionPtr->GetLink()->GetModel();
+  auto name = modelPtr->GetName();
+  gzdbg << "Part attached to gripper: " << name << std::endl;
+
+  // Check if the object should drop.
+  std::string objectType = ariac::DetermineModelType(name);
+  auto it = find_if(this->dataPtr->objectsToDrop.begin(), this->dataPtr->objectsToDrop.end(),
+    [&objectType](const VacuumGripperPluginPrivate::DropObject& obj) {
+      return obj.getType() == objectType;
+    });
+  this->dataPtr->attachedObjType = objectType;
+  bool objectToBeDropped = it != this->dataPtr->objectsToDrop.end();
+
+  if (!objectToBeDropped)
+  {
+    return;
+  }
+  auto found = std::find(std::begin(this->dataPtr->droppedObjects),
+                 std::end(this->dataPtr->droppedObjects), this->dataPtr->attachedObjType);
+  bool alreadyDropped = found != std::end(this->dataPtr->droppedObjects);
+  if (!alreadyDropped)
+  {
+    this->dataPtr->dropPending = true;
+    this->dataPtr->dropAttachedModel = modelPtr;
+    gzdbg << "Drop scheduled" << std::endl;
   }
 }
 
