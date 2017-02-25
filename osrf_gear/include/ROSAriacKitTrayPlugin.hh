@@ -57,6 +57,10 @@ namespace gazebo
     /// \brief Update the kit based on which models are in contact
     public: std::string DetermineModelType(const std::string &modelName);
 
+    /// \brief Callback for when a new subscriber connects to the Kit ROS publisher
+    /// This will check that only the /gazebo node is subscribed during the competition
+    protected: void OnSubscriberConnect(const ros::SingleSubscriberPublisher& pub);
+
     /// \brief Publish the Kit ROS message
     protected: void PublishKitMsg();
 
@@ -71,7 +75,10 @@ namespace gazebo
 
     /// \brief Publisher for the kit state
     protected: ros::Publisher currentKitPub;
+
+    /// \brief Whether or not publish to the Kit ROS topic is enabled
+    /// If unpermitted subscribers connect during the competition, publishing is disabled
+    protected: bool publishingEnabled;
   };
 }
 #endif
-
