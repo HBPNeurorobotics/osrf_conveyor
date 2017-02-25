@@ -336,12 +336,17 @@ def create_drops_info(drops_dict):
 
 
 def create_order_info(name, order_dict):
+    kit_count = get_field_with_default(order_dict, 'kit_count', 1)
     announcement_time = get_required_field(name, order_dict, 'announcement_time')
     parts_dict = get_required_field(name, order_dict, 'parts')
     parts = []
     for part_name, part_dict in parts_dict.items():
         parts.append(create_model_info(part_name, part_dict))
-    return {'announcement_time': announcement_time, 'parts': parts}
+    return {
+        'announcement_time': announcement_time,
+        'parts': parts,
+        'kit_count': kit_count,
+    }
 
 
 def create_order_infos(orders_dict):

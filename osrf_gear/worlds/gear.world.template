@@ -471,8 +471,9 @@
 @[for order_name, order in orders.items()]@
       <order>
         <start_time>@(order['announcement_time'])</start_time>
+@[for kit_index in range(order['kit_count'])]
         <kit>
-          <kit_type>@(order_name)_0</kit_type>
+          <kit_type>@(order_name)_kit_@(kit_index)</kit_type>
 @[for part in order['parts']]@
           <object>
             <type>@(part.type)</type>
@@ -480,15 +481,7 @@
           </object>
 @[end for]@
         </kit>
-        <kit>
-          <kit_type>@(order_name)_1</kit_type>
-@[for part in order['parts']]@
-          <object>
-            <type>@(part.type)</type>
-            <pose>@(' '.join(part.pose.xyz)) @(' '.join(part.pose.rpy))</pose>
-          </object>
 @[end for]@
-        </kit>
       </order>
 @[end for]@
       <material_locations>
