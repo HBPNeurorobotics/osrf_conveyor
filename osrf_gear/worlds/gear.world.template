@@ -472,7 +472,7 @@
       <order>
         <start_time>@(order['announcement_time'])</start_time>
         <kit>
-          <kit_type>@(order_name)</kit_type>
+          <kit_type>@(order_name)_0</kit_type>
 @[for part in order['parts']]@
           <object>
             <type>@(part.type)</type>
@@ -481,7 +481,7 @@
 @[end for]@
         </kit>
         <kit>
-          <kit_type>@(order_name)</kit_type>
+          <kit_type>@(order_name)_1</kit_type>
 @[for part in order['parts']]@
           <object>
             <type>@(part.type)</type>

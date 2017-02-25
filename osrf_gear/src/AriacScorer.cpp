@@ -69,7 +69,8 @@ void AriacScorer::Update(double timeStep)
     // Check score of trays in progress.
     if (this->newOrderReceived || this->newTrayInfoReceived)
     {
-      this->ScoreCurrentState();
+      // Calculate the hypothetical score of each tray.
+      // this->ScoreCurrentState();
     }
   }
 
@@ -139,10 +140,21 @@ bool AriacScorer::GetTrayById(const ariac::TrayID_t & trayID, ariac::KitTray & k
 /////////////////////////////////////////////////
 ariac::TrayScore AriacScorer::SubmitTray(const ariac::KitTray & tray)
 {
+  // Do not allow re-submission of trays - just return the existing score.
+  auto it = this->orderScore->trayScores.find(tray.currentKit.kitType);
+  if (it != this->orderScore->trayScores.end())
+  {
+    auto trayScore = it->second;
+    if (trayScore.isSubmitted)
+    {
+      gzdbg << "Kit already submitted, not rescoring: " << tray.currentKit.kitType << std::endl;
+      return trayScore;
+    }
+  }
   auto trayScore = ScoreTray(tray);
   gzdbg << "Score from tray '" << tray.trayID << "': " << trayScore.total() << std::endl;
-  this->orderScore->trayScores[tray.trayID] = trayScore;
-  this->orderScore->trayScores[tray.trayID].isSubmitted = true;
+  this->orderScore->trayScores[tray.currentKit.kitType] = trayScore;
+  this->orderScore->trayScores[tray.currentKit.kitType].isSubmitted = true;
   return trayScore;
 }
 
@@ -152,6 +164,7 @@ ariac::TrayScore AriacScorer::ScoreTray(const ariac::KitTray & tray)
   ariac::Kit kit = tray.currentKit;
   ariac::KitType_t kitType = tray.currentKit.kitType;
   ariac::TrayScore score;
+  score.trayID = kitType;
   auto it = find_if(this->currentOrder.kits.begin(), this->currentOrder.kits.end(),
     [&kitType](const ariac::Kit& kit) {
       return kit.kitType == kitType;
@@ -302,6 +315,7 @@ void AriacScorer::OnOrderReceived(const osrf_gear::Order::ConstPtr & orderMsg)
 
   ariac::Order order;
   order.orderID = orderMsg->order_id;
+  // Initialize the name of each of the expected kits.
   for (const auto & kitMsg : orderMsg->kits)
   {
     ariac::KitType_t kitType = kitMsg.kit_type;
@@ -319,8 +333,15 @@ void AriacScorer::AssignOrder(const ariac::Order & order)
   if (this->gameScore.orderScores.find(orderID) == this->gameScore.orderScores.end())
   {
     // This is a previously unseen order: start scoring from scratch
-    this->gameScore.orderScores[orderID] = ariac::OrderScore();
-    this->gameScore.orderScores[orderID].orderID = orderID;
+    auto orderScore = ariac::OrderScore();
+    orderScore.orderID = orderID;
+    for (auto const & kit : order.kits)
+    {
+      auto trayScore = ariac::TrayScore();
+      trayScore.trayID = kit.kitType;
+      orderScore.trayScores[kit.kitType] = trayScore;
+    }
+    this->gameScore.orderScores[orderID] = orderScore;
   }
   this->orderScore = &this->gameScore.orderScores[orderID];
 
