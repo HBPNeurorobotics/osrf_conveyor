@@ -203,6 +203,17 @@ void SideContactPlugin::CalculateContactingModels()
 }
 
 /////////////////////////////////////////////////
+void SideContactPlugin::ClearContactingModels()
+{
+  boost::mutex::scoped_lock lock(this->mutex);
+  for (auto model : this->contactingModels)
+  {
+    gzdbg << "Teleporting model: " << model->GetScopedName() << std::endl;
+    model->SetWorldPose(math::Pose(0, 0, -1, 0, 0, 0));
+  }
+}
+
+/////////////////////////////////////////////////
 bool SideContactPlugin::TimeToExecute()
 {
   // We're using a custom update rate.

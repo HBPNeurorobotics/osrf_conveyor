@@ -328,59 +328,45 @@
 @[end for]@
 @[end if]@
 
-    <!-- AGV1 -->
-    <model name ="agv1">
-      <pose>0.3 3.3 0 0 0 3.1415</pose>
+@[for agv_id in [1,2]]@
+    <!-- AGV@(str(agv_id)) -->
+    <model name="agv@(str(agv_id))">
+      <pose>0.3 @(3.3 if agv_id == 1 else -3.3) 0 0 0 3.1415</pose>
       <include>
+        <name>agv@(str(agv_id))</name>
         <uri>model://warehouse_robot</uri>
       </include>
       <plugin name="agv_plugin" filename="libROSAGVPlugin.so">
         <submit_tray_service_name>/ariac/submit_tray</submit_tray_service_name>
-        <index>1</index>
+        <clear_tray_service_name>/ariac/kit_tray_@(str(agv_id))/clear_tray</clear_tray_service_name>
+        <lock_tray_service_name>/ariac/kit_tray_@(str(agv_id))/lock_models</lock_tray_service_name>
+        <index>@(str(agv_id))</index>
       </plugin>
 
       <!-- a tray for building kits -->
       <!-- (this has to be in a model tag so logical cameras can detect it as a nested model) -->
-      <model name="kit_tray">
+      <model name="kit_tray_@(str(agv_id))">
         <pose>0.0 0.15 0.75 0 0 0</pose>
         <include>
+          <name>kit_tray_@(str(agv_id))</name>
           <uri>model://kit_tray</uri>
         </include>
+        <plugin name="kit_tray_plugin" filename="libROSAriacKitTrayPlugin.so">
+          <contact_sensor_name>kit_tray_contact</contact_sensor_name>
+          <clear_tray_service_name>/ariac/kit_tray_@(str(agv_id))/clear_tray</clear_tray_service_name>
+          <lock_models_service_name>/ariac/kit_tray_@(str(agv_id))/lock_models</lock_models_service_name>
+          <update_rate>20</update_rate>
+        </plugin>
       </model>
 
       <!-- join the tray and agv -->
       <joint name="agv_tray" type="fixed">
-          <parent>warehouse_robot::link</parent>
-          <child>kit_tray::tray</child>
+          <parent>agv@(str(agv_id))::link</parent>
+          <child>kit_tray_@(str(agv_id))::kit_tray_@(str(agv_id))::tray</child>
       </joint>
     </model>
 
-    <!-- AGV2 -->
-    <model name ="agv2">
-      <pose>0.3 -3.3 0 0 0 0</pose>
-      <include>
-        <uri>model://warehouse_robot</uri>
-      </include>
-      <plugin name="agv_plugin" filename="libROSAGVPlugin.so">
-        <index>2</index>
-        <submit_tray_service_name>/ariac/submit_tray</submit_tray_service_name>
-      </plugin>
-
-      <!-- a tray for building kits -->
-      <!-- (this has to be in a model tag so logical cameras can detect it as a nested model) -->
-      <model name="kit_tray">
-        <pose>0.0 0.15 0.75 0 0 0</pose>
-        <include>
-          <uri>model://kit_tray</uri>
-        </include>
-      </model>
-
-      <!-- join the tray and agv -->
-      <joint name="agv_tray" type="fixed">
-          <parent>warehouse_robot::link</parent>
-          <child>kit_tray::tray</child>
-      </joint>
-    </model>
+@[end for]@
 
     <!-- an invisible conveyor belt -->
     <model name="conveyor_belt">
@@ -506,7 +492,7 @@ count = {}
     <plugin filename="libPopulationPlugin.so" name="populate_kit_tray_1">
       <activation_topic>/ariac/populate_belt</activation_topic>
       <loop_forever>false</loop_forever>
-      <frame>agv1::kit_tray::kit_tray::tray</frame>
+      <frame>agv1::kit_tray_1::kit_tray_1::tray</frame>
       <object_sequence>
 @[for part in order['parts']]@
         <object>

@@ -414,7 +414,7 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
     this->dataPtr->rosnode->advertiseService(compStartServiceName,
       &ROSAriacTaskManagerPlugin::HandleStartService, this);
 
-  // Service for starting the competition.
+  // Service for ending the competition.
   this->dataPtr->compEndServiceServer =
     this->dataPtr->rosnode->advertiseService(compEndServiceName,
       &ROSAriacTaskManagerPlugin::HandleEndService, this);
@@ -424,7 +424,7 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
     this->dataPtr->rosnode->advertiseService(submitTrayServiceName,
       &ROSAriacTaskManagerPlugin::HandleSubmitTrayService, this);
 
-  // Service for submitting trays for inspection.
+  // Service for querying material storage locations.
   this->dataPtr->getMaterialLocationsServiceServer =
     this->dataPtr->rosnode->advertiseService(getMaterialLocationsServiceName,
       &ROSAriacTaskManagerPlugin::HandleGetMaterialLocationsService, this);
@@ -494,7 +494,7 @@ void ROSAriacTaskManagerPlugin::OnUpdate()
     {
       std::ostringstream logMessage;
       logMessage << "Current game score: " << gameScore.total();
-      ROS_INFO_STREAM(logMessage.str().c_str());
+      ROS_DEBUG_STREAM(logMessage.str().c_str());
       gzdbg << logMessage.str() << std::endl;
       this->dataPtr->currentGameScore = gameScore;
     }

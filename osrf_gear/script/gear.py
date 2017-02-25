@@ -87,6 +87,8 @@ def prepare_arguments(parser):
         help='output additional logging to console')
     add('-o', '--output', default='/tmp/ariac/',
         help='directory in which to output the generated files')
+    add('--no-gui', action='store_true', default=False,
+        help="don't run the gazebo client gui")
     mex_group = parser.add_mutually_exclusive_group(required=False)
     add = mex_group.add_argument
     add('config', nargs="?", metavar="CONFIG",
@@ -489,6 +491,8 @@ def main(sysargv=None):
     ]
     if args.verbose:
         cmd += ['verbose:=true']
+    if args.no_gui:
+        cmd += ['gui:=false']
 
     print("Running command: " + ' '.join(cmd))
     if not args.dry_run:

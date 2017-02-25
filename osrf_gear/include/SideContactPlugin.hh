@@ -24,6 +24,7 @@
 #include <gazebo/common/Plugin.hh>
 #include <gazebo/common/Time.hh>
 #include <gazebo/common/UpdateInfo.hh>
+#include <gazebo/physics/PhysicsTypes.hh>
 #include <gazebo/sensors/sensors.hh>
 #include <gazebo/transport/Node.hh>
 #include <gazebo/transport/Publisher.hh>
@@ -111,6 +112,9 @@ namespace gazebo
 
     /// \brief Determine which models are in contact with the side of the parent link
     protected: virtual void CalculateContactingModels();
+
+    /// \brief Teleport all contacting models to a predetermined location
+    protected: virtual void ClearContactingModels();
 
     /// \brief Determine whether is time to give the plugin an update based on
     /// the plugin's update rate.
