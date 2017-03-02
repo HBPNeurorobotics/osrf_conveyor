@@ -20,8 +20,10 @@
 
 #include <gazebo/common/Events.hh>
 #include <gazebo/common/Plugin.hh>
+#include <gazebo/physics/PhysicsIface.hh>
 #include <gazebo/physics/Joint.hh>
 #include <gazebo/physics/Model.hh>
+#include <gazebo/physics/World.hh>
 #include "ConveyorBeltPlugin.hh"
 
 using namespace gazebo;
@@ -51,16 +53,25 @@ void ConveyorBeltPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   gzdbg << "Using joint name of: [" << jointName << "]\n";
   this->joint = _model->GetJoint(jointName);
   if (!this->joint)
+  {
     gzerr << "Joint [" << jointName << "] not found, belt disabled\n";
+    return;
+  }
 
   // Read and set the belt's link.
-  std::string linkName = "belt";
+  std::string linkName = "belt_link";
   if (_sdf->HasElement("link"))
     linkName = _sdf->Get<std::string>("link");
   gzdbg << "Using link name of: [" << linkName << "]\n";
-  this->link = _model->GetLink(linkName);
+
+  auto worldPtr = gazebo::physics::get_world();
+  this->link = boost::static_pointer_cast<physics::Link>(
+    worldPtr->GetEntity(linkName));
   if (!this->link)
+  {
     gzerr << "Link not found" << std::endl;
+    return;
+  }
 
   // Set the point where the link will be moved to its starting pose.
   this->limit = this->joint->GetUpperLimit(0) - 0.6;
@@ -73,9 +84,6 @@ void ConveyorBeltPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 /////////////////////////////////////////////////
 void ConveyorBeltPlugin::OnUpdate()
 {
-  if (!this->joint)
-    return;
-
   this->joint->SetVelocity(0, this->beltVelocity);
 
   // Reset the belt.
@@ -96,7 +104,7 @@ void ConveyorBeltPlugin::OnUpdate()
 /////////////////////////////////////////////////
 double ConveyorBeltPlugin::Velocity() const
 {
-  if (!this->joint)
+  if (!this->joint || !this->link)
     return 0.0;
 
   return this->beltVelocity;
@@ -105,7 +113,7 @@ double ConveyorBeltPlugin::Velocity() const
 /////////////////////////////////////////////////
 void ConveyorBeltPlugin::SetVelocity(const double _velocity)
 {
-  if (!this->joint)
+  if (!this->joint || !this->link)
     return;
 
   this->beltVelocity = _velocity;

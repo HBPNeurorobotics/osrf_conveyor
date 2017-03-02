@@ -384,58 +384,66 @@
 
     <!-- an invisible conveyor belt -->
     <model name="conveyor_belt">
-      <static>false</static>
-      <pose>1.21 -2 0.8126 0 0 -1.57079</pose>
-      <plugin name="conveyor_belt_plugin" filename="libROSConveyorBeltPlugin.so">
-        <robot_namespace>/ariac</robot_namespace>
-        <velocity>0</velocity>
-      </plugin>
-      <link name="belt">
-        <pose>-5 0 0 0 0 0</pose>
-        <inertial>
-          <inertia>
-            <ixx>3.8185</ixx>
-            <ixy>0</ixy>
-            <ixz>0</ixz>
-            <iyy>1781.5</iyy>
-            <iyz>0</iyz>
-            <izz>1784.72</izz>
-          </inertia>
-          <mass>100</mass>
-        </inertial>
-        <!--Uncomment for debugging -->
-        <!--
-        <visual name="belt_visual">
-          <geometry>
-            <box>
-              <size>14.62206 0.65461 0.18862</size>
-            </box>
-          </geometry>
-        </visual>
-        -->
-        <collision name="belt_collision">
-          <geometry>
-            <box>
-              <size>14.62206 0.65461 0.18862</size>
-            </box>
-          </geometry>
-          <surface>
-            <friction>
-              <ode>
-                <mu>1.0</mu>
-                <mu2>1.0</mu2>
-              </ode>
-              <torsional>
-                <coefficient>1000.0</coefficient>
-                <patch_radius>0.1</patch_radius>
-              </torsional>
-            </friction>
-          </surface>
-        </collision>
-      </link>
+
+      <model name="conveyor_belt_1">
+        <static>true</static>
+        <pose>1.21 -2 0.8126 0 0 -1.57079</pose>
+        <link name="belt">
+          <pose>-5 0 0 0 0 0</pose>
+        </link>
+      </model>
+
+      <model name="conveyor_belt_2">
+        <static>false</static>
+        <pose>1.21 -2 0.8126 0 0 -1.57079</pose>
+        <link name="belt">
+          <pose>-5 0 0 0 0 0</pose>
+          <inertial>
+            <inertia>
+              <ixx>3.8185</ixx>
+              <ixy>0</ixy>
+              <ixz>0</ixz>
+              <iyy>1781.5</iyy>
+              <iyz>0</iyz>
+              <izz>1784.72</izz>
+            </inertia>
+            <mass>100</mass>
+          </inertial>
+          <!--Uncomment for debugging -->
+          <!--
+          <visual name="belt_visual">
+            <geometry>
+              <box>
+                <size>14.62206 0.65461 0.18862</size>
+              </box>
+            </geometry>
+          </visual>
+          -->
+          <collision name="belt_collision">
+            <geometry>
+              <box>
+                <size>14.62206 0.65461 0.18862</size>
+              </box>
+            </geometry>
+            <surface>
+              <friction>
+                <ode>
+                  <mu>1.0</mu>
+                  <mu2>1.0</mu2>
+                </ode>
+                <torsional>
+                  <coefficient>1000.0</coefficient>
+                  <patch_radius>0.1</patch_radius>
+                </torsional>
+              </friction>
+            </surface>
+          </collision>
+        </link>
+      </model>
+
       <joint name="belt_joint" type="prismatic">
-        <parent>world</parent>
-        <child>belt</child>
+        <parent>conveyor_belt_1::belt</parent>
+        <child>conveyor_belt_2::belt</child>
         <axis>
           <xyz>1 0 0</xyz>
           <limit>
@@ -444,6 +452,12 @@
           </limit>
         </axis>
       </joint>
+
+      <plugin name="conveyor_belt_plugin" filename="libROSConveyorBeltPlugin.so">
+        <robot_namespace>/ariac</robot_namespace>
+        <link>conveyor_belt::conveyor_belt_2::belt</link>
+        <velocity>0</velocity>
+      </plugin>
     </model>
 
 @[if options['insert_models_over_bins']]@
@@ -464,7 +478,7 @@
       <control_topic>/ariac/population/control</control_topic>
       <state_topic>/ariac/population/state</state_topic>
       <loop_forever>@("true" if belt_parts_loop else "false")</loop_forever>
-      <frame>conveyor_belt</frame>
+      <frame>conveyor_belt::conveyor_belt_2</frame>
       <object_sequence>
 @[for part_name, spawn_times in belt_parts.items()]@
   @[for spawn_time, part in spawn_times.items()]@
