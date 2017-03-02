@@ -32,61 +32,72 @@ namespace gazebo
   /// \brief A plugin for simulating a conveyor belt.
   /// The plugin accepts the following SDF parameters:
 
-  /// <velocity>: Sets the initial velocity of the belt (m/s).
+  /// <power>: Sets the initial power of the belt as a percentage [0-100].
   /// <joint>: Joint name used to control the belt.
   /// <belt>: Belt's link name.
   ///
   /// Here's an example of a valid SDF conveyor belt:
   /// <model name="conveyor_belt">
-  ///   <static>false</static>
-  ///   <pose>1.21 -2 0.8126 0 0 -1.57079</pose>
-  ///   <plugin name="conveyor_belt_plugin" filename="libConveyorBeltPlugin.so">
-  ///     <robot_namespace>/ariac</robot_namespace>
-  ///     <velocity>0</velocity>
-  ///   </plugin>
-  ///   <link name="belt">
-  ///     <pose>-5 0 0 0 0 0</pose>
-  ///     <inertial>
-  ///       <inertia>
-  ///         <ixx>3.8185</ixx>
-  ///         <ixy>0</ixy>
-  ///         <ixz>0</ixz>
-  ///         <iyy>1781.5</iyy>
-  ///         <iyz>0</iyz>
-  ///         <izz>1784.72</izz>
-  ///       </inertia>
-  ///       <mass>100</mass>
-  ///     </inertial>
-  ///     <visual name="belt_visual">
-  ///       <geometry>
-  ///         <box>
-  ///           <size>14.62206 0.65461 0.18862</size>
-  ///         </box>
-  ///       </geometry>
-  ///     </visual>
-  ///     <collision name="belt_collision">
-  ///       <geometry>
-  ///         <box>
-  ///           <size>14.62206 0.65461 0.18862</size>
-  ///         </box>
-  ///       </geometry>
-  ///       <surface>
-  ///         <friction>
-  ///           <ode>
-  ///             <mu>1.0</mu>
-  ///             <mu2>1.0</mu2>
-  ///           </ode>
-  ///           <torsional>
-  ///             <coefficient>1000.0</coefficient>
-  ///             <patch_radius>0.1</patch_radius>
-  ///           </torsional>
-  ///         </friction>
-  ///       </surface>
-  ///     </collision>
-  ///   </link>
+  ///
+  ///   <model name="conveyor_belt_1">
+  ///     <static>true</static>
+  ///     <pose>1.21 -2 0.8126 0 0 -1.57079</pose>
+  ///     <link name="belt">
+  ///       <pose>-5 0 0 0 0 0</pose>
+  ///     </link>
+  ///   </model>
+  ///
+  ///   <model name="conveyor_belt_2">
+  ///     <static>false</static>
+  ///     <pose>1.21 -2 0.8126 0 0 -1.57079</pose>
+  ///     <link name="belt">
+  ///       <pose>-5 0 0 0 0 0</pose>
+  ///       <inertial>
+  ///         <inertia>
+  ///           <ixx>3.8185</ixx>
+  ///           <ixy>0</ixy>
+  ///           <ixz>0</ixz>
+  ///           <iyy>1781.5</iyy>
+  ///           <iyz>0</iyz>
+  ///           <izz>1784.72</izz>
+  ///         </inertia>
+  ///         <mass>100</mass>
+  ///       </inertial>
+  ///       <!--Uncomment for debugging -->
+  ///       <!--
+  ///       <visual name="belt_visual">
+  ///         <geometry>
+  ///           <box>
+  ///             <size>14.62206 0.65461 0.18862</size>
+  ///           </box>
+  ///         </geometry>
+  ///       </visual>
+  ///       -->
+  ///       <collision name="belt_collision">
+  ///         <geometry>
+  ///           <box>
+  ///             <size>14.62206 0.65461 0.18862</size>
+  ///           </box>
+  ///         </geometry>
+  ///         <surface>
+  ///           <friction>
+  ///             <ode>
+  ///               <mu>1.0</mu>
+  ///               <mu2>1.0</mu2>
+  ///             </ode>
+  ///             <torsional>
+  ///               <coefficient>1000.0</coefficient>
+  ///               <patch_radius>0.1</patch_radius>
+  ///             </torsional>
+  ///           </friction>
+  ///         </surface>
+  ///       </collision>
+  ///     </link>
+  ///   </model>
+  ///
   ///   <joint name="belt_joint" type="prismatic">
-  ///     <parent>world</parent>
-  ///     <child>belt</child>
+  ///     <parent>conveyor_belt_1::belt</parent>
+  ///     <child>conveyor_belt_2::belt</child>
   ///     <axis>
   ///       <xyz>1 0 0</xyz>
   ///       <limit>
@@ -95,6 +106,12 @@ namespace gazebo
   ///       </limit>
   ///     </axis>
   ///   </joint>
+  ///
+  ///   <plugin name="conveyor_belt_plugin" filename="libROSConveyorBeltPlugin.so">
+  ///     <robot_namespace>/ariac</robot_namespace>
+  ///     <link>conveyor_belt::conveyor_belt_2::belt</link>
+  ///     <power>0</power>
+  ///   </plugin>
   /// </model>
   class GAZEBO_VISIBLE ConveyorBeltPlugin : public ModelPlugin
   {
@@ -113,16 +130,20 @@ namespace gazebo
     /// \brief Callback that receives the world update event
     protected: void OnUpdate();
 
-    /// \brief Get the velocity of the conveyor belt.
-    /// \return Velocity of the belt (m/s).
-    protected: double Velocity() const;
+    /// \brief Get the power of the conveyor belt.
+    /// \return Power of the belt as a percentage (0-100).
+    protected: double Power() const;
 
-    /// \brief Set the state of the conveyor belt.
-    /// \param[in] _velocity Velocity of the belt (m/s).
-    protected: void SetVelocity(const double _velocity);
+    /// \brief Set the power of the conveyor belt.
+    /// \param[in] _power Power of the belt as a percentage (0-100).
+    protected: void SetPower(const double _power);
 
     /// \brief Belt velocity (m/s).
-    protected: double beltVelocity;
+    protected: double beltVelocity = 0.0;
+
+    /// \brief Belt power expressed as a percentage of the internal maximum
+    /// speed.
+    protected: double beltPower = 0.0;
 
     /// \brief Pointer to the update event connection.
     private: event::ConnectionPtr updateConnection;
@@ -136,6 +157,9 @@ namespace gazebo
     /// \brief When the joint reaches this point, it will go back to its initial
     /// position.
     private: math::Angle limit;
+
+    /// \brief Maximum linear velocity of the belt.
+    private: const double kMaxBeltLinVel = 1.0;
   };
 }
 #endif

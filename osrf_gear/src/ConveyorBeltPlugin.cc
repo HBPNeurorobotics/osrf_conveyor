@@ -39,12 +39,12 @@ ConveyorBeltPlugin::~ConveyorBeltPlugin()
 /////////////////////////////////////////////////
 void ConveyorBeltPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 {
-  // Read and set the velocity of the belt.
-  if (_sdf->HasElement("velocity"))
-    this->beltVelocity = _sdf->Get<double>("velocity");
-  else
-    this->beltVelocity = 0.5;
-  gzdbg << "Using belt velocity of: " << this->beltVelocity << " m/s\n";
+  // Read the power of the belt.
+  if (_sdf->HasElement("power"))
+    this->beltPower = _sdf->Get<double>("power");
+
+  this->SetPower(this->beltPower);
+  gzdbg << "Using belt power of: " << this->beltPower << " %\n";
 
   // Read and set the joint that controls the belt.
   std::string jointName = "belt_joint";
@@ -102,19 +102,29 @@ void ConveyorBeltPlugin::OnUpdate()
 }
 
 /////////////////////////////////////////////////
-double ConveyorBeltPlugin::Velocity() const
+double ConveyorBeltPlugin::Power() const
 {
   if (!this->joint || !this->link)
     return 0.0;
 
-  return this->beltVelocity;
+  return this->beltPower;
 }
 
 /////////////////////////////////////////////////
-void ConveyorBeltPlugin::SetVelocity(const double _velocity)
+void ConveyorBeltPlugin::SetPower(const double _power)
 {
   if (!this->joint || !this->link)
     return;
 
-  this->beltVelocity = _velocity;
+  if (_power < 0 || _power > 100)
+  {
+    gzerr << "Incorrect power value [" << _power << "]\n";
+    gzerr << "Accepted values are in the [0-100] range\n";
+    return;
+  }
+
+  this->beltPower = _power;
+
+  // Convert the power (percentage) to a velocity.
+  this->beltVelocity = this->kMaxBeltLinVel * this->beltPower / 100.0;
 }

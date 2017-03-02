@@ -71,7 +71,7 @@ bool ROSConveyorBeltPlugin::OnControlCommand(
   osrf_gear::ConveyorBeltControl::Response &_res)
 {
   gzdbg << "Control command received\n";
-  this->SetVelocity(_req.state.velocity);
+  this->SetPower(_req.state.power);
   _res.success = true;
   return true;
 }
