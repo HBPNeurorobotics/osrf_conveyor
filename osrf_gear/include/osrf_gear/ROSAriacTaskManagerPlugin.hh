@@ -141,7 +141,7 @@ namespace gazebo
 
     /// \brief Callback for when a tray is submitted for inspection.
     public: bool HandleSubmitTrayService(
-      osrf_gear::SubmitTray::Request & req, osrf_gear::SubmitTray::Response & res);
+      ros::ServiceEvent<osrf_gear::SubmitTray::Request, osrf_gear::SubmitTray::Response> & event);
 
     /// \brief Callback for when a query is made for material locations.
     public: bool HandleGetMaterialLocationsService(
