@@ -27,7 +27,7 @@
         <surface>
           <contact>
             <ode>
-              <max_vel>0.1</max_vel>
+              <max_vel>0.0</max_vel>
               <min_depth>0.001</min_depth>
             </ode>
           </contact>
@@ -50,6 +50,43 @@
           </script>
         </material>
        </visual>
+
+      <collision name="collision_asymmetric_mark">
+        <pose>0.03 0.03 0.02 0 0 0</pose>
+        <max_contacts>10</max_contacts>
+         <geometry>
+          <cylinder>
+            <length>0.012</length>
+            <radius>0.00392125</radius>
+          </cylinder>
+         </geometry>
+        <surface>
+          <contact>
+            <ode>
+              <max_vel>0.0</max_vel>
+              <min_depth>0.01</min_depth>
+            </ode>
+          </contact>
+        </surface>
+      </collision>
+
+      <visual name="visual_asymmetric_mark">
+        <pose>0.03 0.03 0.02 0 0 0</pose>
+         <geometry>
+          <cylinder>
+            <length>0.012</length>
+            <radius>0.00392125</radius>
+          </cylinder>
+         </geometry>
+        <material>
+          <lighting>1</lighting>
+          <script>
+            <uri>file://media/materials/scripts/gazebo.material</uri>
+            <name>Gazebo/DarkGrey</name>
+          </script>
+          <emissive>0 0 0 1</emissive>
+        </material>
+      </visual>
     </link>
   </model>
 </sdf>

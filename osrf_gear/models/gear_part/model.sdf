@@ -67,7 +67,7 @@
           </script>
         </material>
        </visual>
-      <collision name="collision_mark">
+      <collision name="collision_asymmetric_mark">
         <pose>0 0.021 0.009 0 0 0</pose>
         <max_contacts>10</max_contacts>
          <geometry>
@@ -86,7 +86,7 @@
         </surface>
       </collision>
 
-      <visual name="visual_mark">
+      <visual name="visual_asymmetric_mark">
         <pose>0 0.021 0.009 0 0 0</pose>
          <geometry>
           <cylinder>
