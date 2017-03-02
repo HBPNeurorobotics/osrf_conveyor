@@ -16,19 +16,29 @@
       </inertial>
 
       <collision name="collision">
-        <pose>0 0 0.02895 0 0 0</pose>
+        <max_contacts>10</max_contacts>
+        <pose>0 0 0.01158 0 0 0</pose>
         <geometry>
           <cylinder>
-            <length>0.0579</length>
-            <radius>0.15678</radius>
+            <length>0.0231  6</length>
+            <radius>0.0627</radius>
           </cylinder>
         </geometry>
+        <surface>
+          <contact>
+            <ode>
+              <max_vel>0.1</max_vel>
+              <min_depth>0.001</min_depth>
+            </ode>
+          </contact>
+        </surface>
       </collision>
 
 
       <visual name="visual">
          <geometry>
            <mesh>
+             <scale>0.4 0.4 0.4</scale>
              <uri>model://disk_part/meshes/disk.dae</uri>
            </mesh>
          </geometry>
