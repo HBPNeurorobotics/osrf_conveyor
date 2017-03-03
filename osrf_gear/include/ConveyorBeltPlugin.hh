@@ -159,7 +159,7 @@ namespace gazebo
     private: math::Angle limit;
 
     /// \brief Maximum linear velocity of the belt.
-    private: const double kMaxBeltLinVel = 1.0;
+    private: const double kMaxBeltLinVel = 0.2;
   };
 }
 #endif

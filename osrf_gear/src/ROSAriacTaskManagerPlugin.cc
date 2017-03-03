@@ -478,7 +478,7 @@ void ROSAriacTaskManagerPlugin::OnUpdate()
     this->dataPtr->currentState = "go";
 
     // TODO(dhood): only start the belt if there are belt parts specified
-    this->ControlConveyorBelt(20);
+    this->ControlConveyorBelt(100);
     this->PopulateConveyorBelt();
   }
   else if (this->dataPtr->currentState == "go")
