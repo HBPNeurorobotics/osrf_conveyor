@@ -582,6 +582,6 @@
       </collision>
     </link>
     <static>0</static>
-    <allow_auto_disable>1</allow_auto_disable>
+    <allow_auto_disable>0</allow_auto_disable>
   </model>
 </sdf>
