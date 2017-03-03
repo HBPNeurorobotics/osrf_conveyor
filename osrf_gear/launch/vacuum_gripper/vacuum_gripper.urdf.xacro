@@ -49,7 +49,7 @@
       <grasp_check>
         <detach_steps>40</detach_steps>
         <attach_steps>1</attach_steps>
-        <min_contact_count>250</min_contact_count>
+        <min_contact_count>1</min_contact_count>
       </grasp_check>
 
       <xacro:insert_block name="drops_info" />

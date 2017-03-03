@@ -70,6 +70,14 @@ namespace gazebo
     /// \param[in] _msg Message that contains contact information.
     private: void OnContacts(ConstContactsPtr &_msg);
 
+    /// \brief Determine if the colliding model is sufficiently in contact with the gripper.
+    /// \return True if the colliding model is sufficiently in contact with the gripper.
+    private: bool CheckModelContact();
+
+    /// \brief Determine the normal of the contact with the gripper.
+    /// \return True if the normal was successfully calculated.
+    private: bool GetContactNormal();
+
     /// \brief Attach an object to the gripper.
     private: void HandleAttach();
 
