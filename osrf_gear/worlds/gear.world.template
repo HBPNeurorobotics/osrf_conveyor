@@ -371,15 +371,15 @@
     <!-- an invisible conveyor belt -->
     <model name="conveyor_belt">
 
-      <model name="conveyor_belt_1">
+      <model name="conveyor_belt_fixed">
         <static>true</static>
         <pose>1.21 -2 0.8126 0 0 -1.57079</pose>
-        <link name="belt">
+        <link name="link">
           <pose>-5 0 0 0 0 0</pose>
         </link>
       </model>
 
-      <model name="conveyor_belt_2">
+      <model name="conveyor_belt_moving">
         <static>false</static>
         <pose>1.21 -2 0.8126 0 0 -1.57079</pose>
         <link name="belt">
@@ -428,8 +428,8 @@
       </model>
 
       <joint name="belt_joint" type="prismatic">
-        <parent>conveyor_belt_1::belt</parent>
-        <child>conveyor_belt_2::belt</child>
+        <parent>conveyor_belt_fixed::link</parent>
+        <child>conveyor_belt_moving::belt</child>
         <axis>
           <xyz>1 0 0</xyz>
           <limit>
@@ -441,7 +441,7 @@
 
       <plugin name="conveyor_belt_plugin" filename="libROSConveyorBeltPlugin.so">
         <robot_namespace>/ariac</robot_namespace>
-        <link>conveyor_belt::conveyor_belt_2::belt</link>
+        <link>conveyor_belt::conveyor_belt_moving::belt</link>
         <power>0</power>
       </plugin>
     </model>
@@ -464,7 +464,7 @@
       <control_topic>/ariac/population/control</control_topic>
       <state_topic>/ariac/population/state</state_topic>
       <loop_forever>@("true" if belt_parts_loop else "false")</loop_forever>
-      <frame>conveyor_belt::conveyor_belt_2</frame>
+      <frame>conveyor_belt::conveyor_belt_fixed</frame>
       <object_sequence>
 @[for part_name, spawn_times in belt_parts.items()]@
   @[for spawn_time, part in spawn_times.items()]@
