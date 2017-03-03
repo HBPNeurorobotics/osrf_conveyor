@@ -610,6 +610,7 @@ bool ROSAriacTaskManagerPlugin::HandleStartService(
   std_srvs::Trigger::Request & req,
   std_srvs::Trigger::Response & res)
 {
+  gzdbg << "Handle start service called\n";
   (void)req;
   std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
 
@@ -629,6 +630,7 @@ bool ROSAriacTaskManagerPlugin::HandleEndService(
   std_srvs::Trigger::Request & req,
   std_srvs::Trigger::Response & res)
 {
+  gzdbg << "Handle end service called\n";
   (void)req;
   std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
 
@@ -684,6 +686,7 @@ bool ROSAriacTaskManagerPlugin::HandleGetMaterialLocationsService(
   osrf_gear::GetMaterialLocations::Request & req,
   osrf_gear::GetMaterialLocations::Response & res)
 {
+  gzdbg << "Get material locations service called\n";
   std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
   auto it = this->dataPtr->materialLocations.find(req.material_type);
   if (it == this->dataPtr->materialLocations.end())
@@ -706,6 +709,7 @@ bool ROSAriacTaskManagerPlugin::HandleGetMaterialLocationsService(
 /////////////////////////////////////////////////
 void ROSAriacTaskManagerPlugin::ControlConveyorBelt(double power)
 {
+  gzdbg << "Control conveyor belt called.\n";
 
   if (!this->dataPtr->conveyorControlClient.exists())
   {
@@ -728,6 +732,7 @@ void ROSAriacTaskManagerPlugin::ControlConveyorBelt(double power)
 /////////////////////////////////////////////////
 void ROSAriacTaskManagerPlugin::PopulateConveyorBelt()
 {
+  gzdbg << "Populate conveyor belt called.\n";
   // Publish a message on the activation_plugin of the PopulationPlugin.
   gazebo::msgs::GzString msg;
   msg.set_data("restart");

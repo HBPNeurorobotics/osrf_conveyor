@@ -234,6 +234,7 @@ void KitTrayPlugin::LockContactingModels()
 /////////////////////////////////////////////////
 void KitTrayPlugin::HandleLockModelsRequest(ConstGzStringPtr &_msg)
 {
+  gzdbg << this->trayID << ": Handle clear tray service called.\n";
   (void)_msg;
   this->LockContactingModels();
 }
