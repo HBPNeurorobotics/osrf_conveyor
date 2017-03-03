@@ -296,18 +296,14 @@
     <!-- a wall to delete objects at the end of the belt -->
     <include>
       <uri>model://deletion_wall</uri>
-      <pose>1.2 -4.1 1.4 0 0 1.5708</pose>
+      <pose>1.2 -4.1 1.41 0 0 1.5708</pose>
     </include>
 
 
 
-@{belt_parts_loop = False}@
-@[if belt_parts]@
-<!-- Simulation time at which the last object is spawned (per cycle) -->
-@{max_spawn_time = max([max(times.keys()) for times in belt_parts.values()])}@
-<!-- Calculate the number of population cycles to run before the end.
-     Equivalent to math.ceil(time_limit / max_spawn_time) (without math) -->
-@{belt_population_cycles = -(-time_limit // max_spawn_time) if belt_parts_loop else 1}
+@{belt_parts_loop = True}@
+@{belt_population_cycles = options['belt_population_cycles'] if belt_parts_loop else 1}
+
 @[for obj_type, spawn_times in belt_parts.items()]@
     <!-- Pool of @(obj_type) objects -->
     <population name="@(obj_type)_population">
@@ -326,101 +322,124 @@
     </population>
 
 @[end for]@
-@[end if]@
 
-    <!-- AGV1 -->
-    <model name ="agv1">
-      <pose>0.3 3.3 0 0 0 3.1415</pose>
+@[for agv_id in [1,2]]@
+    <!-- AGV@(str(agv_id)) -->
+    <model name="agv@(str(agv_id))">
+      <pose>0.3 @(3.3 if agv_id == 1 else -3.3) 0 0 0 3.1415</pose>
       <include>
+        <name>agv@(str(agv_id))</name>
         <uri>model://warehouse_robot</uri>
       </include>
       <plugin name="agv_plugin" filename="libROSAGVPlugin.so">
         <submit_tray_service_name>/ariac/submit_tray</submit_tray_service_name>
-        <index>1</index>
+        <clear_tray_service_name>/ariac/kit_tray_@(str(agv_id))/clear_tray</clear_tray_service_name>
+        <lock_tray_service_name>/ariac/kit_tray_@(str(agv_id))/lock_models</lock_tray_service_name>
+        <index>@(str(agv_id))</index>
       </plugin>
 
       <!-- a tray for building kits -->
       <!-- (this has to be in a model tag so logical cameras can detect it as a nested model) -->
-      <model name="kit_tray">
+      <model name="kit_tray_@(str(agv_id))">
         <pose>0.0 0.15 0.75 0 0 0</pose>
         <include>
+          <name>kit_tray_@(str(agv_id))</name>
           <uri>model://kit_tray</uri>
         </include>
+        <plugin name="kit_tray_plugin" filename="libROSAriacKitTrayPlugin.so">
+          <contact_sensor_name>kit_tray_contact</contact_sensor_name>
+          <clear_tray_service_name>/ariac/kit_tray_@(str(agv_id))/clear_tray</clear_tray_service_name>
+          <lock_models_service_name>/ariac/kit_tray_@(str(agv_id))/lock_models</lock_models_service_name>
+          <update_rate>20</update_rate>
+        </plugin>
       </model>
 
       <!-- join the tray and agv -->
       <joint name="agv_tray" type="fixed">
-          <parent>warehouse_robot::link</parent>
-          <child>kit_tray::tray</child>
+          <parent>agv@(str(agv_id))::link</parent>
+          <child>kit_tray_@(str(agv_id))::kit_tray_@(str(agv_id))::tray</child>
       </joint>
     </model>
 
-    <!-- AGV2 -->
-    <model name ="agv2">
-      <pose>0.3 -3.3 0 0 0 0</pose>
-      <include>
-        <uri>model://warehouse_robot</uri>
-      </include>
-      <plugin name="agv_plugin" filename="libROSAGVPlugin.so">
-        <index>2</index>
-        <submit_tray_service_name>/ariac/submit_tray</submit_tray_service_name>
-      </plugin>
-
-      <!-- a tray for building kits -->
-      <!-- (this has to be in a model tag so logical cameras can detect it as a nested model) -->
-      <model name="kit_tray">
-        <pose>0.0 0.15 0.75 0 0 0</pose>
-        <include>
-          <uri>model://kit_tray</uri>
-        </include>
-      </model>
-
-      <!-- join the tray and agv -->
-      <joint name="agv_tray" type="fixed">
-          <parent>warehouse_robot::link</parent>
-          <child>kit_tray::tray</child>
-      </joint>
-    </model>
+@[end for]@
 
     <!-- an invisible conveyor belt -->
     <model name="conveyor_belt">
-      <static>true</static>
-      <pose>1.21 5 0.8126 0 0 1.5708</pose>
+
+      <model name="conveyor_belt_fixed">
+        <static>true</static>
+        <pose>1.21 5 0.8126 0 0 -1.57079</pose>
+        <link name="link">
+          <pose>0 0 0 0 0 0</pose>
+        </link>
+      </model>
+
+      <model name="conveyor_belt_moving">
+        <static>false</static>
+        <pose>1.21 -2 0.8126 0 0 -1.57079</pose>
+        <link name="belt">
+          <pose>-5 0 0 0 0 0</pose>
+          <inertial>
+            <inertia>
+              <ixx>3.8185</ixx>
+              <ixy>0</ixy>
+              <ixz>0</ixz>
+              <iyy>1781.5</iyy>
+              <iyz>0</iyz>
+              <izz>1784.72</izz>
+            </inertia>
+            <mass>100</mass>
+          </inertial>
+          <!--Uncomment for debugging -->
+          <!--
+          <visual name="belt_visual">
+            <geometry>
+              <box>
+                <size>14.62206 0.65461 0.18862</size>
+              </box>
+            </geometry>
+          </visual>
+          -->
+          <collision name="belt_collision">
+            <geometry>
+              <box>
+                <size>14.62206 0.65461 0.18862</size>
+              </box>
+            </geometry>
+            <surface>
+              <friction>
+                <ode>
+                  <mu>1.0</mu>
+                  <mu2>1.0</mu2>
+                </ode>
+                <torsional>
+                  <coefficient>1000.0</coefficient>
+                  <patch_radius>0.1</patch_radius>
+                </torsional>
+              </friction>
+            </surface>
+          </collision>
+        </link>
+      </model>
+
+      <joint name="belt_joint" type="prismatic">
+        <parent>conveyor_belt_fixed::link</parent>
+        <child>conveyor_belt_moving::belt</child>
+        <axis>
+          <xyz>1 0 0</xyz>
+          <limit>
+            <lower>0</lower>
+            <upper>1.0</upper>
+          </limit>
+        </axis>
+      </joint>
+
       <plugin name="conveyor_belt_plugin" filename="libROSConveyorBeltPlugin.so">
         <robot_namespace>/ariac</robot_namespace>
-        <belt_start_velocity>0.0</belt_start_velocity>
-        <velocity_axis>-1 0 0</velocity_axis>
-        <contact_sensor_name>conveyor_belt_contact</contact_sensor_name>
-        <update_rate>13</update_rate>
+        <population_rate_modifier_topic>/ariac/population/rate_modifier</population_rate_modifier_topic>
+        <link>conveyor_belt::conveyor_belt_moving::belt</link>
+        <power>0</power>
       </plugin>
-      <link name="belt">
-        <pose>-5 0 0 0 0 0</pose>
-        <sensor name='conveyor_belt_contact' type='contact'>
-          <update_rate>10</update_rate>
-          <contact>
-            <collision>belt_collision</collision>
-          </contact>
-        </sensor>
-        <collision name="belt_collision">
-          <geometry>
-            <box>
-              <size>19.62206 0.65461 0.18862</size>
-            </box>
-          </geometry>
-          <surface>
-            <friction>
-              <ode>
-                <mu>1.0</mu>
-                <mu2>1.0</mu2>
-              </ode>
-              <torsional>
-                <coefficient>1000.0</coefficient>
-                <patch_radius>0.1</patch_radius>
-              </torsional>
-            </friction>
-          </surface>
-        </collision>
-      </link>
     </model>
 
 @[if options['insert_models_over_bins']]@
@@ -438,10 +457,11 @@
     <!-- Populate the conveyor belt -->
     <plugin filename="libROSPopulationPlugin.so" name="populate_conveyor">
       <activation_topic>/ariac/populate_belt</activation_topic>
+      <rate_modifier_topic>/ariac/population/rate_modifier</rate_modifier_topic>
       <control_topic>/ariac/population/control</control_topic>
       <state_topic>/ariac/population/state</state_topic>
       <loop_forever>@("true" if belt_parts_loop else "false")</loop_forever>
-      <frame>conveyor_belt</frame>
+      <frame>conveyor_belt::conveyor_belt_fixed</frame>
       <object_sequence>
 @[for part_name, spawn_times in belt_parts.items()]@
   @[for spawn_time, part in spawn_times.items()]@
@@ -471,8 +491,9 @@
 @[for order_name, order in orders.items()]@
       <order>
         <start_time>@(order['announcement_time'])</start_time>
+@[for kit_index in range(order['kit_count'])]
         <kit>
-          <kit_type>@(order_name)</kit_type>
+          <kit_type>@(order_name)_kit_@(kit_index)</kit_type>
 @[for part in order['parts']]@
           <object>
             <type>@(part.type)</type>
@@ -480,6 +501,7 @@
           </object>
 @[end for]@
         </kit>
+@[end for]@
       </order>
 @[end for]@
       <material_locations>
@@ -506,7 +528,7 @@ count = {}
     <plugin filename="libPopulationPlugin.so" name="populate_kit_tray_1">
       <activation_topic>/ariac/populate_belt</activation_topic>
       <loop_forever>false</loop_forever>
-      <frame>agv1::kit_tray::kit_tray::tray</frame>
+      <frame>agv1::kit_tray_1::kit_tray_1::tray</frame>
       <object_sequence>
 @[for part in order['parts']]@
         <object>

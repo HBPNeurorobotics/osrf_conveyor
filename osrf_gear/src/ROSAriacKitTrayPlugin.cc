@@ -15,6 +15,7 @@
  *
 */
 
+#include <cstdlib>
 #include <string>
 
 #include <osrf_gear/KitTray.h>
@@ -59,7 +60,26 @@ void KitTrayPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 
   this->rosNode = new ros::NodeHandle("");
   this->currentKitPub = this->rosNode->advertise<osrf_gear::KitTray>(
-    "/ariac/trays", 1000);
+    "/ariac/trays", 1000, boost::bind(&KitTrayPlugin::OnSubscriberConnect, this, _1));
+  this->publishingEnabled = true;
+
+  // ROS service for clearing the tray
+  std::string clearServiceName = "clear";
+  if (_sdf->HasElement("clear_tray_service_name"))
+    clearServiceName = _sdf->Get<std::string>("clear_tray_service_name");
+  this->clearTrayServer =
+    this->rosNode->advertiseService(clearServiceName, &KitTrayPlugin::HandleClearService, this);
+
+  // Initialize Gazebo transport
+  this->gzNode = transport::NodePtr(new transport::Node());
+  this->gzNode->Init();
+
+  // Gazebo subscription for the lock trays topic
+  std::string lockModelsServiceName = "lock_models";
+  if (_sdf->HasElement("lock_models_service_name"))
+    lockModelsServiceName = _sdf->Get<std::string>("lock_models_service_name");
+  this->lockModelsSub = this->gzNode->Subscribe(
+    lockModelsServiceName, &KitTrayPlugin::HandleLockModelsRequest, this);
 }
 
 /////////////////////////////////////////////////
@@ -68,7 +88,9 @@ void KitTrayPlugin::OnUpdate(const common::UpdateInfo &/*_info*/)
   // If we're using a custom update rate value we have to check if it's time to
   // update the plugin or not.
   if (!this->TimeToExecute())
+  {
     return;
+  }
 
   if (!this->newMsg)
   {
@@ -82,12 +104,23 @@ void KitTrayPlugin::OnUpdate(const common::UpdateInfo &/*_info*/)
       << this->contactingModels.size());
   }
   this->ProcessContactingModels();
-  this->PublishKitMsg();
+  if (this->publishingEnabled)
+  {
+    this->PublishKitMsg();
+  }
 }
 
 /////////////////////////////////////////////////
 void KitTrayPlugin::ProcessContactingModels()
 {
+  // Make sure that models fixed to the tray are included in the contacting models,
+  // even if they aren't contacting the tray anymore.
+  for (auto fixedJoint : this->fixedJoints)
+  {
+    auto link = fixedJoint->GetChild();
+    this->contactingLinks.insert(link);
+    this->contactingModels.insert(link->GetParentModel());
+  }
   this->currentKit.objects.clear();
   auto trayPose = this->parentLink->GetWorldPose().Ign();
   for (auto model : this->contactingModels) {
@@ -106,6 +139,25 @@ void KitTrayPlugin::ProcessContactingModels()
 
       this->currentKit.objects.push_back(object);
     }
+  }
+}
+
+/////////////////////////////////////////////////
+void KitTrayPlugin::OnSubscriberConnect(const ros::SingleSubscriberPublisher& pub)
+{
+  auto subscriberName = pub.getSubscriberName();
+  gzdbg << this->trayID << ": New subscription from node: " << subscriberName << std::endl;
+
+  // During the competition, this environment variable will be set.
+  auto compRunning = std::getenv("ARIAC_COMPETITION");
+  if (compRunning && subscriberName.compare("/gazebo") != 0)
+  {
+    std::string errStr = "Competition is running so subscribing to this topic is not permitted.";
+    gzerr << errStr << std::endl;
+    ROS_ERROR_STREAM(errStr);
+    // Disable publishing of kit messages.
+    // This will break the scoring but ensure competitors can't cheat.
+    this->publishingEnabled = false;
   }
 }
 
@@ -131,4 +183,83 @@ void KitTrayPlugin::PublishKitMsg()
     kitTrayMsg.kit.objects.push_back(msgObj);
   }
   this->currentKitPub.publish(kitTrayMsg);
+}
+
+/////////////////////////////////////////////////
+void KitTrayPlugin::UnlockContactingModels()
+{
+  boost::mutex::scoped_lock lock(this->mutex);
+  physics::JointPtr fixedJoint;
+  for (auto fixedJoint : this->fixedJoints)
+  {
+    fixedJoint->Detach();
+  }
+  this->fixedJoints.clear();
+}
+
+/////////////////////////////////////////////////
+void KitTrayPlugin::LockContactingModels()
+{
+  boost::mutex::scoped_lock lock(this->mutex);
+  physics::JointPtr fixedJoint;
+  for (auto model : this->contactingModels)
+  {
+  // Create the joint that will attach the models
+  fixedJoint = this->world->GetPhysicsEngine()->CreateJoint(
+        "fixed", this->model);
+  auto jointName = this->model->GetName() + "_" + model->GetName() + "__joint__";
+  gzdbg << "Creating fixed joint: " << jointName << std::endl;
+  fixedJoint->SetName(jointName);
+
+  model->SetGravityMode(false);
+  model->GetLink(model->GetName()+"::link")->SetGravityMode(false);
+
+  // Lift the part slightly because it will fall through the tray if the tray is animated
+  model->SetWorldPose(model->GetWorldPose() + math::Pose(0,0,0.01,0,0,0));
+
+  auto link = model->GetLink(model->GetName() + "::link");
+  if (link == NULL)
+  {
+    gzwarn << "Couldn't find link to make joint with";
+    continue;
+  }
+  fixedJoint->Load(link, this->parentLink, math::Pose());
+  fixedJoint->Attach(this->parentLink, link);
+  fixedJoint->Init();
+  this->fixedJoints.push_back(fixedJoint);
+  model->SetAutoDisable(true);
+  }
+}
+
+/////////////////////////////////////////////////
+void KitTrayPlugin::HandleLockModelsRequest(ConstGzStringPtr &_msg)
+{
+  (void)_msg;
+  this->LockContactingModels();
+}
+
+/////////////////////////////////////////////////
+bool KitTrayPlugin::HandleClearService(
+  ros::ServiceEvent<std_srvs::Trigger::Request, std_srvs::Trigger::Response>& event)
+{
+  std_srvs::Trigger::Response& res = event.getResponse();
+
+  const std::string& callerName = event.getCallerName();
+  gzdbg << this->trayID << ": Handle clear tray service called by: " << callerName << std::endl;
+
+  // During the competition, this environment variable will be set.
+  auto compRunning = std::getenv("ARIAC_COMPETITION");
+  if (compRunning && callerName.compare("/gazebo") != 0)
+  {
+    std::string errStr = "Competition is running so this service is not enabled.";
+    gzerr << errStr << std::endl;
+    ROS_ERROR_STREAM(errStr);
+    res.success = false;
+    return true;
+  }
+
+  this->UnlockContactingModels();
+  this->ClearContactingModels();
+  res.success = true;
+  return true;
 }

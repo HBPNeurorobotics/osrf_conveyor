@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 Open Source Robotics Foundation
+ * Copyright (C) 2017 Open Source Robotics Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,134 +15,134 @@
  *
 */
 
-#include <boost/algorithm/string/replace.hpp>
+#include <functional>
 #include <string>
 
+#include <gazebo/common/Events.hh>
+#include <gazebo/common/Plugin.hh>
+#include <gazebo/physics/PhysicsIface.hh>
+#include <gazebo/physics/Joint.hh>
+#include <gazebo/physics/Model.hh>
+#include <gazebo/physics/World.hh>
 #include "ConveyorBeltPlugin.hh"
-#include <gazebo/transport/Node.hh>
-#include <gazebo/transport/Publisher.hh>
 
 using namespace gazebo;
-GZ_REGISTER_MODEL_PLUGIN(ConveyorBeltPlugin)
 
-/////////////////////////////////////////////////
-ConveyorBeltPlugin::ConveyorBeltPlugin() : SideContactPlugin()
-{
-}
+GZ_REGISTER_MODEL_PLUGIN(ConveyorBeltPlugin)
 
 /////////////////////////////////////////////////
 ConveyorBeltPlugin::~ConveyorBeltPlugin()
 {
   event::Events::DisconnectWorldUpdateBegin(this->updateConnection);
-  this->parentSensor.reset();
-  this->world.reset();
-}
-
-//////////////////////////////////////////////////
-std::string ConveyorBeltPlugin::Topic(std::string topicName) const
-{
-  std::string globalTopicName = "~/";
-  globalTopicName += this->parentSensor->Name() + "/" + this->GetHandle() + "/" + topicName;
-  boost::replace_all(globalTopicName, "::", "/");
-
-  return globalTopicName;
 }
 
 /////////////////////////////////////////////////
 void ConveyorBeltPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 {
-  SideContactPlugin::Load(_model, _sdf);
+  // Read the power of the belt.
+  if (_sdf->HasElement("power"))
+    this->beltPower = _sdf->Get<double>("power");
 
-  if (this->updateRate > 0)
-    gzdbg << "ConveyorBeltPlugin running at " << this->updateRate << " Hz\n";
-  else
-    gzdbg << "ConveyorBeltPlugin running at the default update rate\n";
+  this->SetPower(this->beltPower);
+  gzdbg << "Using belt power of: " << this->beltPower << " %\n";
 
-  if (!this->node)
+  // Read and set the joint that controls the belt.
+  std::string jointName = "belt_joint";
+  if (_sdf->HasElement("joint"))
+    jointName = _sdf->Get<std::string>("joint");
+  gzdbg << "Using joint name of: [" << jointName << "]\n";
+  this->joint = _model->GetJoint(jointName);
+  if (!this->joint)
   {
-    this->node = transport::NodePtr(new transport::Node());
-    this->node->Init(this->world->GetName());
+    gzerr << "Joint [" << jointName << "] not found, belt disabled\n";
+    return;
   }
 
-  if (_sdf->HasElement("belt_start_velocity"))
-  {
-    this->beltVelocity = _sdf->Get<double>("belt_start_velocity");
-  }
-  else {
-    this->beltVelocity = 0.5;
-  }
-  gzdbg << "Using belt start velocity of: " << this->beltVelocity << " m/s\n";
+  // Read and set the belt's link.
+  std::string linkName = "belt_link";
+  if (_sdf->HasElement("link"))
+    linkName = _sdf->Get<std::string>("link");
+  gzdbg << "Using link name of: [" << linkName << "]\n";
 
-  std::string controlCommandTopic;
-  if (_sdf->HasElement("control_command_topic"))
+  auto worldPtr = gazebo::physics::get_world();
+  this->link = boost::static_pointer_cast<physics::Link>(
+    worldPtr->GetEntity(linkName));
+  if (!this->link)
   {
-    controlCommandTopic = _sdf->Get<std::string>("control_command_topic");
+    gzerr << "Link not found" << std::endl;
+    return;
   }
-  else {
-    controlCommandTopic = this->Topic("control_command");
-  }
-  this->controlCommandSub = this->node->Subscribe(controlCommandTopic,
-      &ConveyorBeltPlugin::OnControlCommand, this);
 
-  if (_sdf->HasElement("velocity_axis"))
+  // Set the point where the link will be moved to its starting pose.
+  this->limit = this->joint->GetUpperLimit(0) - 0.6;
+
+  // Initialize Gazebo transport
+  this->gzNode = transport::NodePtr(new transport::Node());
+  this->gzNode->Init();
+
+  // Publisher for modifying the rate at which the belt is populated.
+  // TODO(dhood): this should not be in this class.
+  std::string populationRateModifierTopic = "population_rate_modifier";
+  if (_sdf->HasElement("population_rate_modifier_topic"))
+    populationRateModifierTopic = _sdf->Get<std::string>("population_rate_modifier_topic");
+  this->populationRateModifierPub =
+    this->gzNode->Advertise<msgs::GzString>(populationRateModifierTopic);
+
+  // Listen to the update event that is broadcasted every simulation iteration.
+  this->updateConnection = event::Events::ConnectWorldUpdateBegin(
+    std::bind(&ConveyorBeltPlugin::OnUpdate, this));
+}
+
+/////////////////////////////////////////////////
+void ConveyorBeltPlugin::OnUpdate()
+{
+  this->joint->SetVelocity(0, this->beltVelocity);
+
+  // Reset the belt.
+  if (this->joint->GetAngle(0) >= this->limit)
   {
-    this->velocityAxis = _sdf->Get<ignition::math::Vector3d>("velocity_axis");
-  }
-  else
-  {
-    gzerr << "'velocity_axis' tag not found\n";
+    // Warning: Megahack!!
+    // We should use "this->joint->SetPosition(0, 0)" here but I found that
+    // this line occasionally freezes the joint. I tracked the problem and
+    // found an incorrect value in childLinkPose within
+    // Joint::SetPositionMaximal(). This workaround makes sure that the right
+    // numbers are always used in our scenario.
+    const math::Pose childLinkPose(1.20997, 2.5998, 0.8126, 0, 0, -1.57);
+    const math::Pose newChildLinkPose(1.20997, 2.98, 0.8126, 0, 0, -1.57);
+    this->link->MoveFrame(childLinkPose, newChildLinkPose);
   }
 }
 
 /////////////////////////////////////////////////
-void ConveyorBeltPlugin::OnUpdate(const common::UpdateInfo &/*_info*/)
+double ConveyorBeltPlugin::Power() const
 {
-  double velocity;
-  {
-    std::lock_guard<std::mutex> lock(this->mutex);
-    velocity = this->beltVelocity;
-  }
-  this->ActOnContactingLinks(velocity);
+  if (!this->joint || !this->link)
+    return 0.0;
 
-  // If we're using a custom update rate value we have to check if it's time to
-  // update the plugin or not.
-  if (!this->TimeToExecute())
+  return this->beltPower;
+}
+
+/////////////////////////////////////////////////
+void ConveyorBeltPlugin::SetPower(const double _power)
+{
+  if (!this->joint || !this->link)
     return;
 
-  auto prevNumberContactingLinks = this->contactingLinks.size();
-  this->CalculateContactingLinks();
-  if (prevNumberContactingLinks != this->contactingLinks.size()) {
-    gzdbg << "Number of links ontop of belt: " << this->contactingLinks.size() << "\n";
-  }
-}
-
-/////////////////////////////////////////////////
-void ConveyorBeltPlugin::ActOnContactingLinks(double velocity)
-{
-  ignition::math::Vector3d velocity_beltFrame = velocity * this->velocityAxis;
-  auto beltPose = this->parentLink->GetWorldPose().Ign();
-  math::Vector3 velocity_worldFrame = beltPose.Rot().RotateVector(velocity_beltFrame);
-  for (auto linkPtr : this->contactingLinks)
+  if (_power < 0 || _power > 100)
   {
-    if (linkPtr)
-    {
-      linkPtr->SetLinearVel(velocity_worldFrame);
-    }
+    gzerr << "Incorrect power value [" << _power << "]\n";
+    gzerr << "Accepted values are in the [0-100] range\n";
+    return;
   }
-}
 
-/////////////////////////////////////////////////
-void ConveyorBeltPlugin::OnControlCommand(ConstHeaderPtr& _msg)
-{
-  double requestedVelocity = std::stod(_msg->str_id());
-  gzdbg << "Received control command of: " << requestedVelocity << "\n";
-  this->SetVelocity(requestedVelocity);
-}
+  this->beltPower = _power;
 
-/////////////////////////////////////////////////
-void ConveyorBeltPlugin::SetVelocity(double velocity)
-{
-  std::lock_guard<std::mutex> lock(this->mutex);
-  gzdbg << "Setting velocity to: " << velocity << "\n";
-  this->beltVelocity = velocity;
+  // Publish a message on the rate modifier topic of the PopulationPlugin.
+  gazebo::msgs::GzString msg;
+  msg.set_data(std::to_string(_power / 100.0));
+  this->populationRateModifierPub->Publish(msg);
+
+  // Convert the power (percentage) to a velocity.
+  this->beltVelocity = this->kMaxBeltLinVel * this->beltPower / 100.0;
+  gzdbg << "Received power of: " << _power << ", setting velocity to: " << this->beltVelocity << std::endl;
 }

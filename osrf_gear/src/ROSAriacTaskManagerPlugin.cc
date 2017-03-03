@@ -16,6 +16,7 @@
 */
 
 #include <algorithm>
+#include <cstdlib>
 #include <limits>
 #include <mutex>
 #include <ostream>
@@ -139,6 +140,9 @@ namespace gazebo
 
     /// \brief A mutex to protect currentState.
     public: std::mutex mutex;
+
+    // During the competition, this environment variable will be set.
+    bool competitonMode = false;
   };
 }
 
@@ -151,11 +155,11 @@ static void fillOrderMsg(const ariac::Order &_order,
                         osrf_gear::Order &_msgOrder)
 {
   _msgOrder.order_id = _order.orderID;
-  for (const auto item : _order.kits)
+  for (const auto &kit : _order.kits)
   {
     osrf_gear::Kit msgKit;
-    msgKit.kit_type = item.first;
-    for (const auto &obj : item.second.objects)
+    msgKit.kit_type = kit.kitType;
+    for (const auto &obj : kit.objects)
     {
       osrf_gear::KitObject msgObj;
       msgObj.type = obj.type;
@@ -190,6 +194,11 @@ ROSAriacTaskManagerPlugin::~ROSAriacTaskManagerPlugin()
 void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
   sdf::ElementPtr _sdf)
 {
+  gzdbg << "ARIAC VERSION: 0.1.0\n";
+  auto competitionEnv = std::getenv("ARIAC_COMPETITION");
+  this->dataPtr->competitonMode = competitionEnv != NULL;
+  gzdbg << "ARIAC COMPETITION MODE: " << (this->dataPtr->competitonMode ? competitionEnv : "false") << std::endl;
+
   GZ_ASSERT(_world, "ROSAriacTaskManagerPlugin world pointer is NULL");
   GZ_ASSERT(_sdf, "ROSAriacTaskManagerPlugin sdf pointer is NULL");
   this->dataPtr->world = _world;
@@ -280,7 +289,7 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
     }
 
     // Store all kits for an order.
-    std::map<std::string, ariac::Kit> kits;
+    std::vector<ariac::Kit> kits;
 
     sdf::ElementPtr kitElem = orderElem->GetElement("kit");
     while (kitElem)
@@ -336,7 +345,7 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
       }
 
       // Add a new kit to the collection of kits.
-      kits[kitType] = kit;
+      kits.push_back(kit);
 
       kitElem = kitElem->GetNextElement("kit");
     }
@@ -413,7 +422,7 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
     this->dataPtr->rosnode->advertiseService(compStartServiceName,
       &ROSAriacTaskManagerPlugin::HandleStartService, this);
 
-  // Service for starting the competition.
+  // Service for ending the competition.
   this->dataPtr->compEndServiceServer =
     this->dataPtr->rosnode->advertiseService(compEndServiceName,
       &ROSAriacTaskManagerPlugin::HandleEndService, this);
@@ -423,7 +432,7 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
     this->dataPtr->rosnode->advertiseService(submitTrayServiceName,
       &ROSAriacTaskManagerPlugin::HandleSubmitTrayService, this);
 
-  // Service for submitting trays for inspection.
+  // Service for querying material storage locations.
   this->dataPtr->getMaterialLocationsServiceServer =
     this->dataPtr->rosnode->advertiseService(getMaterialLocationsServiceName,
       &ROSAriacTaskManagerPlugin::HandleGetMaterialLocationsService, this);
@@ -477,7 +486,7 @@ void ROSAriacTaskManagerPlugin::OnUpdate()
     this->dataPtr->currentState = "go";
 
     // TODO(dhood): only start the belt if there are belt parts specified
-    this->ControlConveyorBelt(0.2);
+    this->ControlConveyorBelt(100);
     this->PopulateConveyorBelt();
   }
   else if (this->dataPtr->currentState == "go")
@@ -493,7 +502,7 @@ void ROSAriacTaskManagerPlugin::OnUpdate()
     {
       std::ostringstream logMessage;
       logMessage << "Current game score: " << gameScore.total();
-      ROS_INFO_STREAM(logMessage.str().c_str());
+      ROS_DEBUG_STREAM(logMessage.str().c_str());
       gzdbg << logMessage.str() << std::endl;
       this->dataPtr->currentGameScore = gameScore;
     }
@@ -631,10 +640,23 @@ bool ROSAriacTaskManagerPlugin::HandleEndService(
 
 /////////////////////////////////////////////////
 bool ROSAriacTaskManagerPlugin::HandleSubmitTrayService(
-  osrf_gear::SubmitTray::Request & req,
-  osrf_gear::SubmitTray::Response & res)
+  ros::ServiceEvent<osrf_gear::SubmitTray::Request, osrf_gear::SubmitTray::Response> & event)
 {
   std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
+  const osrf_gear::SubmitTray::Request& req = event.getRequest();
+  osrf_gear::SubmitTray::Response& res = event.getResponse();
+
+  const std::string& callerName = event.getCallerName();
+  gzdbg << "Submit tray service called by: " << callerName << std::endl;
+
+  if (this->dataPtr->competitonMode && callerName.compare("/gazebo") != 0)
+  {
+    std::string errStr = "Competition is running so this service is not enabled.";
+    gzerr << errStr << std::endl;
+    ROS_ERROR_STREAM(errStr);
+    res.success = false;
+    return true;
+  }
 
   if (this->dataPtr->currentState != "go") {
     std::string errStr = "Competition is not running so trays cannot be submitted.";
@@ -682,7 +704,7 @@ bool ROSAriacTaskManagerPlugin::HandleGetMaterialLocationsService(
 }
 
 /////////////////////////////////////////////////
-void ROSAriacTaskManagerPlugin::ControlConveyorBelt(double velocity)
+void ROSAriacTaskManagerPlugin::ControlConveyorBelt(double power)
 {
 
   if (!this->dataPtr->conveyorControlClient.exists())
@@ -692,7 +714,7 @@ void ROSAriacTaskManagerPlugin::ControlConveyorBelt(double velocity)
 
   // Make a service call to set the velocity of the belt
   osrf_gear::ConveyorBeltState controlMsg;
-  controlMsg.velocity = velocity;
+  controlMsg.power = power;
   osrf_gear::ConveyorBeltControl srv;
   srv.request.state = controlMsg;
   this->dataPtr->conveyorControlClient.call(srv);

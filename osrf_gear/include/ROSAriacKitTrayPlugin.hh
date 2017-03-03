@@ -24,10 +24,13 @@
 #include <string>
 
 #include <ros/ros.h>
+#include <std_srvs/Trigger.h>
 
 #include <gazebo/common/Plugin.hh>
 #include <gazebo/msgs/msgs.hh>
+#include <gazebo/physics/PhysicsTypes.hh>
 #include <gazebo/sensors/sensors.hh>
+#include <gazebo/transport/transport.hh>
 #include <gazebo/util/system.hh>
 #include <osrf_gear/ARIAC.hh>
 #include "SideContactPlugin.hh"
@@ -54,11 +57,28 @@ namespace gazebo
     /// \brief Update the kit based on which models are in contact
     protected: void ProcessContactingModels();
 
+    /// \brief Create a fixed joint to all contacting models
+    protected: virtual void LockContactingModels();
+
+    /// \brief Remove any fixed joints to contacting models
+    protected: virtual void UnlockContactingModels();
+
     /// \brief Update the kit based on which models are in contact
     public: std::string DetermineModelType(const std::string &modelName);
 
+    /// \brief Callback for when a new subscriber connects to the Kit ROS publisher
+    /// This will check that only the /gazebo node is subscribed during the competition
+    protected: void OnSubscriberConnect(const ros::SingleSubscriberPublisher& pub);
+
     /// \brief Publish the Kit ROS message
     protected: void PublishKitMsg();
+
+    /// \brief Service for locking the models to the tray and disabling updates
+    protected: void HandleLockModelsRequest(ConstGzStringPtr &_msg);
+
+    /// \brief Service for clearing the tray
+    protected: bool HandleClearService(
+      ros::ServiceEvent<std_srvs::Trigger::Request, std_srvs::Trigger::Response>& event);
 
     /// \brief Kit which is currently on the tray
     protected: ariac::Kit currentKit;
@@ -66,12 +86,30 @@ namespace gazebo
     /// \brief ID of tray
     protected: std::string trayID;
 
+    /// \brief Fixed joints to lock contacting models
+    protected: std::vector<physics::JointPtr> fixedJoints;
+
     /// \brief ROS node handle
     protected: ros::NodeHandle *rosNode;
 
+    /// \brief Gazebo node for communication
+    protected: transport::NodePtr gzNode;
+
     /// \brief Publisher for the kit state
     protected: ros::Publisher currentKitPub;
+
+    /// \brief Whether or not the Kit ROS topic is enabled
+    /// If unpermitted subscribers connect during the competition, publishing is disabled
+    protected: bool publishingEnabled;
+
+    /// \brief Service that locks models to the tray
+    public: ros::ServiceServer lockModelsServer;
+
+    /// \brief ROS service that clears the tray
+    public: ros::ServiceServer clearTrayServer;
+
+    /// \brief Gazebo subscriber to the lock models topic
+    protected: transport::SubscriberPtr lockModelsSub;
   };
 }
 #endif
-

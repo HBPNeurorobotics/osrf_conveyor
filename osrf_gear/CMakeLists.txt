@@ -190,37 +190,6 @@ install(TARGETS ${ros_proximity_ray_plugin_name}
   RUNTIME DESTINATION bin
 )
 
-# Create the libConveyorController.so library.
-set(conveyor_controller_name ConveyorController)
-add_library(${conveyor_controller_name} SHARED src/ConveyorController.cc)
-target_link_libraries(${conveyor_controller_name}
-  ${conveyor_belt_plugin_name}
-  ${GAZEBO_LIBRARIES}
-  ${proximity_ray_plugin_name}
-)
-install(TARGETS ${conveyor_controller_name}
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin
-)
-
-# Create the libROSConveyorController.so library.
-set(ros_conveyor_controller_name ROSConveyorController)
-add_library(${ros_conveyor_controller_name} SHARED src/ROSConveyorController.cc)
-target_link_libraries(${ros_conveyor_controller_name}
-  ${conveyor_belt_plugin_name}
-  ${proximity_ray_plugin_name}
-  ${roscpp_LIBRARIES}
-  ${GAZEBO_LIBRARIES})
-add_dependencies(${ros_conveyor_controller_name}
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-)
-install(TARGETS ${ros_conveyor_controller_name}
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin
-)
-
 # Create the libPopulationPlugin.so library.
 set(population_plugin_name PopulationPlugin)
 add_library(${population_plugin_name} src/PopulationPlugin.cc)

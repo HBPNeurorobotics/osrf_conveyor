@@ -82,6 +82,12 @@ namespace gazebo
 
               /// \brief Destination where objects are teleported to after a drop
               public: math::Pose destination;
+
+              /// \brief Getter for the type of object to drop
+              public: std::string getType() const
+              {
+                return this->type;
+              };
             };
 
     /// \brief Collection of objects that have been dropped.
@@ -160,6 +166,12 @@ namespace gazebo
 
     /// \brief Attached model to be dropped.
     public: physics::ModelPtr dropAttachedModel;
+
+    /// \brief Collision with the model in contact.
+    public: physics::CollisionPtr modelCollision;
+
+    /// \brief Normal of the contact with the model in collision.
+    public: ignition::math::Vector3d modelContactNormal;
   };
 }
 
@@ -175,7 +187,7 @@ VacuumGripperPlugin::VacuumGripperPlugin()
   gzmsg << "VacuumGripper plugin loaded" << std::endl;
 
   this->dataPtr->attached = false;
-  this->dataPtr->updateRate = common::Time(0, common::Time::SecToNano(0.75));
+  this->dataPtr->updateRate = common::Time(0, common::Time::SecToNano(0.1));
 }
 
 /////////////////////////////////////////////////
@@ -379,24 +391,8 @@ void VacuumGripperPlugin::OnUpdate()
     return;
   }
 
-  // @todo: should package the decision into a function
-  if (this->dataPtr->contacts.size() > 0)
-  {
-    gzdbg << "Number of points in contact with gripper: " << this->dataPtr->contacts.size() << std::endl;
-  }
-  if (this->dataPtr->contacts.size() >= this->dataPtr->minContactCount)
-  {
-    this->dataPtr->posCount++;
-    this->dataPtr->zeroCount = 0;
-  }
-  else
-  {
-    this->dataPtr->zeroCount++;
-    this->dataPtr->posCount = std::max(0, this->dataPtr->posCount-1);
-  }
-
-  if (this->dataPtr->posCount > this->dataPtr->attachSteps &&
-      !this->dataPtr->attached)
+  bool modelInContact = this->CheckModelContact();
+  if (modelInContact)
   {
     this->HandleAttach();
   }
@@ -431,7 +427,6 @@ void VacuumGripperPlugin::OnUpdate()
   //   this->HandleDetach();
   // }
 
-  this->dataPtr->contacts.clear();
   this->dataPtr->prevUpdateTime = common::Time::GetWallTime();
 }
 
@@ -439,6 +434,7 @@ void VacuumGripperPlugin::OnUpdate()
 void VacuumGripperPlugin::OnContacts(ConstContactsPtr &_msg)
 {
   std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
+  this->dataPtr->contacts.clear();
   for (int i = 0; i < _msg->contact_size(); ++i)
   {
     CollisionPtr collision1 = boost::dynamic_pointer_cast<Collision>(
@@ -455,12 +451,12 @@ void VacuumGripperPlugin::OnContacts(ConstContactsPtr &_msg)
 }
 
 /////////////////////////////////////////////////
-void VacuumGripperPlugin::HandleAttach()
+bool VacuumGripperPlugin::GetContactNormal()
 {
-  std::map<std::string, physics::CollisionPtr> cc;
-  std::map<std::string, int> contactCounts;
-  std::map<std::string, int>::iterator iter;
+  physics::CollisionPtr collisionPtr;
+  ignition::math::Vector3d contactNormal;
 
+  // Get the pointer to the collision that's not the gripper's.
   // This function is only called from the OnUpdate function so
   // the call to contacts.clear() is not going to happen in
   // parallel with the reads in the following code, no mutex needed.
@@ -468,56 +464,75 @@ void VacuumGripperPlugin::HandleAttach()
   {
     std::string name1 = this->dataPtr->contacts[i].collision1();
     std::string name2 = this->dataPtr->contacts[i].collision2();
+    gzdbg << "Collision between '" << name1 << "' and '" << name2 << "'\n";
 
     if (this->dataPtr->collisions.find(name1) ==
         this->dataPtr->collisions.end())
     {
-      cc[name1] = boost::dynamic_pointer_cast<Collision>(
-          this->dataPtr->world->GetEntity(name1));
-      contactCounts[name1] += 1;
+      // Model in contact is the second name
+      this->dataPtr->modelCollision = boost::dynamic_pointer_cast<Collision>(
+        this->dataPtr->world->GetEntity(name1));
+      this->dataPtr->modelContactNormal = -1 * msgs::ConvertIgn(this->dataPtr->contacts[i].normal(0));
+      return true;
     }
 
     if (this->dataPtr->collisions.find(name2) ==
         this->dataPtr->collisions.end())
     {
-      cc[name2] = boost::dynamic_pointer_cast<Collision>(
-          this->dataPtr->world->GetEntity(name2));
-      contactCounts[name2] += 1;
+      // Model in contact is the first name -- frames are reversed
+      this->dataPtr->modelCollision = boost::dynamic_pointer_cast<Collision>(
+        this->dataPtr->world->GetEntity(name2));
+      this->dataPtr->modelContactNormal = msgs::ConvertIgn(this->dataPtr->contacts[i].normal(0));
+      return true;
     }
   }
 
-  iter = contactCounts.begin();
-  while (iter != contactCounts.end())
+  if (!collisionPtr)
   {
-    if (iter->second < 2)
-      contactCounts.erase(iter++);
-    else
-    {
-      if (!this->dataPtr->attached && cc[iter->first])
-      {
-        this->dataPtr->attached = true;
+    gzdbg << "Somehow the gripper was in collision with itself.\n";
+  }
 
-        this->dataPtr->fixedJoint->Load(this->dataPtr->suctionCupLink,
-            cc[iter->first]->GetLink(), math::Pose());
-        this->dataPtr->fixedJoint->Init();
+  return false;
+}
 
-        // Check if the object should drop.
-        auto name = cc[iter->first]->GetLink()->GetModel()->GetName();
-        this->dataPtr->attachedObjType = ariac::DetermineModelType(name);
-        auto found = std::find(std::begin(this->dataPtr->droppedObjects),
-                       std::end(this->dataPtr->droppedObjects), this->dataPtr->attachedObjType);
-        bool alreadyDropped = found != std::end(this->dataPtr->droppedObjects);
-        if (!alreadyDropped)
-        {
-          this->dataPtr->dropPending = true;
-          this->dataPtr->dropAttachedModel =
-            cc[iter->first]->GetLink()->GetModel();
+/////////////////////////////////////////////////
+void VacuumGripperPlugin::HandleAttach()
+{
+  if (this->dataPtr->attached)
+  {
+    return;
+  }
+  this->dataPtr->attached = true;
 
-          gzdbg << "Drop scheduled" << std::endl;
-        }
-      }
-      ++iter;
-    }
+  this->dataPtr->fixedJoint->Load(this->dataPtr->suctionCupLink,
+      this->dataPtr->modelCollision->GetLink(), math::Pose());
+  this->dataPtr->fixedJoint->Init();
+
+  auto modelPtr = this->dataPtr->modelCollision->GetLink()->GetModel();
+  auto name = modelPtr->GetName();
+  gzdbg << "Part attached to gripper: " << name << std::endl;
+
+  // Check if the object should drop.
+  std::string objectType = ariac::DetermineModelType(name);
+  auto it = find_if(this->dataPtr->objectsToDrop.begin(), this->dataPtr->objectsToDrop.end(),
+    [&objectType](const VacuumGripperPluginPrivate::DropObject& obj) {
+      return obj.getType() == objectType;
+    });
+  this->dataPtr->attachedObjType = objectType;
+  bool objectToBeDropped = it != this->dataPtr->objectsToDrop.end();
+
+  if (!objectToBeDropped)
+  {
+    return;
+  }
+  auto found = std::find(std::begin(this->dataPtr->droppedObjects),
+                 std::end(this->dataPtr->droppedObjects), this->dataPtr->attachedObjType);
+  bool alreadyDropped = found != std::end(this->dataPtr->droppedObjects);
+  if (!alreadyDropped)
+  {
+    this->dataPtr->dropPending = true;
+    this->dataPtr->dropAttachedModel = modelPtr;
+    gzdbg << "Drop scheduled" << std::endl;
   }
 }
 
@@ -526,6 +541,47 @@ void VacuumGripperPlugin::HandleDetach()
 {
   this->dataPtr->attached = false;
   this->dataPtr->fixedJoint->Detach();
+}
+
+/////////////////////////////////////////////////
+bool VacuumGripperPlugin::CheckModelContact()
+{
+  bool modelInContact = false;
+  if (this->dataPtr->contacts.size() > 0)
+  {
+    gzdbg << "Number of collisions with gripper: " << this->dataPtr->contacts.size() << std::endl;
+  }
+  if (this->dataPtr->contacts.size() >= this->dataPtr->minContactCount)
+  {
+    gzdbg << "More collisions than the minContactCount: " << this->dataPtr->minContactCount << std::endl;
+    this->dataPtr->posCount++;
+    this->dataPtr->zeroCount = 0;
+  }
+  else
+  {
+    this->dataPtr->zeroCount++;
+    this->dataPtr->posCount = std::max(0, this->dataPtr->posCount-1);
+  }
+
+  if (this->dataPtr->posCount > this->dataPtr->attachSteps &&
+      !this->dataPtr->attached)
+  {
+    if (!this->GetContactNormal())
+    {
+      return false;
+    }
+    // Only consider models with collision normals aligned with the normal of the gripper
+    auto gripperLinkPose = this->dataPtr->suctionCupLink->GetWorldPose().Ign();
+    math::Vector3 gripperLinkNormal =
+      gripperLinkPose.Rot().RotateVector(ignition::math::Vector3d(0, 0, 1));
+    double alignment = gripperLinkNormal.Dot(this->dataPtr->modelContactNormal);
+
+    // Alignment of > 0.95 represents alignment angle of < acos(0.95) = ~18 degrees
+    if (alignment > 0.95) {
+      modelInContact = true;
+    }
+  }
+  return modelInContact;
 }
 
 /////////////////////////////////////////////////

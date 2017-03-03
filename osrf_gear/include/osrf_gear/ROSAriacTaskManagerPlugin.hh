@@ -123,7 +123,7 @@ namespace gazebo
     protected: void ProcessOrdersToAnnounce();
 
     /// \brief Set the velocity of the conveyor belt.
-    protected: void ControlConveyorBelt(double velocity);
+    protected: void ControlConveyorBelt(double power);
 
     /// \brief Publish competition status.
     protected: void PublishStatus(const ros::TimerEvent&);
@@ -141,7 +141,7 @@ namespace gazebo
 
     /// \brief Callback for when a tray is submitted for inspection.
     public: bool HandleSubmitTrayService(
-      osrf_gear::SubmitTray::Request & req, osrf_gear::SubmitTray::Response & res);
+      ros::ServiceEvent<osrf_gear::SubmitTray::Request, osrf_gear::SubmitTray::Response> & event);
 
     /// \brief Callback for when a query is made for material locations.
     public: bool HandleGetMaterialLocationsService(

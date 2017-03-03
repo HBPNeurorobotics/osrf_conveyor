@@ -46,9 +46,9 @@ namespace gazebo
     /// \brief Receives requests on the conveyor belt's topic.
     /// \param[in] _req The desired state of the conveyor belt.
     /// \param[in] _res If the service succeeded or not.
-    public: bool OnControlCommand(
-      osrf_gear::ConveyorBeltControl::Request &_req,
-      osrf_gear::ConveyorBeltControl::Response &_res);
+    public: bool OnControlCommand(ros::ServiceEvent<
+      osrf_gear::ConveyorBeltControl::Request,
+      osrf_gear::ConveyorBeltControl::Response> & event);
 
     /// \brief for setting ROS name space
     private: std::string robotNamespace_;

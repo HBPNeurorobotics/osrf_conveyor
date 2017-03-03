@@ -68,6 +68,7 @@ configurable_options = {
     'insert_models_over_bins': False,
     'disable_shadows': False,
     'fill_demo_tray': False,
+    'belt_population_cycles': 1,
     'gazebo_state_logging': False,
     'spawn_extra_models': False,
     'model_type_aliases': {
@@ -338,12 +339,17 @@ def create_drops_info(drops_dict):
 
 
 def create_order_info(name, order_dict):
+    kit_count = get_field_with_default(order_dict, 'kit_count', 1)
     announcement_time = get_required_field(name, order_dict, 'announcement_time')
     parts_dict = get_required_field(name, order_dict, 'parts')
     parts = []
     for part_name, part_dict in parts_dict.items():
         parts.append(create_model_info(part_name, part_dict))
-    return {'announcement_time': announcement_time, 'parts': parts}
+    return {
+        'announcement_time': announcement_time,
+        'parts': parts,
+        'kit_count': kit_count,
+    }
 
 
 def create_order_infos(orders_dict):

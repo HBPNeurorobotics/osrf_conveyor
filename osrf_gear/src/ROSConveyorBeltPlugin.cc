@@ -16,6 +16,7 @@
 */
 #include "ROSConveyorBeltPlugin.hh"
 
+#include <cstdlib>
 #include <string>
 
 using namespace gazebo;
@@ -66,12 +67,26 @@ void ROSConveyorBeltPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf
 }
 
 /////////////////////////////////////////////////
-bool ROSConveyorBeltPlugin::OnControlCommand(
-  osrf_gear::ConveyorBeltControl::Request &_req,
-  osrf_gear::ConveyorBeltControl::Response &_res)
+bool ROSConveyorBeltPlugin::OnControlCommand(ros::ServiceEvent<
+  osrf_gear::ConveyorBeltControl::Request, osrf_gear::ConveyorBeltControl::Response> & event)
 {
-  gzdbg << "Control command received\n";
-  this->SetVelocity(_req.state.velocity);
-  _res.success = true;
+  const osrf_gear::ConveyorBeltControl::Request& req = event.getRequest();
+  osrf_gear::ConveyorBeltControl::Response& res = event.getResponse();
+
+  const std::string& callerName = event.getCallerName();
+  gzdbg << "Conveyor control service called by: " << callerName << std::endl;
+
+  // During the competition, this environment variable will be set.
+  auto compRunning = std::getenv("ARIAC_COMPETITION");
+  if (compRunning && callerName.compare("/gazebo") != 0)
+  {
+    std::string errStr = "Competition is running so this service is not enabled.";
+    gzerr << errStr << std::endl;
+    ROS_ERROR_STREAM(errStr);
+    res.success = false;
+    return true;
+  }
+  this->SetPower(req.state.power);
+  res.success = true;
   return true;
 }
