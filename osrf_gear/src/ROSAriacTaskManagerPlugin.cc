@@ -140,6 +140,9 @@ namespace gazebo
 
     /// \brief A mutex to protect currentState.
     public: std::mutex mutex;
+
+    // During the competition, this environment variable will be set.
+    bool competitonMode = false;
   };
 }
 
@@ -191,6 +194,11 @@ ROSAriacTaskManagerPlugin::~ROSAriacTaskManagerPlugin()
 void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
   sdf::ElementPtr _sdf)
 {
+  gzdbg << "ARIAC VERSION: 0.1.0\n";
+  auto competitionEnv = std::getenv("ARIAC_COMPETITION");
+  this->dataPtr->competitonMode = competitionEnv != NULL;
+  gzdbg << "ARIAC COMPETITION MODE: " << (this->dataPtr->competitonMode ? competitionEnv : "false") << std::endl;
+
   GZ_ASSERT(_world, "ROSAriacTaskManagerPlugin world pointer is NULL");
   GZ_ASSERT(_sdf, "ROSAriacTaskManagerPlugin sdf pointer is NULL");
   this->dataPtr->world = _world;
@@ -641,9 +649,7 @@ bool ROSAriacTaskManagerPlugin::HandleSubmitTrayService(
   const std::string& callerName = event.getCallerName();
   gzdbg << "Submit tray service called by: " << callerName << std::endl;
 
-  // During the competition, this environment variable will be set.
-  auto compRunning = std::getenv("ARIAC_COMPETITION");
-  if (compRunning && callerName.compare("/gazebo") != 0)
+  if (this->dataPtr->competitonMode && callerName.compare("/gazebo") != 0)
   {
     std::string errStr = "Competition is running so this service is not enabled.";
     gzerr << errStr << std::endl;

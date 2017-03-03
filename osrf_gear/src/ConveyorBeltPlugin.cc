@@ -144,4 +144,5 @@ void ConveyorBeltPlugin::SetPower(const double _power)
 
   // Convert the power (percentage) to a velocity.
   this->beltVelocity = this->kMaxBeltLinVel * this->beltPower / 100.0;
+  gzdbg << "Received power of: " << _power << ", setting velocity to: " << this->beltVelocity << std::endl;
 }
