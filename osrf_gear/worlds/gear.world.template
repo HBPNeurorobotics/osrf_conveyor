@@ -326,7 +326,7 @@
 @[for agv_id in [1,2]]@
     <!-- AGV@(str(agv_id)) -->
     <model name="agv@(str(agv_id))">
-      <pose>0.3 @(3.3 if agv_id == 1 else -3.3) 0 0 0 3.1415</pose>
+      <pose>0.3 @(3.3 if agv_id == 1 else -3.3) 0 0 0 @(3.14159 if agv_id == 1 else 0)</pose>
       <include>
         <name>agv@(str(agv_id))</name>
         <uri>model://warehouse_robot</uri>
@@ -341,7 +341,7 @@
       <!-- a tray for building kits -->
       <!-- (this has to be in a model tag so logical cameras can detect it as a nested model) -->
       <model name="kit_tray_@(str(agv_id))">
-        <pose>0.0 0.15 0.75 0 0 0</pose>
+        <pose>0.0 0.25 0.75 0 0 0</pose>
         <include>
           <name>kit_tray_@(str(agv_id))</name>
           <uri>model://kit_tray</uri>
