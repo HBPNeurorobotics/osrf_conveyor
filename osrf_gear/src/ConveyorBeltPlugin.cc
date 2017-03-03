@@ -76,6 +76,18 @@ void ConveyorBeltPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   // Set the point where the link will be moved to its starting pose.
   this->limit = this->joint->GetUpperLimit(0) - 0.6;
 
+  // Initialize Gazebo transport
+  this->gzNode = transport::NodePtr(new transport::Node());
+  this->gzNode->Init();
+
+  // Publisher for modifying the rate at which the belt is populated.
+  // TODO(dhood): this should not be in this class.
+  std::string populationRateModifierTopic = "population_rate_modifier";
+  if (_sdf->HasElement("population_rate_modifier_topic"))
+    populationRateModifierTopic = _sdf->Get<std::string>("population_rate_modifier_topic");
+  this->populationRateModifierPub =
+    this->gzNode->Advertise<msgs::GzString>(populationRateModifierTopic);
+
   // Listen to the update event that is broadcasted every simulation iteration.
   this->updateConnection = event::Events::ConnectWorldUpdateBegin(
     std::bind(&ConveyorBeltPlugin::OnUpdate, this));
@@ -125,6 +137,12 @@ void ConveyorBeltPlugin::SetPower(const double _power)
 
   this->beltPower = _power;
 
+  // Publish a message on the rate modifier topic of the PopulationPlugin.
+  gazebo::msgs::GzString msg;
+  msg.set_data(std::to_string(_power / 100.0));
+  this->populationRateModifierPub->Publish(msg);
+
   // Convert the power (percentage) to a velocity.
   this->beltVelocity = this->kMaxBeltLinVel * this->beltPower / 100.0;
+  gzdbg << "Received power of: " << _power << ", setting velocity to: " << this->beltVelocity << std::endl;
 }

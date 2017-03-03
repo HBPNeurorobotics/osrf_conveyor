@@ -68,6 +68,7 @@ configurable_options = {
     'insert_models_over_bins': False,
     'disable_shadows': False,
     'fill_demo_tray': False,
+    'belt_population_cycles': 1,
     'gazebo_state_logging': False,
     'spawn_extra_models': False,
     'model_type_aliases': {

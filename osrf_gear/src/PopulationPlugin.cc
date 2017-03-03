@@ -107,6 +107,9 @@ namespace gazebo
     /// \brief Subscriber to the activation topic.
     public: transport::SubscriberPtr activationSub;
 
+    /// \brief Subscriber to the rate modifier topic.
+    public: transport::SubscriberPtr rateModifierSub;
+
     /// \brief If true, the objects will start populating.
     public: bool enabled = false;
 
@@ -120,6 +123,10 @@ namespace gazebo
     /// update rate is disabled. The plugin will execute at the physics rate.
     public: double updateRate = -1;
 
+    /// \brief Rate modifier of the populating: 1.0 will populate at the standard rate,
+    /// other values will scale the populating frequency.
+    public: double rateModifier = 1.0;
+
     /// \brief Last time (sim time) that the plugin was updated.
     public: gazebo::common::Time lastUpdateTime;
 
@@ -127,6 +134,8 @@ namespace gazebo
     /// The key is the object type and the value contains the index of the next
     /// object to be spawned.
     public: std::map<std::string, int> objectCounter;
+
+
   };
 }
 
@@ -227,14 +236,14 @@ void PopulationPlugin::Load(physics::WorldPtr _world, sdf::ElementPtr _sdf)
   std::sort(this->dataPtr->initialObjects.begin(),
     this->dataPtr->initialObjects.end());
 
+  // Create and initialize the node.
+  this->dataPtr->node = transport::NodePtr(new transport::Node());
+  this->dataPtr->node->Init();
+
   // Listen on the activation topic, if present. This topic is used for
   // manual activation.
   if (_sdf->HasElement("activation_topic"))
   {
-    // Create and initialize the node.
-    this->dataPtr->node = transport::NodePtr(new transport::Node());
-    this->dataPtr->node->Init();
-
     // Subscribe to the activation topic.
     this->dataPtr->activationSub = this->dataPtr->node->Subscribe(
         _sdf->Get<std::string>("activation_topic"),
@@ -244,6 +253,16 @@ void PopulationPlugin::Load(physics::WorldPtr _world, sdf::ElementPtr _sdf)
     this->Restart();
 
   this->dataPtr->lastUpdateTime = this->dataPtr->world->GetSimTime();
+
+  // Listen on the activation topic, if present. This topic is used for
+  // manual activation.
+  if (_sdf->HasElement("rate_modifier_topic"))
+  {
+    // Subscribe to the rate modifier topic.
+    this->dataPtr->rateModifierSub = this->dataPtr->node->Subscribe(
+        _sdf->Get<std::string>("rate_modifier_topic"),
+        &PopulationPlugin::OnRateModification, this);
+  }
 
   this->dataPtr->connection = event::Events::ConnectWorldUpdateEnd(
       boost::bind(&PopulationPlugin::OnUpdate, this));
@@ -310,7 +329,7 @@ void PopulationPlugin::OnUpdate()
 
   // Check whether spawn a new object from the list.
   auto elapsed = this->dataPtr->world->GetSimTime() - this->dataPtr->startTime;
-  if (elapsed.Double() >= this->dataPtr->objects.front().time)
+  if (elapsed.Double() * this->dataPtr->rateModifier >= this->dataPtr->objects.front().time)
   {
     auto obj = this->dataPtr->objects.front();
     if (this->dataPtr->frame)
@@ -363,6 +382,22 @@ void PopulationPlugin::OnActivation(ConstGzStringPtr &_msg)
     this->Resume();
   else
     gzerr << "Unknown activation command [" << _msg->data() << "]" << std::endl;
+}
+
+/////////////////////////////////////////////////
+void PopulationPlugin::OnRateModification(ConstGzStringPtr &_msg)
+{
+  std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
+
+  double rateModifier = std::stod(_msg->data());
+  if (rateModifier >= 0.0)
+  {
+    this->dataPtr->rateModifier = rateModifier;
+  }
+  else
+  {
+    gzdbg << "Ignoring rate modification request with negative value: " << _msg->data() << std::endl;
+  }
 }
 
 /////////////////////////////////////////////////
