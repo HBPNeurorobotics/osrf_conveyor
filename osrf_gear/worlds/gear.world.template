@@ -296,7 +296,7 @@
     <!-- a wall to delete objects at the end of the belt -->
     <include>
       <uri>model://deletion_wall</uri>
-      <pose>1.2 -4.1 1.4 0 0 1.5708</pose>
+      <pose>1.2 -4.1 1.41 0 0 1.5708</pose>
     </include>
 
 
@@ -370,43 +370,80 @@
 
     <!-- an invisible conveyor belt -->
     <model name="conveyor_belt">
-      <static>true</static>
-      <pose>1.21 5 0.8126 0 0 1.5708</pose>
+
+      <model name="conveyor_belt_fixed">
+        <static>true</static>
+        <pose>1.21 5 0.8126 0 0 -1.57079</pose>
+        <link name="link">
+          <pose>0 0 0 0 0 0</pose>
+        </link>
+      </model>
+
+      <model name="conveyor_belt_moving">
+        <static>false</static>
+        <pose>1.21 -2 0.8126 0 0 -1.57079</pose>
+        <link name="belt">
+          <pose>-5 0 0 0 0 0</pose>
+          <inertial>
+            <inertia>
+              <ixx>3.8185</ixx>
+              <ixy>0</ixy>
+              <ixz>0</ixz>
+              <iyy>1781.5</iyy>
+              <iyz>0</iyz>
+              <izz>1784.72</izz>
+            </inertia>
+            <mass>100</mass>
+          </inertial>
+          <!--Uncomment for debugging -->
+          <!--
+          <visual name="belt_visual">
+            <geometry>
+              <box>
+                <size>14.62206 0.65461 0.18862</size>
+              </box>
+            </geometry>
+          </visual>
+          -->
+          <collision name="belt_collision">
+            <geometry>
+              <box>
+                <size>14.62206 0.65461 0.18862</size>
+              </box>
+            </geometry>
+            <surface>
+              <friction>
+                <ode>
+                  <mu>1.0</mu>
+                  <mu2>1.0</mu2>
+                </ode>
+                <torsional>
+                  <coefficient>1000.0</coefficient>
+                  <patch_radius>0.1</patch_radius>
+                </torsional>
+              </friction>
+            </surface>
+          </collision>
+        </link>
+      </model>
+
+      <joint name="belt_joint" type="prismatic">
+        <parent>conveyor_belt_fixed::link</parent>
+        <child>conveyor_belt_moving::belt</child>
+        <axis>
+          <xyz>1 0 0</xyz>
+          <limit>
+            <lower>0</lower>
+            <upper>1.0</upper>
+          </limit>
+        </axis>
+      </joint>
+
       <plugin name="conveyor_belt_plugin" filename="libROSConveyorBeltPlugin.so">
         <robot_namespace>/ariac</robot_namespace>
-        <belt_start_velocity>0.0</belt_start_velocity>
-        <velocity_axis>-1 0 0</velocity_axis>
-        <contact_sensor_name>conveyor_belt_contact</contact_sensor_name>
-        <update_rate>13</update_rate>
+        <link>conveyor_belt::conveyor_belt_moving::belt</link>
+        <power>0</power>
       </plugin>
-      <link name="belt">
-        <pose>-5 0 0 0 0 0</pose>
-        <sensor name='conveyor_belt_contact' type='contact'>
-          <update_rate>10</update_rate>
-          <contact>
-            <collision>belt_collision</collision>
-          </contact>
-        </sensor>
-        <collision name="belt_collision">
-          <geometry>
-            <box>
-              <size>19.62206 0.65461 0.18862</size>
-            </box>
-          </geometry>
-          <surface>
-            <friction>
-              <ode>
-                <mu>1.0</mu>
-                <mu2>1.0</mu2>
-              </ode>
-              <torsional>
-                <coefficient>1000.0</coefficient>
-                <patch_radius>0.1</patch_radius>
-              </torsional>
-            </friction>
-          </surface>
-        </collision>
-      </link>
     </model>
 
 @[if options['insert_models_over_bins']]@
@@ -427,7 +464,7 @@
       <control_topic>/ariac/population/control</control_topic>
       <state_topic>/ariac/population/state</state_topic>
       <loop_forever>@("true" if belt_parts_loop else "false")</loop_forever>
-      <frame>conveyor_belt</frame>
+      <frame>conveyor_belt::conveyor_belt_fixed</frame>
       <object_sequence>
 @[for part_name, spawn_times in belt_parts.items()]@
   @[for spawn_time, part in spawn_times.items()]@
@@ -457,8 +494,9 @@
 @[for order_name, order in orders.items()]@
       <order>
         <start_time>@(order['announcement_time'])</start_time>
+@[for kit_index in range(order['kit_count'])]
         <kit>
-          <kit_type>@(order_name)</kit_type>
+          <kit_type>@(order_name)_kit_@(kit_index)</kit_type>
 @[for part in order['parts']]@
           <object>
             <type>@(part.type)</type>
@@ -466,6 +504,7 @@
           </object>
 @[end for]@
         </kit>
+@[end for]@
       </order>
 @[end for]@
       <material_locations>

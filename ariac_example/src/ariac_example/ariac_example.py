@@ -21,6 +21,7 @@ import rospy
 
 from osrf_gear.msg import Order
 from osrf_gear.msg import VacuumGripperState
+from osrf_gear.srv import AGVControl
 from osrf_gear.srv import VacuumGripperControl
 from sensor_msgs.msg import JointState
 from std_srvs.srv import Trigger
@@ -63,6 +64,26 @@ def control_gripper(enabled):
         rospy.logerr("Failed to control the gripper: %s" % response)
     else:
         rospy.loginfo("Gripper controlled successfully")
+    return response.success
+
+
+def control_agv(index, kit_type):
+    rospy.loginfo("Waiting for AGV control to be ready...")
+    name = '/ariac/agv' + str(index)
+    rospy.wait_for_service(name)
+    rospy.loginfo("AGV control is now ready.")
+    rospy.loginfo("Requesting AGV control...")
+
+    try:
+        agv_control = rospy.ServiceProxy(name, AGVControl)
+        response = agv_control(kit_type)
+    except rospy.ServiceException as exc:
+        rospy.logerr("Failed to control the AGV: %s" % exc)
+        return False
+    if not response.success:
+        rospy.logerr("Failed to control the AGV: %s" % response)
+    else:
+        rospy.loginfo("AGV controlled successfully")
     return response.success
 
 
