@@ -152,11 +152,11 @@ static void fillOrderMsg(const ariac::Order &_order,
                         osrf_gear::Order &_msgOrder)
 {
   _msgOrder.order_id = _order.orderID;
-  for (const auto item : _order.kits)
+  for (const auto &kit : _order.kits)
   {
     osrf_gear::Kit msgKit;
-    msgKit.kit_type = item.first;
-    for (const auto &obj : item.second.objects)
+    msgKit.kit_type = kit.kitType;
+    for (const auto &obj : kit.objects)
     {
       osrf_gear::KitObject msgObj;
       msgObj.type = obj.type;
@@ -281,7 +281,7 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
     }
 
     // Store all kits for an order.
-    std::map<std::string, ariac::Kit> kits;
+    std::vector<ariac::Kit> kits;
 
     sdf::ElementPtr kitElem = orderElem->GetElement("kit");
     while (kitElem)
@@ -337,7 +337,7 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
       }
 
       // Add a new kit to the collection of kits.
-      kits[kitType] = kit;
+      kits.push_back(kit);
 
       kitElem = kitElem->GetNextElement("kit");
     }
