@@ -478,7 +478,7 @@ void ROSAriacTaskManagerPlugin::OnUpdate()
     this->dataPtr->currentState = "go";
 
     // TODO(dhood): only start the belt if there are belt parts specified
-    this->ControlConveyorBelt(0.2);
+    this->ControlConveyorBelt(20);
     this->PopulateConveyorBelt();
   }
   else if (this->dataPtr->currentState == "go")
@@ -698,7 +698,7 @@ bool ROSAriacTaskManagerPlugin::HandleGetMaterialLocationsService(
 }
 
 /////////////////////////////////////////////////
-void ROSAriacTaskManagerPlugin::ControlConveyorBelt(double velocity)
+void ROSAriacTaskManagerPlugin::ControlConveyorBelt(double power)
 {
 
   if (!this->dataPtr->conveyorControlClient.exists())
@@ -708,7 +708,7 @@ void ROSAriacTaskManagerPlugin::ControlConveyorBelt(double velocity)
 
   // Make a service call to set the velocity of the belt
   osrf_gear::ConveyorBeltState controlMsg;
-  controlMsg.velocity = velocity;
+  controlMsg.power = power;
   osrf_gear::ConveyorBeltControl srv;
   srv.request.state = controlMsg;
   this->dataPtr->conveyorControlClient.call(srv);

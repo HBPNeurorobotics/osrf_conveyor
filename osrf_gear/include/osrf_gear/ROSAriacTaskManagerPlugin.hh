@@ -123,7 +123,7 @@ namespace gazebo
     protected: void ProcessOrdersToAnnounce();
 
     /// \brief Set the velocity of the conveyor belt.
-    protected: void ControlConveyorBelt(double velocity);
+    protected: void ControlConveyorBelt(double power);
 
     /// \brief Publish competition status.
     protected: void PublishStatus(const ros::TimerEvent&);

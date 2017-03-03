@@ -86,7 +86,7 @@ bool ROSConveyorBeltPlugin::OnControlCommand(ros::ServiceEvent<
     res.success = false;
     return true;
   }
-  this->SetVelocity(req.state.velocity);
+  this->SetPower(req.state.power);
   res.success = true;
   return true;
 }
