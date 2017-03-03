@@ -24,6 +24,7 @@
 #include <gazebo/physics/Joint.hh>
 #include <gazebo/physics/Link.hh>
 #include <gazebo/physics/Model.hh>
+#include <gazebo/transport/transport.hh>
 #include <gazebo/util/system.hh>
 #include <sdf/sdf.hh>
 
@@ -160,6 +161,12 @@ namespace gazebo
 
     /// \brief Maximum linear velocity of the belt.
     private: const double kMaxBeltLinVel = 0.2;
+
+    /// \brief Gazebo node for communication.
+    protected: transport::NodePtr gzNode;
+
+    /// \brief Gazebo publisher for modifying the rate of populating the belt.
+    public: transport::PublisherPtr populationRateModifierPub;
   };
 }
 #endif

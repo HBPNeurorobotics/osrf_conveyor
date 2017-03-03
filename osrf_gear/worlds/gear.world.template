@@ -436,6 +436,7 @@
 
       <plugin name="conveyor_belt_plugin" filename="libROSConveyorBeltPlugin.so">
         <robot_namespace>/ariac</robot_namespace>
+        <population_rate_modifier_topic>/ariac/population/rate_modifier</population_rate_modifier_topic>
         <link>conveyor_belt::conveyor_belt_moving::belt</link>
         <power>0</power>
       </plugin>
@@ -456,6 +457,7 @@
     <!-- Populate the conveyor belt -->
     <plugin filename="libROSPopulationPlugin.so" name="populate_conveyor">
       <activation_topic>/ariac/populate_belt</activation_topic>
+      <rate_modifier_topic>/ariac/population/rate_modifier</rate_modifier_topic>
       <control_topic>/ariac/population/control</control_topic>
       <state_topic>/ariac/population/state</state_topic>
       <loop_forever>@("true" if belt_parts_loop else "false")</loop_forever>

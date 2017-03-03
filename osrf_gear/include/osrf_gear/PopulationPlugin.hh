@@ -22,6 +22,7 @@
 #include <gazebo/common/Plugin.hh>
 #include <gazebo/msgs/gz_string.pb.h>
 #include <gazebo/physics/PhysicsTypes.hh>
+#include <gazebo/transport/transport.hh>
 #include <sdf/sdf.hh>
 
 namespace gazebo
@@ -107,6 +108,12 @@ namespace gazebo
     /// \param[in] _msg String message that indicates the activation command.
     ///   * start|restart: Start/restart the object population.
     protected: void OnActivation(ConstGzStringPtr &_msg);
+
+    /// \brief Callback that receives rate modifier messages. If the
+    /// <rate_modifier_topic> is set in SDF, the plugin will modify the population rate
+    /// by the received factor.
+    /// \param[in] _msg String message that indicates the rate modifier.
+    protected: void OnRateModification(ConstGzStringPtr &_msg);
 
     /// \brief True when the plugin is enabled or false if it's paused.
     protected: bool Enabled() const;
