@@ -22,6 +22,7 @@
 #include <gazebo/transport/transport.hh>
 #include <ignition/math.hh>
 #include <osrf_gear/SubmitTray.h>
+#include <std_msgs/String.h>
 #include <std_srvs/Trigger.h>
 
 #include <string>
@@ -91,6 +92,9 @@ namespace gazebo
 
     /// \brief Evaluation result of the tray (negative means that the tray was invalid)
     public: int inspectionResult = -1;
+
+    /// \brief Publishes the AGV state.
+    public: ros::Publisher statePub;
   };
 }
 
@@ -262,6 +266,11 @@ void ROSAGVPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf)
   this->dataPtr->rosClearTrayClient =
     this->dataPtr->rosnode->serviceClient<std_srvs::Trigger>(clearTrayServiceName);
 
+  // Publisher for the status of the AGV.
+  std::string stateTopic = "/ariac/" + this->dataPtr->agvName + "/state";
+  this->dataPtr->statePub = this->dataPtr->rosnode->advertise<
+    std_msgs::String>(stateTopic, 1000);
+
   this->dataPtr->currentState = "ready_to_deliver";
 
   // Listen to the update event. This event is broadcast every
@@ -371,6 +380,9 @@ void ROSAGVPlugin::OnUpdate(const common::UpdateInfo &/*_info*/)
       this->dataPtr->currentState = "ready_to_deliver";
     }
   }
+  std_msgs::String stateMsg;
+  stateMsg.data = this->dataPtr->currentState;
+  this->dataPtr->statePub.publish(stateMsg);
 
 }
 
