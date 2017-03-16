@@ -15,6 +15,7 @@
  *
 */
 
+#include <math.h>
 #include <string>
 
 #include <gazebo/common/Console.hh>
@@ -262,7 +263,9 @@ ariac::TrayScore AriacScorer::ScoreTray(const ariac::KitTray & tray)
       // Now filter the poses based on a threshold set in radians (more user-friendly).
       double yawDiff = objOrientation.GetYaw() - orderOrientation.GetYaw();
       if (std::abs(yawDiff) > scoringParameters.orientationThresh)
-        continue;
+        // Account for wrapping in angles. E.g. -pi compared with pi should "pass".
+        if (std::abs(std::abs(yawDiff) - 2 * M_PI) > scoringParameters.orientationThresh)
+          continue;
 
       gzdbg << "Object of type '" << currentObject.type << \
         "' in the correct orientation" << std::endl;

@@ -21,6 +21,8 @@ catkin_package(
 set(rostests
   ariac_rosapi.test
   ariac_example.test
+  ariac_qual2a.test
+  ariac_qual2b.test
   gripper.test
 )
 
@@ -39,6 +41,9 @@ endforeach()
 install(FILES
   ${rostests}
   ariac_rosapi.yaml
+  fill_demo_tray.yaml
+  qual2a_testing.yaml
+  qual2b_testing.yaml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/test
 )
 
