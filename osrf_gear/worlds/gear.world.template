@@ -309,7 +309,7 @@
     <population name="@(obj_type)_population">
       <model name="populate_conveyor|@(obj_type)">
         <include>
-          <uri>model://@(obj_type)</uri>
+          <uri>model://@(obj_type)_ariac</uri>
         </include>
       </model>
       <pose>-16.5 -3 2.1 0 0 0</pose>
@@ -329,7 +329,7 @@
       <pose>0.3 @(3.3 if agv_id == 1 else -3.3) 0 0 0 @(3.14159 if agv_id == 1 else 0)</pose>
       <include>
         <name>agv@(str(agv_id))</name>
-        <uri>model://warehouse_robot</uri>
+        <uri>model://warehouse_robot_ariac</uri>
       </include>
       <plugin name="agv_plugin" filename="libROSAGVPlugin.so">
         <submit_tray_service_name>/ariac/submit_tray</submit_tray_service_name>
@@ -344,7 +344,7 @@
         <pose>0.0 0.15 0.75 0 0 0</pose>
         <include>
           <name>kit_tray_@(str(agv_id))</name>
-          <uri>model://kit_tray</uri>
+          <uri>model://kit_tray_ariac</uri>
         </include>
         <plugin name="kit_tray_plugin" filename="libROSAriacKitTrayPlugin.so">
           <contact_sensor_name>kit_tray_contact</contact_sensor_name>
@@ -447,7 +447,7 @@
 @[for model_name, model in models_to_insert.items()]@
     <include>
       <name>@(model_name)</name>
-      <uri>model://@(model.type)</uri>
+      <uri>model://@(model.type)_ariac</uri>
       <pose>@(' '.join(model.pose.xyz)) @(' '.join(model.pose.rpy))</pose>
     </include>
 @[end for]@
@@ -550,7 +550,7 @@ except:
 }@
     <include>
       <name>populate_kit_tray_1|@(part.type)_clone_@(id)</name>
-      <uri>model://@(part.type)</uri>
+      <uri>model://@(part.type)_ariac</uri>
       <pose>-7.5 -3 2.1 0 0 0</pose>
     </include>
 @{
