@@ -24,6 +24,7 @@ from osrf_gear.msg import VacuumGripperState
 from osrf_gear.srv import AGVControl
 from osrf_gear.srv import VacuumGripperControl
 from sensor_msgs.msg import JointState
+from std_msgs.msg import String
 from std_srvs.srv import Trigger
 from trajectory_msgs.msg import JointTrajectory
 from trajectory_msgs.msg import JointTrajectoryPoint
@@ -91,6 +92,7 @@ class MyCompetitionClass:
     def __init__(self):
         self.joint_trajectory_publisher = \
             rospy.Publisher("/ariac/arm/command", JointTrajectory, queue_size=10)
+        self.current_comp_state = None
         self.received_orders = []
         self.current_joint_state = None
         self.current_gripper_state = None
@@ -106,6 +108,11 @@ class MyCompetitionClass:
             'wrist_2_joint',
             'wrist_3_joint',
         ]
+
+    def comp_state_callback(self, msg):
+        if self.current_comp_state != msg.data:
+            rospy.loginfo("Competition state: " + str(msg.data))
+        self.current_comp_state = msg.data
 
     def order_callback(self, msg):
         rospy.loginfo("Received order:\n" + str(msg))
@@ -135,6 +142,8 @@ class MyCompetitionClass:
 
 
 def connect_callbacks(comp_class):
+    comp_state_sub = rospy.Subscriber(
+        "/ariac/competition_state", String, comp_class.comp_state_callback)
     order_sub = rospy.Subscriber("/ariac/orders", Order, comp_class.order_callback)
     joint_state_sub = rospy.Subscriber(
         "/ariac/joint_states", JointState, comp_class.joint_state_callback)
