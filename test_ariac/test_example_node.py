@@ -25,10 +25,15 @@ class Tester(unittest.TestCase):
         self.comp_state_sub = rospy.Subscriber(
             "/ariac/current_score", Float32, self.comp_score_callback)
 
+        # Starting the competition will cause parts from the order to be spawned on AGV1
         self._test_start_comp()
         time.sleep(1.0)
         self._test_order_reception()
+
+        # Pre-defined initial pose because sometimes the arm starts "droopy"
+        self._send_arm_to_initial_pose()
         self._test_send_arm_to_zero_state()
+
         self._test_agv_control()
         time.sleep(0.5)
         self._test_comp_end()
@@ -42,6 +47,11 @@ class Tester(unittest.TestCase):
 
     def _test_order_reception(self):
         self.assertEqual(len(self.comp_class.received_orders), 1)
+
+    def _send_arm_to_initial_pose(self):
+        positions = [1.51, 0.0, -1.12, 3.14, 3.77, -1.51, 0.0]
+        self.comp_class.send_arm_to_state(positions)
+        time.sleep(1.0)
 
     def _test_send_arm_to_zero_state(self):
         self.comp_class.send_arm_to_state([0] * len(self.comp_class.arm_joint_names))

@@ -18,6 +18,9 @@ class Tester(unittest.TestCase):
         ariac_example.connect_callbacks(self.comp_class)
         time.sleep(1.0)
 
+        # Pre-defined initial pose because sometimes the arm starts "droopy"
+        self._send_arm_to_initial_pose()
+
         # Pre-defined pose that puts the gripper in contact with a part.
         self._send_arm_to_part()
 
@@ -52,6 +55,11 @@ class Tester(unittest.TestCase):
         positions = [1.85, 0.35, -0.38, 2.76, 3.67, -1.51, 0.0]
         self.comp_class.send_arm_to_state(positions)
         time.sleep(1.5)
+
+    def _send_arm_to_initial_pose(self):
+        positions = [1.51, 0.0, -1.12, 3.14, 3.77, -1.51, 0.0]
+        self.comp_class.send_arm_to_state(positions)
+        time.sleep(1.0)
 
     def _send_arm_to_tray(self):
         trajectory = [
