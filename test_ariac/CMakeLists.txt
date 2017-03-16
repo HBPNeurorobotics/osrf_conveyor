@@ -39,6 +39,7 @@ endforeach()
 install(FILES
   ${rostests}
   ariac_rosapi.yaml
+  fill_demo_tray.yaml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/test
 )
 
