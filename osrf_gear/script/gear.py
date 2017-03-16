@@ -468,7 +468,8 @@ def main(sysargv=None):
                 config_data += comp_config_data
     dict_config = yaml.load(config_data) or {}
     expanded_dict_config = expand_yaml_substitutions(dict_config)
-    # print(yaml.dump({'Using configuration': expanded_dict_config}))
+    if args.verbose:
+        print(yaml.dump({'Using configuration': expanded_dict_config}))
     template_data = prepare_template_data(expanded_dict_config)
     files = generate_files(template_data)
     if not args.dry_run and not os.path.isdir(args.output):
