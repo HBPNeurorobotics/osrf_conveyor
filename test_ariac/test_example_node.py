@@ -55,7 +55,8 @@ class Tester(unittest.TestCase):
 
     def _test_send_arm_to_zero_state(self):
         self.comp_class.send_arm_to_state([0] * len(self.comp_class.arm_joint_names))
-        time.sleep(1.5)
+        # This can be slow if there are a lot of models in the environment
+        time.sleep(5.0)
         error = 0
         for position in self.comp_class.current_joint_state.position:
             error += abs(position - 0.0)
@@ -66,10 +67,19 @@ class Tester(unittest.TestCase):
         self.assertTrue(success, 'Failed to control AGV')
 
     def _test_comp_end(self):
+        num_received_orders = len(self.comp_class.received_orders)
+        num_kits = len(self.comp_class.received_orders[0].kits)
+        if num_received_orders == 1 and num_kits == 1:
+            self.assertTrue(
+                self.comp_class.current_comp_state == 'done', 'Competition not in "done" state')
+        else:
+            # If there were more kits expected, the order won't be done
+            self.assertTrue(
+                self.comp_class.current_comp_state == 'go', 'Competition not in "go" state')
+        num_parts_in_order = len(self.comp_class.received_orders[0].kits[0].objects)
         self.assertTrue(
-            self.comp_class.current_comp_state == 'done', 'Competition not in "done" state')
-        self.assertTrue(
-            self.current_comp_score == 6.0,
+            # Expect to have a point for each part, the all parts bonus, and a point for each part's pose
+            self.current_comp_score == 3 * num_parts_in_order,
             'Something went wrong in the scoring. Current score: ' + str(self.current_comp_score))
 
 
