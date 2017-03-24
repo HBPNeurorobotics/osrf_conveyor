@@ -11,7 +11,16 @@
         </geometry>
       </visual>
       <collision name="collision_base">
+        <max_contacts>10</max_contacts>
         <pose>0 0 0.20437 0 0 0</pose>
+          <surface>
+          <contact>
+            <ode>
+              <max_vel>0.0</max_vel>
+              <min_depth>0.001</min_depth>
+            </ode>
+          </contact>
+          </surface>
         <geometry>
           <box>
             <size>0.55508 1.0228 0.40874</size>
@@ -19,12 +28,21 @@
         </geometry>
       </collision>
       <collision name="collision_bumper">
+        <max_contacts>10</max_contacts>
         <pose>0 0 0.062205 0 0 0</pose>
         <geometry>
           <box>
             <size>0.67266 1.17126 0.12441</size>
           </box>
         </geometry>
+          <surface>
+          <contact>
+            <ode>
+              <max_vel>0.0</max_vel>
+              <min_depth>0.001</min_depth>
+            </ode>
+          </contact>
+          </surface>
       </collision>
       <collision name="collision_column_large">
         <pose>0 -0.27539 0.43738 0 0 0</pose>
@@ -34,6 +52,14 @@
             <length>0.87476</length>
           </cylinder>
         </geometry>
+          <surface>
+          <contact>
+            <ode>
+              <max_vel>0.0</max_vel>
+              <min_depth>0.001</min_depth>
+            </ode>
+          </contact>
+          </surface>
       </collision>
       <collision name="collision_column_small">
         <pose>0 -0.27539 0.70424 0 0 0</pose>
@@ -43,6 +69,14 @@
             <length>1.40848</length>
           </cylinder>
         </geometry>
+          <surface>
+          <contact>
+            <ode>
+              <max_vel>0.0</max_vel>
+              <min_depth>0.001</min_depth>
+            </ode>
+          </contact>
+          </surface>
       </collision>
     </link>
   </model>
