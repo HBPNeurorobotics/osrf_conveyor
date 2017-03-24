@@ -81,8 +81,8 @@ namespace gazebo
     /// \brief The state of the AGV
     public: std::string currentState;
 
-    /// \brief The time the last tray was delivered
-    public: common::Time deliveryTime;
+    /// \brief The time the last tray delivery was triggered
+    public: common::Time deliveryTriggerTime;
 
     /// \brief Whether or not gravity of the AGV has been disabled
     public: bool gravityDisabled;
@@ -308,14 +308,22 @@ void ROSAGVPlugin::OnUpdate(const common::UpdateInfo &/*_info*/)
       gazebo::msgs::GzString lock_msg;
       lock_msg.set_data("lock");
       this->dataPtr->lockTrayModelsPub->Publish(lock_msg);
-
+      this->dataPtr->currentState = "preparing_to_deliver";
+      this->dataPtr->deliveryTriggerTime = currentSimTime;
+    }
+    this->dataPtr->deliveryTriggered = false;
+  }
+  if (this->dataPtr->currentState == "preparing_to_deliver")
+  {
+    // Wait a bit while the models get locked to the tray
+    if (currentSimTime - this->dataPtr->deliveryTriggerTime  > 0.5)
+    {
       // Trigger the tray delivery animation
       this->dataPtr->deliverTrayAnimation->SetTime(0);
       this->dataPtr->model->SetAnimation(this->dataPtr->deliverTrayAnimation);
       ROS_INFO_STREAM("AGV successfully triggered.");
       this->dataPtr->currentState = "delivering";
     }
-    this->dataPtr->deliveryTriggered = false;
   }
   if (this->dataPtr->currentState == "delivering")
   {
@@ -332,7 +340,6 @@ void ROSAGVPlugin::OnUpdate(const common::UpdateInfo &/*_info*/)
     if (deliverTrayAnimationDone)
     {
       gzdbg << "Delivery animation finished." << std::endl;
-      this->dataPtr->deliveryTime = currentSimTime;
       this->dataPtr->currentState = "delivered";
     }
   }
