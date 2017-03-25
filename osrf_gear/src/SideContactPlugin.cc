@@ -209,6 +209,7 @@ void SideContactPlugin::ClearContactingModels()
   for (auto model : this->contactingModels)
   {
     gzdbg << "Teleporting model: " << model->GetScopedName() << std::endl;
+    model->SetGravityMode(true);
     model->SetWorldPose(math::Pose(0, 0, -1, 0, 0, 0));
   }
 }
