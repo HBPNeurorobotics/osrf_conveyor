@@ -12,12 +12,12 @@ import rospy
 import rostest
 
 
-class Tester(unittest.TestCase):
+class ExampleNodeTester(unittest.TestCase):
 
     def comp_score_callback(self, msg):
         self.current_comp_score = msg.data
 
-    def test_example_node(self):
+    def prepare_tester(self):
         self.comp_class = ariac_example.MyCompetitionClass()
         ariac_example.connect_callbacks(self.comp_class)
 
@@ -25,14 +25,17 @@ class Tester(unittest.TestCase):
         self.comp_state_sub = rospy.Subscriber(
             "/ariac/current_score", Float32, self.comp_score_callback)
 
+        # Pre-defined initial pose because sometimes the arm starts "droopy"
+        self._send_arm_to_initial_pose()
+        self._test_send_arm_to_zero_state()
+
+    def test(self):
+        self.prepare_tester()
+
         # Starting the competition will cause parts from the order to be spawned on AGV1
         self._test_start_comp()
         time.sleep(1.0)
         self._test_order_reception()
-
-        # Pre-defined initial pose because sometimes the arm starts "droopy"
-        self._send_arm_to_initial_pose()
-        self._test_send_arm_to_zero_state()
 
         self._test_agv_control()
         time.sleep(0.5)
@@ -95,4 +98,4 @@ if __name__ == '__main__':
     time.sleep(10.0)
     print('OK, starting test.')
 
-    rostest.run('osrf_gear', 'test_example_node', Tester, sys.argv)
+    rostest.run('osrf_gear', 'test_example_node', ExampleNodeTester, sys.argv)
