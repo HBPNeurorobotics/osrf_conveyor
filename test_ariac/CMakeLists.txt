@@ -23,8 +23,9 @@ set(rostests
   ariac_example.test
   ariac_qual2a.test
   ariac_qual2b.test
-  ariac_qual2a_scoring.test
-  ariac_qual2b_scoring.test
+  ariac_qual2a_scoring_after_waiting.test
+  ariac_qual2b_scoring_after_waiting.test
+  ariac_qual2a_scoring_immediate.test
   ariac_qual2b_scoring_immediate.test
   gripper.test
 )
