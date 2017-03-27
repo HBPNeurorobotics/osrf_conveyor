@@ -212,17 +212,26 @@ void KitTrayPlugin::LockContactingModels()
   fixedJoint->SetName(jointName);
 
   model->SetGravityMode(false);
-  model->GetLink(model->GetName()+"::link")->SetGravityMode(false);
 
   // Lift the part slightly because it will fall through the tray if the tray is animated
   model->SetWorldPose(model->GetWorldPose() + math::Pose(0,0,0.01,0,0,0));
 
-  auto link = model->GetLink(model->GetName() + "::link");
+  auto modelName = model->GetName();
+  auto linkName = modelName + "::link";
+  auto link = model->GetLink(linkName);
   if (link == NULL)
   {
-    gzwarn << "Couldn't find link to make joint with";
-    continue;
+    // If the model was inserted into the world using the "population" SDF tag,
+    // the link will have an additional namespace of the model type.
+    linkName = modelName + "::" + ariac::DetermineModelType(modelName) + "::link";
+    link = model->GetLink(linkName);
+    if (link == NULL)
+    {
+      gzwarn << "Couldn't find link to make joint with: " << linkName;
+      continue;
+    }
   }
+  link->SetGravityMode(false);
   fixedJoint->Load(link, this->parentLink, math::Pose());
   fixedJoint->Attach(this->parentLink, link);
   fixedJoint->Init();
