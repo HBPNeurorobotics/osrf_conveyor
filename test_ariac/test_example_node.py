@@ -38,7 +38,7 @@ class ExampleNodeTester(unittest.TestCase):
         self._test_order_reception()
 
         self._test_agv_control()
-        time.sleep(2.5)
+        time.sleep(5.0)
         self._test_comp_end()
 
     def _test_start_comp(self):

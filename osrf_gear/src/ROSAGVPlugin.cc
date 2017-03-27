@@ -296,7 +296,7 @@ void ROSAGVPlugin::OnUpdate(const common::UpdateInfo &/*_info*/)
   if (this->dataPtr->currentState == "preparing_to_deliver")
   {
     // Wait a bit to ensure the models have been detected by the kit tray's plugin
-    if (currentSimTime - this->dataPtr->deliveryTriggerTime  > 0.5)
+    if (currentSimTime - this->dataPtr->deliveryTriggerTime > 0.75)
     {
       // Make a request to lock the models to the tray
       gazebo::msgs::GzString lock_msg;
