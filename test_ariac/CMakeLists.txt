@@ -25,6 +25,7 @@ set(rostests
   ariac_qual2b.test
   ariac_qual2a_scoring.test
   ariac_qual2b_scoring.test
+  ariac_qual2b_scoring_immediate.test
   gripper.test
 )
 
@@ -53,6 +54,8 @@ install(PROGRAMS
   ros_api_checker
   test_example_node.py
   test_gripper.py
-  test_scoring.py
+  test_scoring_after_waiting.py
+  test_scoring_after_waiting.py
+  test_scoring_immediate.py
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/test
 )

@@ -35,7 +35,7 @@ class ScoringTester(ExampleNodeTester):
 
 
 if __name__ == '__main__':
-    rospy.init_node('test_scoring', anonymous=True)
+    rospy.init_node('test_scoring_after_waiting', anonymous=True)
 
     # Wait until /clock is being published; this can take an unpredictable
     # amount of time when we're downloading models.
@@ -46,4 +46,4 @@ if __name__ == '__main__':
     time.sleep(10.0)
     print('OK, starting test.')
 
-    rostest.run('test_ariac', 'test_scoring', ScoringTester, sys.argv)
+    rostest.run('test_ariac', 'test_scoring_after_waiting', ScoringTester, sys.argv)
