@@ -28,7 +28,7 @@ class ScoringTester(ExampleNodeTester):
 
         # Submit the tray
         self._test_agv_control()
-        time.sleep(0.5)
+        time.sleep(2.5)
 
         # Check the score
         self._test_comp_end()

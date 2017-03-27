@@ -23,7 +23,7 @@ class ScoringTester(ExampleNodeTester):
 
         # Submit the tray as soon as the parts are spawned on the tray
         self._test_agv_control()
-        time.sleep(1.0)
+        time.sleep(2.5)
 
         # Check the score
         self._test_comp_end()
