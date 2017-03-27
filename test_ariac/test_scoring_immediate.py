@@ -20,22 +20,17 @@ class ScoringTester(ExampleNodeTester):
 
         # Starting the competition will cause parts from the order to be spawned on AGV1
         self._test_start_comp()
-        time.sleep(1.0)
-        self._test_order_reception()
 
-        # Sleep a long time to check that the tray is stable
-        time.sleep(60)
-
-        # Submit the tray
+        # Submit the tray as soon as the parts are spawned on the tray
         self._test_agv_control()
-        time.sleep(0.5)
+        time.sleep(2.5)
 
         # Check the score
         self._test_comp_end()
 
 
 if __name__ == '__main__':
-    rospy.init_node('test_scoring', anonymous=True)
+    rospy.init_node('test_scoring_after_waiting', anonymous=True)
 
     # Wait until /clock is being published; this can take an unpredictable
     # amount of time when we're downloading models.
@@ -46,4 +41,4 @@ if __name__ == '__main__':
     time.sleep(10.0)
     print('OK, starting test.')
 
-    rostest.run('test_ariac', 'test_scoring', ScoringTester, sys.argv)
+    rostest.run('test_ariac', 'test_scoring_after_waiting', ScoringTester, sys.argv)

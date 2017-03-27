@@ -5,6 +5,6 @@
               $(find test_ariac)/test/qual2b_testing.yaml
               $(find ariac_example)/config/sample_gear_conf.yaml
               --verbose"/>
-  <test pkg="test_ariac" type="test_example_node.py" test-name="ariac_qual2b"
-        time-limit="60.0"/>
+  <test pkg="test_ariac" type="test_scoring_after_waiting.py" test-name="qual2b_scoring_after_waiting"
+        time-limit="120.0"/>
 </launch>
