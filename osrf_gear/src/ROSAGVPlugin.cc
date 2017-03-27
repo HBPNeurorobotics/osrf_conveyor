@@ -288,6 +288,21 @@ void ROSAGVPlugin::OnUpdate(const common::UpdateInfo &/*_info*/)
   {
     if (this->dataPtr->deliveryTriggered)
     {
+      this->dataPtr->currentState = "preparing_to_deliver";
+      this->dataPtr->deliveryTriggerTime = currentSimTime;
+    }
+    this->dataPtr->deliveryTriggered = false;
+  }
+  if (this->dataPtr->currentState == "preparing_to_deliver")
+  {
+    // Wait a bit while the models get locked to the tray
+    if (currentSimTime - this->dataPtr->deliveryTriggerTime  > 0.5)
+    {
+      // Make a request to lock the models to the tray
+      gazebo::msgs::GzString lock_msg;
+      lock_msg.set_data("lock");
+      this->dataPtr->lockTrayModelsPub->Publish(lock_msg);
+
       // Make a service call to submit the tray for inspection.
       // Do this immediately in case the assigned goal changes as the AGV is moving.
       if (!this->dataPtr->rosSubmitTrayClient.exists())
@@ -304,20 +319,6 @@ void ROSAGVPlugin::OnUpdate(const common::UpdateInfo &/*_info*/)
         this->dataPtr->inspectionResult = submit_srv.response.inspection_result;
       }
 
-      // Make a request to lock the models to the tray
-      gazebo::msgs::GzString lock_msg;
-      lock_msg.set_data("lock");
-      this->dataPtr->lockTrayModelsPub->Publish(lock_msg);
-      this->dataPtr->currentState = "preparing_to_deliver";
-      this->dataPtr->deliveryTriggerTime = currentSimTime;
-    }
-    this->dataPtr->deliveryTriggered = false;
-  }
-  if (this->dataPtr->currentState == "preparing_to_deliver")
-  {
-    // Wait a bit while the models get locked to the tray
-    if (currentSimTime - this->dataPtr->deliveryTriggerTime  > 0.5)
-    {
       // Trigger the tray delivery animation
       this->dataPtr->deliverTrayAnimation->SetTime(0);
       this->dataPtr->model->SetAnimation(this->dataPtr->deliverTrayAnimation);

@@ -202,6 +202,7 @@ void KitTrayPlugin::LockContactingModels()
 {
   boost::mutex::scoped_lock lock(this->mutex);
   physics::JointPtr fixedJoint;
+  gzdbg << "Number of models in contact with the tray: " << this->contactingModels.size() << std::endl;
   for (auto model : this->contactingModels)
   {
   // Create the joint that will attach the models
