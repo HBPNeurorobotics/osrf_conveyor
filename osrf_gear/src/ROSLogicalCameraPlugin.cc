@@ -218,9 +218,10 @@ void ROSLogicalCameraPlugin::OnImage(ConstLogicalCameraImagePtr &_msg)
       logStream << "Publishing model: " << modelName << " of type: " << modelType  << std::endl;
       // Convert the world pose of the model into the camera frame
       modelPose = (nestedModel->GetWorldPose()) - cameraPose;
-      this->AddModelToMsg(modelType, modelPose, imageMsg);
       this->AddNoise(modelPose);
-      this->PublishTF(modelPose, this->name + "_frame", ariac::TrimNamespace(modelName) + "_frame");
+      this->AddModelToMsg(modelType, modelPose, imageMsg);
+      // Do not publish TF information for nested models (kit_tray).
+      // this->PublishTF(modelPose, this->name + "_frame", ariac::TrimNamespace(modelName) + "_frame");
     }
   }
 
