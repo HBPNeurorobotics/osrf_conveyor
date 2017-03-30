@@ -18,6 +18,8 @@
         </noise>
       </orientation_noise>
       <known_model_types>
+        <type>agv1</type>
+        <type>agv2</type>
         <type>kit_tray</type>
         <type>part1</type>
         <type>part2</type>
