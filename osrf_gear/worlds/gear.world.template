@@ -8,6 +8,12 @@
       </camera>
     </gui>
 
+@[if options['unthrottled_physics_update']]@
+    <physics type="ode">
+      <real_time_update_rate>0</real_time_update_rate>
+    </physics>
+@[end if]@
+
 @[if not options['disable_shadows']]@
     <!-- Disable shadows. -->
     <scene>

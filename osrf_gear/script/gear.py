@@ -71,6 +71,7 @@ configurable_options = {
     'belt_population_cycles': 1,
     'gazebo_state_logging': False,
     'spawn_extra_models': False,
+    'unthrottled_physics_update': False,
     'model_type_aliases': {
         'belt_model_type1': 'part1',
         'belt_model_type2': 'part2',
