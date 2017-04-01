@@ -48,6 +48,7 @@ install(FILES
   fill_demo_tray.yaml
   qual2a_testing.yaml
   qual2b_testing.yaml
+  minimal_sample_unthrottled.yaml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/test
 )
 
@@ -55,6 +56,7 @@ install(PROGRAMS
   ros_api_checker
   test_example_node.py
   test_gripper.py
+  test_gripper_unthrottled.py
   test_scoring_after_waiting.py
   test_scoring_after_waiting.py
   test_scoring_immediate.py

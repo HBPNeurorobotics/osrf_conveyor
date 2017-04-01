@@ -539,6 +539,7 @@ void VacuumGripperPlugin::HandleAttach()
 /////////////////////////////////////////////////
 void VacuumGripperPlugin::HandleDetach()
 {
+  gzdbg << "Detaching part from gripper." << std::endl;
   this->dataPtr->attached = false;
   this->dataPtr->fixedJoint->Detach();
 }
