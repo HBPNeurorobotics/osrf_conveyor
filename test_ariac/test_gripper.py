@@ -4,16 +4,16 @@ from __future__ import print_function
 
 import sys
 import time
-import unittest
 
+from test_example_node import ExampleNodeTester
 from ariac_example import ariac_example
 import rospy
 import rostest
 
 
-class Tester(unittest.TestCase):
+class GripperTester(ExampleNodeTester):
 
-    def test_gripper(self):
+    def test(self):
         self.comp_class = ariac_example.MyCompetitionClass()
         ariac_example.connect_callbacks(self.comp_class)
         time.sleep(1.0)
@@ -25,13 +25,7 @@ class Tester(unittest.TestCase):
         self._send_arm_to_part()
 
         # Enable the gripper so that it picks up the part.
-        success = ariac_example.control_gripper(True)
-        self.assertTrue(success, 'Gripper not successfully controlled')
-        time.sleep(1.0)
-        self.assertTrue(
-            self.comp_class.current_gripper_state.enabled, 'Gripper not successfully enabled')
-        self.assertTrue(
-            self.comp_class.current_gripper_state.attached, 'Part not successfully attached')
+        self._test_enable_gripper()
 
         # Move the part over the tray using a pre-defined sequence of poses.
         self._send_arm_to_tray()
@@ -41,25 +35,35 @@ class Tester(unittest.TestCase):
             self.comp_class.current_gripper_state.attached, 'Part no longer attached')
 
         # Disable the gripper so that it drops the part.
+        self._disable_gripper()
+
+        time.sleep(1.0)
+
+    def _test_enable_gripper(self):
+        self._enable_gripper()
+        self.assertTrue(success, 'Gripper not successfully controlled')
+        self.assertTrue(
+            self.comp_class.current_gripper_state.enabled, 'Gripper not successfully enabled')
+        self.assertTrue(
+            self.comp_class.current_gripper_state.attached, 'Part not successfully attached')
+
+    def _enable_gripper(self):
+        success = ariac_example.control_gripper(True)
+        time.sleep(1.5)
+
+    def _disable_gripper(self):
         success = ariac_example.control_gripper(False)
         self.assertTrue(success, 'Gripper not successfully controlled')
-        time.sleep(1.0)
+        time.sleep(0.5)
         self.assertFalse(
             self.comp_class.current_gripper_state.enabled, 'Gripper not successfully disabled')
         self.assertFalse(
             self.comp_class.current_gripper_state.attached, 'Part not successfully dettached')
 
-        time.sleep(1.0)
-
     def _send_arm_to_part(self):
         positions = [1.85, 0.35, -0.38, 2.76, 3.67, -1.51, 0.0]
         self.comp_class.send_arm_to_state(positions)
         time.sleep(1.5)
-
-    def _send_arm_to_initial_pose(self):
-        positions = [1.51, 0.0, -1.12, 3.14, 3.77, -1.51, 0.0]
-        self.comp_class.send_arm_to_state(positions)
-        time.sleep(1.0)
 
     def _send_arm_to_tray(self):
         trajectory = [
@@ -85,4 +89,4 @@ if __name__ == '__main__':
     time.sleep(12.0)
     print('OK, starting test.')
 
-    rostest.run('test_ariac', 'test_gripper', Tester, sys.argv)
+    rostest.run('test_ariac', 'test_gripper', GripperTester, sys.argv)
