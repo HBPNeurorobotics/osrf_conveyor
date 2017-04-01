@@ -35,13 +35,14 @@ class GripperTester(ExampleNodeTester):
             self.comp_class.current_gripper_state.attached, 'Part no longer attached')
 
         # Disable the gripper so that it drops the part.
-        self._disable_gripper()
+        self._test_disable_gripper()
 
         time.sleep(1.0)
 
     def _test_enable_gripper(self):
-        self._enable_gripper()
+        success = self._enable_gripper()
         self.assertTrue(success, 'Gripper not successfully controlled')
+        time.sleep(1.0)
         self.assertTrue(
             self.comp_class.current_gripper_state.enabled, 'Gripper not successfully enabled')
         self.assertTrue(
@@ -49,16 +50,22 @@ class GripperTester(ExampleNodeTester):
 
     def _enable_gripper(self):
         success = ariac_example.control_gripper(True)
-        time.sleep(1.5)
-
-    def _disable_gripper(self):
-        success = ariac_example.control_gripper(False)
-        self.assertTrue(success, 'Gripper not successfully controlled')
         time.sleep(0.5)
+        return success
+
+    def _test_disable_gripper(self):
+        success = self._disable_gripper()
+        self.assertTrue(success, 'Gripper not successfully controlled')
+        time.sleep(1.0)
         self.assertFalse(
             self.comp_class.current_gripper_state.enabled, 'Gripper not successfully disabled')
         self.assertFalse(
             self.comp_class.current_gripper_state.attached, 'Part not successfully dettached')
+
+    def _disable_gripper(self):
+        success = ariac_example.control_gripper(False)
+        time.sleep(0.5)
+        return success
 
     def _send_arm_to_part(self):
         positions = [1.85, 0.35, -0.38, 2.76, 3.67, -1.51, 0.0]

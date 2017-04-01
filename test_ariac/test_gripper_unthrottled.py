@@ -32,7 +32,7 @@ class UnthrottledGripperTester(GripperTester):
             self._disable_gripper()
 
         # Enable the gripper so that it picks up the part.
-        self._enable_gripper()
+        self._test_enable_gripper()
 
         # Move the part over the tray using a pre-defined sequence of poses.
         self._send_arm_to_tray()
@@ -42,7 +42,7 @@ class UnthrottledGripperTester(GripperTester):
             self.comp_class.current_gripper_state.attached, 'Part no longer attached')
 
         # Disable the gripper so that it drops the part.
-        self._disable_gripper()
+        self._test_disable_gripper()
 
         time.sleep(1.0)
 

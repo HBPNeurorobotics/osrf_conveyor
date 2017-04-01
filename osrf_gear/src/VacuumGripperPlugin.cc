@@ -158,6 +158,9 @@ namespace gazebo
     /// \brief Whether the suction is enabled or not.
     public: bool enabled = false;
 
+    /// \brief Whether disabling of the suction has been requested or not.
+    public: bool disableRequested = false;
+
     /// \brief Whether there's an ongoing drop.
     public: bool dropPending = false;
 
@@ -371,11 +374,10 @@ void VacuumGripperPlugin::Enable()
 /////////////////////////////////////////////////
 void VacuumGripperPlugin::Disable()
 {
-  {
-    std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
-    this->dataPtr->enabled = false;
-  }
-  this->HandleDetach();
+  // Since we can't know what thread this gets called from, just set a flag
+  // and the joint will be detached in the next OnUpdate callback in the physics thread.
+  std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
+  this->dataPtr->disableRequested = true;
 }
 
 /////////////////////////////////////////////////
@@ -384,6 +386,13 @@ void VacuumGripperPlugin::OnUpdate()
   this->Publish();
 
   std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
+  if (this->dataPtr->disableRequested)
+  {
+    this->HandleDetach();
+    this->dataPtr->enabled = false;
+    this->dataPtr->disableRequested = false;
+  }
+
   if (common::Time::GetWallTime() -
       this->dataPtr->prevUpdateTime < this->dataPtr->updateRate ||
       !this->dataPtr->enabled)
