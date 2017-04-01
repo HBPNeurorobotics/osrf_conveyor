@@ -28,6 +28,7 @@ set(rostests
   ariac_qual2a_scoring_immediate.test
   ariac_qual2b_scoring_immediate.test
   gripper.test
+  gripper_unthrottled.test
 )
 
 foreach(rostest ${rostests})
