@@ -329,6 +329,7 @@
 
 @[end for]@
 
+@[if options['insert_agvs']]@
 @[for agv_id in [1,2]]@
     <!-- AGV@(str(agv_id)) -->
     <model name="agv@(str(agv_id))">
@@ -368,6 +369,7 @@
     </model>
 
 @[end for]@
+@[end if]@
 
     <!-- an invisible conveyor belt -->
     <model name="conveyor_belt">

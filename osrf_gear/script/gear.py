@@ -65,6 +65,7 @@ default_bin_origins = {
 bin_width = 0.6
 bin_height = 0.72
 configurable_options = {
+    'insert_agvs': True,
     'insert_models_over_bins': False,
     'disable_shadows': False,
     'fill_demo_tray': False,
