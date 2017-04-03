@@ -65,7 +65,7 @@ initial_pose_string = \
 
   <node name="osrf_gear_spawn_@(model_name.replace('|', '_'))" pkg="gazebo_ros" type="spawn_model"
     args="
-      -file $(find osrf_gear)/models/@(model.type)/model.sdf
+      -file $(find osrf_gear)/models/@(model.type)_ariac/model.sdf
       -sdf
       -reference_frame @(model.reference_frame)
       @(initial_pose_string)
