@@ -501,6 +501,9 @@
 @[if order['announcement_condition'] == 'time']@
         <start_time>@(order['announcement_condition_value'])</start_time>
 @[end if]@
+@[if order['announcement_condition'] == 'unwanted_parts']@
+        <interrupt_on_unwanted_parts>@(order['announcement_condition_value'])</interrupt_on_unwanted_parts>
+@[end if]@
 @[for kit_index in range(order['kit_count'])]
         <kit>
           <kit_type>@(order_name)_kit_@(kit_index)</kit_type>

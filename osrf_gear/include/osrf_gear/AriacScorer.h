@@ -66,6 +66,10 @@ class AriacScorer
   /// \return The score for the order.
   public: ariac::OrderScore UnassignCurrentOrder(double timeTaken = 0.0);
 
+  /// \brief Get the kit trays the scorer is monitoring.
+  /// \return Vector of kit tray states.
+  public: std::vector<ariac::KitTray> GetTrays();
+
   /// \brief Get the kit tray with the specified ID.
   /// \param[in] trayID The ID of the tray to get.
   /// \param[in] kitTray The kitTray found.
