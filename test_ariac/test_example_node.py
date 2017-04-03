@@ -27,10 +27,10 @@ class ExampleNodeTester(unittest.TestCase):
 
         # Pre-defined initial pose because sometimes the arm starts "droopy"
         self._send_arm_to_initial_pose()
-        self._test_send_arm_to_zero_state()
 
     def test(self):
         self.prepare_tester()
+        self._test_send_arm_to_zero_state()
 
         # Starting the competition will cause parts from the order to be spawned on AGV1
         self._test_start_comp()

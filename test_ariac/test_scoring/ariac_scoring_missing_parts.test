@@ -3,7 +3,7 @@
   <node name="ariac_sim" pkg="osrf_gear" type="gear.py"
         args="-f
               $(find test_ariac)/test/scoring_base_order.yaml
-              $(find test_ariac)/test/scoring_missing_partsyaml
+              $(find test_ariac)/test/scoring_missing_parts.yaml
               $(find osrf_gear)/config/sample_user_config.yaml
               --verbose"/>
   <test pkg="test_ariac" type="test_scoring_against_expected_score.py"
