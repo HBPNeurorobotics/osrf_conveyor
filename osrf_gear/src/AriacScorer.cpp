@@ -183,8 +183,9 @@ ariac::TrayScore AriacScorer::ScoreTray(const ariac::KitTray & tray)
   }
   ariac::Kit assignedKit = *it;
   auto numAssignedObjects = assignedKit.objects.size();
+  auto numCurrentObjects = kit.objects.size();
   gzdbg << "Comparing the " << numAssignedObjects << " assigned objects with the current " << \
-    kit.objects.size() << " objects" << std::endl;
+    numCurrentObjects << " objects" << std::endl;
 
   // Count the number of each type of assigned object
   std::map<std::string, unsigned int> assignedObjectTypeCount, currentObjectTypeCount;
@@ -216,9 +217,9 @@ ariac::TrayScore AriacScorer::ScoreTray(const ariac::KitTray & tray)
       assignedObjectsMissing = true;
     }
   }
-  if (!assignedObjectsMissing)
+  if (!assignedObjectsMissing && numCurrentObjects == numAssignedObjects)
   {
-    gzdbg << "All objects on tray" << std::endl;
+    gzdbg << "All objects on tray and no extra objects detected." << std::endl;
     score.allPartsBonus += scoringParameters.allObjectsBonusFactor * numAssignedObjects;
   }
 
