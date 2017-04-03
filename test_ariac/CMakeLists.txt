@@ -29,6 +29,8 @@ set(rostests
   ariac_qual2b_scoring_immediate.test
   gripper.test
   gripper_unthrottled.test
+  test_scoring/ariac_scoring_perfect_kit.test
+  test_scoring/ariac_scoring_correct_parts_incorrect_poses.test
 )
 
 foreach(rostest ${rostests})
@@ -50,6 +52,9 @@ install(FILES
   qual2a_testing.yaml
   qual2b_testing.yaml
   minimal_sample_unthrottled.yaml
+  test_scoring/scoring_base_order.yaml
+  test_scoring/scoring_perfect_kit.yaml
+  test_scoring/scoring_correct_parts_incorrect_poses.yaml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/test
 )
 

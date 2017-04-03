@@ -4,11 +4,8 @@ from __future__ import print_function
 
 import sys
 import time
-import unittest
 
 from test_example_node import ExampleNodeTester
-from ariac_example import ariac_example
-from std_msgs.msg import Float32
 import rospy
 import rostest
 
@@ -16,18 +13,21 @@ import rostest
 class ScoringTester(ExampleNodeTester):
 
     def test(self):
+        expectedScore = float(sys.argv[1])
+        rospy.loginfo('Using expected score of: ' + str(expectedScore))
         self.prepare_tester()
 
         # Starting the competition will cause parts from the order to be spawned on AGV1
         self._test_start_comp()
 
-        # Submit the tray as soon as the parts are spawned on the tray
-        time.sleep(0.5)  # OK, give a little bit of leeway because that's what teams would do
+        # Submit the tray
         self._test_agv_control()
         time.sleep(5.0)
 
-        # Check the score
-        self._test_comp_end()
+        self.assertTrue(
+            self.current_comp_score == expectedScore,
+            'Something went wrong in the scoring. Expected score of ' + str(expectedScore) +
+                ' but received: ' + str(self.current_comp_score))
 
 
 if __name__ == '__main__':
