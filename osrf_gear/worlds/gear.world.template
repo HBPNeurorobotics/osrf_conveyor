@@ -498,7 +498,9 @@
       <orders_topic>/ariac/orders</orders_topic>
 @[for order_name, order in orders.items()]@
       <order>
-        <start_time>@(order['announcement_time'])</start_time>
+@[if order['announcement_condition'] == 'time']@
+        <start_time>@(order['announcement_condition_value'])</start_time>
+@[end if]@
 @[for kit_index in range(order['kit_count'])]
         <kit>
           <kit_type>@(order_name)_kit_@(kit_index)</kit_type>

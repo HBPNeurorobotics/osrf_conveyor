@@ -263,14 +263,12 @@ void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
   while (orderElem)
   {
     // Parse the start time.
-    if (!orderElem->HasElement("start_time"))
+    double startTime = -1.0;
+    if (orderElem->HasElement("start_time"))
     {
-      gzerr << "Unable to find <start_time> element in <order>. Ignoring" << std::endl;
-      orderElem = orderElem->GetNextElement("order");
-      continue;
+      sdf::ElementPtr startTimeElement = orderElem->GetElement("start_time");
+      startTime = startTimeElement->Get<double>();
     }
-    sdf::ElementPtr startTimeElement = orderElem->GetElement("start_time");
-    double startTime = startTimeElement->Get<double>();
 
     // Parse the allowed completion time.
     double allowedTime = std::numeric_limits<double>::infinity();
@@ -592,7 +590,8 @@ void ROSAriacTaskManagerPlugin::ProcessOrdersToAnnounce()
 
   // Check whether announce a new order from the list.
   auto elapsed = this->dataPtr->world->GetSimTime() - this->dataPtr->gameStartTime;
-  if (elapsed.Double() >= this->dataPtr->ordersToAnnounce.front().startTime)
+  if (this->dataPtr->ordersToAnnounce.front().startTime >= 0 &&
+    elapsed.Double() >= this->dataPtr->ordersToAnnounce.front().startTime)
   {
     auto order = this->dataPtr->ordersToAnnounce.front();
     gzdbg << "New order to announce: " << order.orderID << std::endl;

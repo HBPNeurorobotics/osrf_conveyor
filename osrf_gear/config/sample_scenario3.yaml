@@ -27,7 +27,8 @@ belt_parts:
 
 orders:
   order_0:
-    announcement_time: 0.0
+    announcement_condition: time
+    announcement_condition_value: 0.0
     parts:
       part_0:
         type: order_part1
@@ -40,7 +41,8 @@ orders:
           xyz: [-0.15, -0.15, 0]
           rpy: [0, 0, -0.5]
   order_1:
-    announcement_time: 20.0
+    announcement_condition: time
+    announcement_condition_value: 20.0
     parts:
       part_0:
         type: order_part3
