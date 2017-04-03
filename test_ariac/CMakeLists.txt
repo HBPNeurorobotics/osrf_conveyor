@@ -31,6 +31,7 @@ set(rostests
   gripper_unthrottled.test
   test_scoring/ariac_scoring_perfect_kit.test
   test_scoring/ariac_scoring_correct_parts_incorrect_poses.test
+  test_scoring/ariac_scoring_correct_parts_plus_unwanted.test
 )
 
 foreach(rostest ${rostests})
@@ -55,6 +56,7 @@ install(FILES
   test_scoring/scoring_base_order.yaml
   test_scoring/scoring_perfect_kit.yaml
   test_scoring/scoring_correct_parts_incorrect_poses.yaml
+  test_scoring/scoring_correct_parts_plus_unwanted.yaml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/test
 )
 
@@ -66,5 +68,6 @@ install(PROGRAMS
   test_scoring_after_waiting.py
   test_scoring_after_waiting.py
   test_scoring_immediate.py
+  test_scoring_against_expected_score.py
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/test
 )
