@@ -32,6 +32,7 @@ set(rostests
   test_scoring/ariac_scoring_perfect_kit.test
   test_scoring/ariac_scoring_correct_parts_incorrect_poses.test
   test_scoring/ariac_scoring_correct_parts_plus_unwanted.test
+  test_scoring/ariac_scoring_missing_parts.test
 )
 
 foreach(rostest ${rostests})
@@ -57,6 +58,7 @@ install(FILES
   test_scoring/scoring_perfect_kit.yaml
   test_scoring/scoring_correct_parts_incorrect_poses.yaml
   test_scoring/scoring_correct_parts_plus_unwanted.yaml
+  test_scoring/scoring_missing_parts.yaml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/test
 )
 
