@@ -341,6 +341,9 @@ namespace ariac
     /// \brief After how many unwanted parts to interrupt the previous order (-1 for never).
     public: int interruptOnUnwantedParts;
 
+    /// \brief After how many wanted parts to interrupt the previous order (-1 for never).
+    public: int interruptOnWantedParts;
+
     /// \brief Simulation time in seconds permitted for the order to be
     /// completed before cancelling it. Infinite by default.
     public: double allowedTime;

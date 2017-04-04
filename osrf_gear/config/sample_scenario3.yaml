@@ -41,8 +41,8 @@ orders:
           xyz: [-0.15, -0.15, 0]
           rpy: [0, 0, -0.5]
   order_1:
-    announcement_condition: unwanted_parts
-    announcement_condition_value: 2
+    announcement_condition: wanted_parts
+    announcement_condition_value: 1
     parts:
       part_0:
         type: order_part3

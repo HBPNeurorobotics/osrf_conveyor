@@ -501,6 +501,9 @@
 @[if order['announcement_condition'] == 'time']@
         <start_time>@(order['announcement_condition_value'])</start_time>
 @[end if]@
+@[if order['announcement_condition'] == 'wanted_parts']@
+        <interrupt_on_wanted_parts>@(order['announcement_condition_value'])</interrupt_on_wanted_parts>
+@[end if]@
 @[if order['announcement_condition'] == 'unwanted_parts']@
         <interrupt_on_unwanted_parts>@(order['announcement_condition_value'])</interrupt_on_unwanted_parts>
 @[end if]@
