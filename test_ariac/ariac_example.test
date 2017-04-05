@@ -5,7 +5,7 @@
         args="-f
               $(find osrf_gear)/config/sample.yaml
               $(find test_ariac)/test/fill_demo_tray.yaml
-              --verbose"/>
+              --verbose --no-gui"/>
   <test pkg="test_ariac" type="test_example_node.py" test-name="ariac_example"
         time-limit="60.0"/>
 </launch>
