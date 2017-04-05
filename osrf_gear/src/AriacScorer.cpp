@@ -278,16 +278,32 @@ ariac::TrayScore AriacScorer::ScoreTray(const ariac::KitTray & tray)
       // TODO: this value can probably be derived using relationships between
       // euler angles and quaternions.
       double quaternionDiffThresh = 0.05;
+      gzdbg << "Cosine of angle between orientations (quaternion dot product): " << \
+        orientationDiff << std::endl;
       if (std::abs(orientationDiff) < (1.0 - quaternionDiffThresh))
         continue;
 
       // Now filter the poses based on a threshold set in radians (more user-friendly).
-      double yawDiff = objOrientation.GetYaw() - orderOrientation.GetYaw();
-      gzdbg << "Orientation error: " << std::abs(yawDiff) << \
-        " (or " << std::abs(std::abs(yawDiff) - 2 * M_PI) << ")" << std::endl;
-      if (std::abs(yawDiff) > scoringParameters.orientationThresh)
+      double angleDiff = objOrientation.GetRoll() - orderOrientation.GetRoll();
+      gzdbg << "Orientation error (roll): " << std::abs(angleDiff) << \
+        " (or " << std::abs(std::abs(angleDiff) - 2 * M_PI) << ")" << std::endl;
+      if (std::abs(angleDiff) > scoringParameters.orientationThresh)
         // Account for wrapping in angles. E.g. -pi compared with pi should "pass".
-        if (std::abs(std::abs(yawDiff) - 2 * M_PI) > scoringParameters.orientationThresh)
+        if (std::abs(std::abs(angleDiff) - 2 * M_PI) > scoringParameters.orientationThresh)
+          continue;
+      angleDiff = objOrientation.GetPitch() - orderOrientation.GetPitch();
+      gzdbg << "Orientation error (pitch): " << std::abs(angleDiff) << \
+        " (or " << std::abs(std::abs(angleDiff) - 2 * M_PI) << ")" << std::endl;
+      if (std::abs(angleDiff) > scoringParameters.orientationThresh)
+        // Account for wrapping in angles. E.g. -pi compared with pi should "pass".
+        if (std::abs(std::abs(angleDiff) - 2 * M_PI) > scoringParameters.orientationThresh)
+          continue;
+      angleDiff = objOrientation.GetYaw() - orderOrientation.GetYaw();
+      gzdbg << "Orientation error (yaw): " << std::abs(angleDiff) << \
+        " (or " << std::abs(std::abs(angleDiff) - 2 * M_PI) << ")" << std::endl;
+      if (std::abs(angleDiff) > scoringParameters.orientationThresh)
+        // Account for wrapping in angles. E.g. -pi compared with pi should "pass".
+        if (std::abs(std::abs(angleDiff) - 2 * M_PI) > scoringParameters.orientationThresh)
           continue;
 
       gzdbg << "Object of type '" << currentObject.type << \
