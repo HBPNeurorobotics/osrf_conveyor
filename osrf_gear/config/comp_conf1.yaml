@@ -19,7 +19,8 @@
 # Orders to announce during the game
 # orders:
 #   order_0:
-#     announcement_time: 0.0          # Time in seconds to wait before announcing the order
+#     announcement_condition: time
+#     announcement_condition_value: 0.0# Time in seconds to wait before announcing the order
 #     parts:                          # List of parts required to be in the kit
 #       part_0:
 #         type: model_type_1          # Type of model required
@@ -73,7 +74,8 @@ belt_parts:
 
 orders:
   order_0:
-    announcement_time: 0.0
+    announcement_condition: time
+    announcement_condition_value: 0.0
     parts:
       part_0:
         type: belt_model_type1

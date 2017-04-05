@@ -548,7 +548,7 @@ count = {}
       <object_sequence>
 @[for part in order['parts']]@
         <object>
-          <time>@(order['announcement_time'])</time>
+          <time>0.0</time>
           <type>@(part.type)</type>
           <pose>@(' '.join(part.pose.xyz[0:-1])) 0.1 @(' '.join(part.pose.rpy))</pose>
         </object>

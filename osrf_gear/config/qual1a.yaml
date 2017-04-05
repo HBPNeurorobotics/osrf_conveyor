@@ -12,7 +12,8 @@ options:
 
 orders:
   order_0:
-    announcement_time: 0.0
+    announcement_condition: time
+    announcement_condition_value: 0.0
     parts:
       part_0:
         type: order_part1
