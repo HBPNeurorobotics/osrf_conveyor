@@ -260,7 +260,6 @@ ariac::TrayScore AriacScorer::ScoreTray(const ariac::KitTray & tray)
         currentObject.pose.pos.x - assignedObject.pose.pos.x,
         currentObject.pose.pos.y - assignedObject.pose.pos.y,
         0);
-      gzdbg << posnDiff << std::endl;
       gzdbg << "Position error: " << posnDiff.GetLength() << std::endl;
       if (posnDiff.GetLength() > scoringParameters.distanceThresh)
         continue;
