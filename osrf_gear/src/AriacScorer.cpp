@@ -405,6 +405,7 @@ void AriacScorer::FillKitFromMsg(const osrf_gear::TrayContents::ConstPtr &trayMs
     geometry_msgs::Quaternion o = objMsg.pose.orientation;
     gazebo::math::Vector3 objPosition(p.x, p.y, p.z);
     gazebo::math::Quaternion objOrientation(o.w, o.x, o.y, o.z);
+    objOrientation.Normalize();
     obj.pose = gazebo::math::Pose(objPosition, objOrientation);
     kit.objects.push_back(obj);
   }

@@ -159,6 +159,7 @@ void KitTrayPlugin::ProcessContactingModels()
       ignition::math::Matrix4d transMat(trayPose);
       ignition::math::Matrix4d objectPoseMat(objectPose.Ign());
       object.pose = (transMat.Inverse() * objectPoseMat).Pose();
+      object.pose.rot.Normalize();
 
       this->currentKit.objects.push_back(object);
     }
