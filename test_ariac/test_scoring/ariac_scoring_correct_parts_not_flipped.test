@@ -8,5 +8,5 @@
               --verbose --no-gui"/>
   <test pkg="test_ariac" type="test_scoring_against_expected_score.py"
         test-name="test_scoring_perfect_kit"
-        time-limit="60.0" args="10"/>
+        time-limit="60.0" args="8"/>
 </launch>
