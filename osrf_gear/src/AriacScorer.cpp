@@ -256,8 +256,11 @@ ariac::TrayScore AriacScorer::ScoreTray(const ariac::KitTray & tray)
       // Check the position of the object (ignoring orientation)
       gzdbg << "Comparing pose '" << currentObject.pose << \
         "' with the assigned pose '" << assignedObject.pose << "'" << std::endl;
-      gazebo::math::Vector3 posnDiff = assignedObject.pose.CoordPositionSub(currentObject.pose);
-      posnDiff.z = 0;
+      gazebo::math::Vector3 posnDiff(
+        currentObject.pose.pos.x - assignedObject.pose.pos.x,
+        currentObject.pose.pos.y - assignedObject.pose.pos.y,
+        0);
+      gzdbg << posnDiff << std::endl;
       gzdbg << "Position error: " << posnDiff.GetLength() << std::endl;
       if (posnDiff.GetLength() > scoringParameters.distanceThresh)
         continue;
