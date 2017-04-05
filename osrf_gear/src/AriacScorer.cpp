@@ -283,19 +283,14 @@ ariac::TrayScore AriacScorer::ScoreTray(const ariac::KitTray & tray)
       if (std::abs(orientationDiff) < (1.0 - quaternionDiffThresh))
         continue;
 
-      // If the parts are not "flipped" parts, filter the yaw based on a threshold
-      // set in radians (more user-friendly). Otherwise, the previous quaternion check is sufficient.
-      bool isFlippedPart = std::abs(objOrientation.GetRoll()) > 0.1 || std::abs(objOrientation.GetPitch()) > 0.1;
-      if (!isFlippedPart)
-      {
-        double angleDiff = objOrientation.GetYaw() - orderOrientation.GetYaw();
-        gzdbg << "Orientation error (yaw): " << std::abs(angleDiff) << \
-          " (or " << std::abs(std::abs(angleDiff) - 2 * M_PI) << ")" << std::endl;
-        if (std::abs(angleDiff) > scoringParameters.orientationThresh)
-          // Account for wrapping in angles. E.g. -pi compared with pi should "pass".
-          if (std::abs(std::abs(angleDiff) - 2 * M_PI) > scoringParameters.orientationThresh)
-            continue;
-      }
+      // Filter the yaw based on a threshold set in radians (more user-friendly).
+      double angleDiff = objOrientation.GetYaw() - orderOrientation.GetYaw();
+      gzdbg << "Orientation error (yaw): " << std::abs(angleDiff) << \
+        " (or " << std::abs(std::abs(angleDiff) - 2 * M_PI) << ")" << std::endl;
+      if (std::abs(angleDiff) > scoringParameters.orientationThresh)
+        // Account for wrapping in angles. E.g. -pi compared with pi should "pass".
+        if (std::abs(std::abs(angleDiff) - 2 * M_PI) > scoringParameters.orientationThresh)
+          continue;
 
       gzdbg << "Object of type '" << currentObject.type << \
         "' in the correct orientation" << std::endl;

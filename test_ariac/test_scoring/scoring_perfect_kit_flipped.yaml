@@ -26,4 +26,4 @@ models_to_spawn:
         type: order_part2
         pose:
           xyz: [0, 0.15, 0.1]
-          rpy: [3.1, 0, 0]
+          rpy: [3.1, 0, 0.3]
