@@ -31,6 +31,11 @@ orders:
         pose:
           xyz: [-0.15, 0.15, 0]
           rpy: [0, '-pi', 'pi']
+      part_4:
+        type: order_part2
+        pose:
+          xyz: [0, 0.15, 0]
+          rpy: ['pi', 0, 0]
 # This does not work. There is a discrepancy between the frames.
 # To get this (and other non-integer multiples of PI) to work, you have to
 # specify different rpy for the spawned models.

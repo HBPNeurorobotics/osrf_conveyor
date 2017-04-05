@@ -22,3 +22,8 @@ models_to_spawn:
         pose:
           xyz: [-0.15, 0.15, 0.1]
           rpy: [0, '-pi', 'pi']
+      part_4:
+        type: order_part2
+        pose:
+          xyz: [0, 0.15, 0.1]
+          rpy: [3.1, 0, 0]
