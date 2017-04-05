@@ -43,6 +43,21 @@ void KitTrayPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 {
   SideContactPlugin::Load(_model, _sdf);
 
+  if (_sdf->HasElement("parts_to_ignore"))
+  {
+    this->partsToIgnore.clear();
+    sdf::ElementPtr partsToIgnoreElem = _sdf->GetElement("parts_to_ignore");
+    sdf::ElementPtr partToIgnoreElem = partsToIgnoreElem->GetElement("name");
+    while (partToIgnoreElem)
+    {
+      std::string ignoredPartName = partToIgnoreElem->Get<std::string>();
+
+      ROS_DEBUG_STREAM("Ignoring part: " << ignoredPartName);
+      this->partsToIgnore.push_back(ignoredPartName);
+      partToIgnoreElem = partToIgnoreElem->GetNextElement("name");
+    }
+  }
+
   if (this->updateRate > 0)
     gzdbg << "KitTrayPlugin running at " << this->updateRate << " Hz\n";
   else
@@ -126,8 +141,16 @@ void KitTrayPlugin::ProcessContactingModels()
   for (auto model : this->contactingModels) {
     if (model) {
       model->SetAutoDisable(false);
-      ariac::KitObject object;
 
+      // If the part is to be ignored, don't add it to the kit
+      gzdbg << model->GetName() << std::endl;
+      auto it = std::find(this->partsToIgnore.begin(), this->partsToIgnore.end(), model->GetName());
+      if (it != this->partsToIgnore.end())
+      {
+        continue;
+      }
+
+      ariac::KitObject object;
       // Determine the object type
       object.type = ariac::DetermineModelType(model->GetName());
 
