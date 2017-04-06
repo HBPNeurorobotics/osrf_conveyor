@@ -3,6 +3,7 @@
 #   - The second will interrupt the first at an inconvenient time.
 #   - The second has no time limit.
 #   - After the second order is complete, the first order is to be resumed.
+# - Faulty parts should be removed from the trays.
 
 options:
   insert_models_over_bins: true
@@ -106,5 +107,11 @@ models_over_bins:
         rpy: [0, 0, 0]
         num_models_x: 4
         num_models_y: 4
+
+faulty_parts:
+  - bin7|piston_rod_part_1
+  - bin7|piston_rod_part_3
+  - bin8|gasket_part_4
+  - bin8|gasket_part_3
 
 time_limit: -1
