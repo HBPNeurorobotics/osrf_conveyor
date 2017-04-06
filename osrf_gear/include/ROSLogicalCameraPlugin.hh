@@ -76,8 +76,8 @@ namespace gazebo
     /// \param[in] _msg The logical camera image
     public: void OnImage(ConstLogicalCameraImagePtr &_msg);
 
-    /// \brief Determine if the model type is one that should be published
-    protected: bool ModelTypeToPublish(const std::string & modelType);
+    /// \brief Determine if the model is one that should be published
+    protected: bool ModelToPublish(const std::string & modelName, const std::string & modelType);
 
     /// \brief Add noise to a model pose
     protected: void AddNoise(math::Pose & pose);
@@ -111,6 +111,9 @@ namespace gazebo
 
     /// \brief Whitelist of the known model types to detect
     protected: std::vector<std::string> knownModelTypes;
+
+    /// \brief Whitelist of know models by name
+    protected: std::vector<std::string> knownModelNames;
 
     /// \brief Map of noise IDs to noise models
     protected: std::map<std::string, sensors::NoisePtr> noiseModels;

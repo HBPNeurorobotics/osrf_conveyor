@@ -91,9 +91,22 @@ void ROSLogicalCameraPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sd
       knownModelTypeElem = knownModelTypeElem->GetNextElement("type");
     }
   }
-  else
+
+  if (_sdf->HasElement("known_model_names"))
   {
-    ROS_DEBUG("Publishing all model types");
+    ROS_DEBUG("Only publishing known model names");
+    this->onlyPublishKnownModels = true;
+    this->knownModelNames.clear();
+    sdf::ElementPtr knownModelNamesElem = _sdf->GetElement("known_model_names");
+    sdf::ElementPtr knownModelNameElem = knownModelNamesElem->GetElement("name");
+    while (knownModelNameElem)
+    {
+      std::string knownModelName = knownModelNameElem->Get<std::string>();
+
+      ROS_DEBUG_STREAM("New known model name: " << knownModelName);
+      this->knownModelNames.push_back(knownModelName);
+      knownModelNameElem = knownModelNameElem->GetNextElement("name");
+    }
   }
 
   this->model = _parent;
@@ -186,7 +199,7 @@ void ROSLogicalCameraPlugin::OnImage(ConstLogicalCameraImagePtr &_msg)
     std::string modelName = _msg->model(i).name();
     std::string modelType = ariac::DetermineModelType(modelName);
 
-    if (!this->ModelTypeToPublish(modelType))
+    if (!this->ModelToPublish(modelName, modelType))
     {
       logStream << "Not publishing model: " << modelName << " of type: " << modelType << std::endl;
     }
@@ -210,7 +223,7 @@ void ROSLogicalCameraPlugin::OnImage(ConstLogicalCameraImagePtr &_msg)
     {
       modelName = nestedModel->GetName();
       modelType = ariac::DetermineModelType(modelName);
-      if (!this->ModelTypeToPublish(modelType))
+      if (!this->ModelToPublish(modelName, modelType))
       {
         logStream << "Not publishing model: " << modelName << " of type: " << modelType << std::endl;
         continue;
@@ -232,19 +245,22 @@ void ROSLogicalCameraPlugin::OnImage(ConstLogicalCameraImagePtr &_msg)
   this->imagePub.publish(imageMsg);
 }
 
-bool ROSLogicalCameraPlugin::ModelTypeToPublish(const std::string & modelType)
+bool ROSLogicalCameraPlugin::ModelToPublish(
+  const std::string & modelName, const std::string & modelType)
 {
-  bool publishModelType = true;
+  bool publishModel = true;
 
   // Check if there are restrictions on which models to publish
   if (this->onlyPublishKnownModels)
   {
-    // Only publish the model if its type is one of the known types
+    // Only publish the model if its type is known
     auto it = std::find(this->knownModelTypes.begin(), this->knownModelTypes.end(), modelType);
     bool knownModel = it != this->knownModelTypes.end();
-    publishModelType = knownModel;
+    it = std::find(this->knownModelNames.begin(), this->knownModelNames.end(), modelName);
+    knownModel |= it != this->knownModelNames.end();
+    publishModel = knownModel;
   }
-  return publishModelType;
+  return publishModel;
 }
 
 void ROSLogicalCameraPlugin::AddNoise(math::Pose & pose)
