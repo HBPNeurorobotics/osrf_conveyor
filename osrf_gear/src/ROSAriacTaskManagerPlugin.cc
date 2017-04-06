@@ -632,6 +632,11 @@ void ROSAriacTaskManagerPlugin::ProcessOrdersToAnnounce()
       std::vector<std::string> partsInNextOrder_copy(partsInNextOrder);
       for (const auto part : tray.currentKit.objects)
       {
+        // Don't count faulty parts, because they have to be removed anyway.
+        if (part.isFaulty)
+        {
+          continue;
+        }
         auto it = std::find(partsInNextOrder_copy.begin(), partsInNextOrder_copy.end(), part.type);
         if (it == partsInNextOrder_copy.end())
         {
