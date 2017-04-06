@@ -267,7 +267,7 @@ bool ROSLogicalCameraPlugin::ModelToPublish(
     // Only publish the model if its type is known
     auto it = std::find(this->knownModelTypes.begin(), this->knownModelTypes.end(), modelType);
     bool knownModel = it != this->knownModelTypes.end();
-    it = std::find(this->knownModelNames.begin(), this->knownModelNames.end(), modelName);
+    it = std::find(this->knownModelNames.begin(), this->knownModelNames.end(), ariac::TrimNamespace(modelName));
     knownModel |= it != this->knownModelNames.end();
     publishModel = knownModel;
   }

@@ -115,7 +115,8 @@ namespace gazebo
     /// \brief Whitelist of the known model types to detect
     protected: std::vector<std::string> knownModelTypes;
 
-    /// \brief Whitelist of know models by name
+    /// \brief Whitelist of known models by name (independent of the namespace (e.g. bin7)).
+    /// e.g. if model_name1 is whitelisted, both bin7|model_name1 and bin6|model_name1 will be published
     protected: std::vector<std::string> knownModelNames;
 
     /// \brief Map of noise IDs to noise models

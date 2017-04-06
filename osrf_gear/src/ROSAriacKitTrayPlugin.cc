@@ -150,7 +150,8 @@ void KitTrayPlugin::ProcessContactingModels()
       object.type = ariac::DetermineModelType(model->GetName());
 
       // Determine if the object is faulty
-      auto it = std::find(this->faultyPartNames.begin(), this->faultyPartNames.end(), model->GetName());
+      auto modelName = ariac::TrimNamespace(model->GetName());
+      auto it = std::find(this->faultyPartNames.begin(), this->faultyPartNames.end(), modelName);
       object.isFaulty = it != this->faultyPartNames.end();
 
       // Determine the pose of the object in the frame of the tray

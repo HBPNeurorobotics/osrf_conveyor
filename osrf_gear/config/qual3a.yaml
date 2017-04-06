@@ -3,7 +3,7 @@
 #   - The second will interrupt the first at an inconvenient time.
 #   - The second has no time limit.
 #   - After the second order is complete, the first order is to be resumed.
-# - Faulty parts should be removed from the trays.
+# - Faulty parts should not be used to build the kits.
 
 options:
   insert_models_over_bins: true
@@ -109,9 +109,10 @@ models_over_bins:
         num_models_y: 4
 
 faulty_parts:
-  - bin7|piston_rod_part_1
-  - bin7|piston_rod_part_3
-  - bin8|gasket_part_4
-  - bin8|gasket_part_3
+  - piston_rod_part_1
+  - piston_rod_part_3
+  - gasket_part_clone_0
+  - gasket_part_4
+  - gasket_part_3
 
 time_limit: -1

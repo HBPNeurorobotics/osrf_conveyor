@@ -1,6 +1,6 @@
 faulty_parts:
-  - agv1|kit_tray_1|kit_tray_1|tray|gear_part_2
-  - agv1|kit_tray_1|kit_tray_1|tray|piston_rod_part_1
+  - gear_part_2
+  - piston_rod_part_1
 models_to_spawn:
   # Spawn some models on the agv tray on startup
   agv1::kit_tray_1::kit_tray_1::tray:
