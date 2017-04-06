@@ -183,6 +183,7 @@ void ROSLogicalCameraPlugin::OnImage(ConstLogicalCameraImagePtr &_msg)
   math::Quaternion cameraOrientation = math::Quaternion(
     msgs::ConvertIgn(_msg->pose().orientation()));
   math::Pose cameraPose = math::Pose(cameraPosition, cameraOrientation);
+  this->PublishTF(cameraPose, "world", this->name + "_frame");
 
   imageMsg.pose.position.x = cameraPosition.x;
   imageMsg.pose.position.y = cameraPosition.y;

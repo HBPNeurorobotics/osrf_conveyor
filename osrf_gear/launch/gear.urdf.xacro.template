@@ -48,6 +48,7 @@
 
   <!-- sensor links and fixed joints -->
 @[for name, sensor in sensors.items()]@
+@[if not name.startswith('logical_camera')]@
 
   <!-- a @(sensor.type) type sensor in the frame @(name)_frame -->
   <link name="@(name)_frame" />
@@ -56,6 +57,7 @@
     <child link="@(name)_frame" />
     <origin xyz="@(' '.join(sensor.pose.xyz))" rpy="@(' '.join(sensor.pose.rpy))" />
   </joint>
+@[end if]@
 @[end for]@
 @[for name, pose in bins.items()]@
   <!-- a bin in the frame @(name)_frame -->
