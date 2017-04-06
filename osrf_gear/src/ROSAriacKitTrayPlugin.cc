@@ -18,7 +18,7 @@
 #include <cstdlib>
 #include <string>
 
-#include <osrf_gear/KitTray.h>
+#include <osrf_gear/TrayContents.h>
 
 #include "ROSAriacKitTrayPlugin.hh"
 
@@ -43,18 +43,18 @@ void KitTrayPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 {
   SideContactPlugin::Load(_model, _sdf);
 
-  if (_sdf->HasElement("parts_to_ignore"))
+  if (_sdf->HasElement("faulty_parts"))
   {
-    this->partsToIgnore.clear();
-    sdf::ElementPtr partsToIgnoreElem = _sdf->GetElement("parts_to_ignore");
-    sdf::ElementPtr partToIgnoreElem = partsToIgnoreElem->GetElement("name");
-    while (partToIgnoreElem)
+    this->faultyPartNames.clear();
+    sdf::ElementPtr faultyPartNamesElem = _sdf->GetElement("faulty_parts");
+    sdf::ElementPtr faultyPartElem = faultyPartNamesElem->GetElement("name");
+    while (faultyPartElem)
     {
-      std::string ignoredPartName = partToIgnoreElem->Get<std::string>();
+      std::string faultyPartName = faultyPartElem->Get<std::string>();
 
-      ROS_DEBUG_STREAM("Ignoring part: " << ignoredPartName);
-      this->partsToIgnore.push_back(ignoredPartName);
-      partToIgnoreElem = partToIgnoreElem->GetNextElement("name");
+      ROS_DEBUG_STREAM("Ignoring part: " << faultyPartName);
+      this->faultyPartNames.push_back(faultyPartName);
+      faultyPartElem = faultyPartElem->GetNextElement("name");
     }
   }
 
@@ -74,7 +74,7 @@ void KitTrayPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   }
 
   this->rosNode = new ros::NodeHandle("");
-  this->currentKitPub = this->rosNode->advertise<osrf_gear::KitTray>(
+  this->currentKitPub = this->rosNode->advertise<osrf_gear::TrayContents>(
     "/ariac/trays", 1000, boost::bind(&KitTrayPlugin::OnSubscriberConnect, this, _1));
   this->publishingEnabled = true;
 
@@ -141,18 +141,14 @@ void KitTrayPlugin::ProcessContactingModels()
   for (auto model : this->contactingModels) {
     if (model) {
       model->SetAutoDisable(false);
-
-      // If the part is to be ignored, don't add it to the kit
-      gzdbg << model->GetName() << std::endl;
-      auto it = std::find(this->partsToIgnore.begin(), this->partsToIgnore.end(), model->GetName());
-      if (it != this->partsToIgnore.end())
-      {
-        continue;
-      }
-
       ariac::KitObject object;
+
       // Determine the object type
       object.type = ariac::DetermineModelType(model->GetName());
+
+      // Determine if the object is faulty
+      auto it = std::find(this->faultyPartNames.begin(), this->faultyPartNames.end(), model->GetName());
+      object.isFaulty = it != this->faultyPartNames.end();
 
       // Determine the pose of the object in the frame of the tray
       math::Pose objectPose = model->GetWorldPose();
@@ -188,12 +184,13 @@ void KitTrayPlugin::OnSubscriberConnect(const ros::SingleSubscriberPublisher& pu
 void KitTrayPlugin::PublishKitMsg()
 {
   // Publish current kit
-  osrf_gear::KitTray kitTrayMsg;
+  osrf_gear::TrayContents kitTrayMsg;
   kitTrayMsg.tray = this->trayID;
   for (const auto &obj : this->currentKit.objects)
   {
-    osrf_gear::KitObject msgObj;
+    osrf_gear::DetectedObject msgObj;
     msgObj.type = obj.type;
+    msgObj.is_faulty = obj.isFaulty;
     msgObj.pose.position.x = obj.pose.pos.x;
     msgObj.pose.position.y = obj.pose.pos.y;
     msgObj.pose.position.z = obj.pose.pos.z;
@@ -203,7 +200,7 @@ void KitTrayPlugin::PublishKitMsg()
     msgObj.pose.orientation.w = obj.pose.rot.w;
 
     // Add the object to the kit.
-    kitTrayMsg.kit.objects.push_back(msgObj);
+    kitTrayMsg.objects.push_back(msgObj);
   }
   this->currentKitPub.publish(kitTrayMsg);
 }

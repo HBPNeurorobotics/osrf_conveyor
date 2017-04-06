@@ -358,11 +358,11 @@
           <clear_tray_service_name>/ariac/kit_tray_@(str(agv_id))/clear_tray</clear_tray_service_name>
           <lock_models_service_name>/ariac/kit_tray_@(str(agv_id))/lock_models</lock_models_service_name>
           <update_rate>20</update_rate>
-          <parts_to_ignore>
+          <faulty_parts>
 @[for part_name, part_info in faulty_parts.items()]@
             <name>@(part_name)</name>
 @[end for]@
-          </parts_to_ignore>
+          </faulty_parts>
         </plugin>
       </model>
 

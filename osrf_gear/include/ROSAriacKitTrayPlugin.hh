@@ -109,7 +109,7 @@ namespace gazebo
     public: ros::ServiceServer clearTrayServer;
 
     /// \brief Parts to ignore (won't be published in msgs, will be locked to tray)
-    protected: std::vector<std::string> partsToIgnore;
+    protected: std::vector<std::string> faultyPartNames;
 
     /// \brief Gazebo subscriber to the lock models topic
     protected: transport::SubscriberPtr lockModelsSub;

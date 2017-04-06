@@ -219,7 +219,7 @@ ariac::TrayScore AriacScorer::ScoreTray(const ariac::KitTray & tray)
     auto assignedObjectCount = value.second;
     auto currentObjectCount =
       std::count_if(kit.objects.begin(), kit.objects.end(),
-        [assignedObjectType](ariac::KitObject k) {return k.type == assignedObjectType;});
+        [assignedObjectType](ariac::KitObject k) {return !k.isFaulty && k.type == assignedObjectType;});
     gzdbg << "Found " << currentObjectCount << \
       " objects of type '" << assignedObjectType << "'" << std::endl;
     score.partPresence +=
@@ -244,6 +244,10 @@ ariac::TrayScore AriacScorer::ScoreTray(const ariac::KitTray & tray)
   {
     for (auto it = remainingAssignedObjects.begin(); it != remainingAssignedObjects.end(); ++it)
     {
+      // Ignore faulty parts
+      if (currentObject.isFaulty)
+        continue;
+
       // Only check poses of parts of the same type
       auto assignedObject = *it;
       if (assignedObject.type != currentObject.type)
@@ -303,7 +307,7 @@ ariac::TrayScore AriacScorer::ScoreTray(const ariac::KitTray & tray)
 }
 
 /////////////////////////////////////////////////
-void AriacScorer::OnTrayInfoReceived(const osrf_gear::KitTray::ConstPtr & trayMsg)
+void AriacScorer::OnTrayInfoReceived(const osrf_gear::TrayContents::ConstPtr & trayMsg)
 {
   boost::mutex::scoped_lock kitTraysLock(this->kitTraysMutex);
 
@@ -322,7 +326,7 @@ void AriacScorer::OnTrayInfoReceived(const osrf_gear::KitTray::ConstPtr & trayMs
   // will be part of future orders.
   this->newTrayInfoReceived = true;
   ariac::Kit kitState;
-  FillKitFromMsg(trayMsg->kit, kitState);
+  FillKitFromMsg(trayMsg, kitState);
   this->kitTrays[trayID].UpdateKitState(kitState);
 }
 
@@ -376,6 +380,24 @@ ariac::OrderScore AriacScorer::UnassignCurrentOrder(double timeTaken)
   orderScore.timeTaken = timeTaken;
   this->currentOrder.kits.clear();
   return orderScore;
+}
+
+/////////////////////////////////////////////////
+void AriacScorer::FillKitFromMsg(const osrf_gear::TrayContents::ConstPtr &trayMsg, ariac::Kit &kit)
+{
+  kit.objects.clear();
+  for (const auto & objMsg : trayMsg->objects)
+  {
+    ariac::KitObject obj;
+    obj.type = ariac::DetermineModelType(objMsg.type);
+    obj.isFaulty = objMsg.is_faulty;
+    geometry_msgs::Point p = objMsg.pose.position;
+    geometry_msgs::Quaternion o = objMsg.pose.orientation;
+    gazebo::math::Vector3 objPosition(p.x, p.y, p.z);
+    gazebo::math::Quaternion objOrientation(o.w, o.x, o.y, o.z);
+    obj.pose = gazebo::math::Pose(objPosition, objOrientation);
+    kit.objects.push_back(obj);
+  }
 }
 
 /////////////////////////////////////////////////

@@ -264,6 +264,7 @@ namespace ariac
     {
       _out << "<object>" << std::endl;
       _out << "Type: [" << _obj.type << "]" << std::endl;
+      _out << "Faulty: [" << (_obj.isFaulty ? "true" : "false") << "]" << std::endl;
       _out << "Pose: [" << _obj.pose << "]" << std::endl;
       _out << "</object>" << std::endl;
       return _out;
@@ -271,6 +272,9 @@ namespace ariac
 
     /// \brief Object type.
     public: std::string type;
+
+    /// \brief Whether or not the object is faulty.
+    public: bool isFaulty;
 
     /// \brief Pose in which the object should be placed.
     public: math::Pose pose;

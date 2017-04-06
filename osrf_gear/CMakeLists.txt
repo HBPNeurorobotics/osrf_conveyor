@@ -25,6 +25,7 @@ find_package(gazebo REQUIRED)
 add_message_files(DIRECTORY msg
   FILES
   ConveyorBeltState.msg
+  DetectedObject.msg
   Kit.msg
   KitObject.msg
   KitTray.msg
@@ -34,6 +35,7 @@ add_message_files(DIRECTORY msg
   PopulationState.msg
   Proximity.msg
   StorageUnit.msg
+  TrayContents.msg
   VacuumGripperState.msg
 )
 

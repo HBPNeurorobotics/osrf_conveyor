@@ -30,6 +30,7 @@
 #include "osrf_gear/AriacKitTray.h"
 #include <osrf_gear/KitTray.h>
 #include <osrf_gear/Order.h>
+#include <osrf_gear/TrayContents.h>
 #include "osrf_gear/VacuumGripperState.h"
 
 /// \brief A scorer for the ARIAC game.
@@ -85,6 +86,9 @@ class AriacScorer
   /// \brief Calculate the score for the trays given the objects in them.
   protected: void ScoreCurrentState();
 
+  /// \brief Helper function for filling a Kit from a tray contents ROS message.
+  public: static void FillKitFromMsg(const osrf_gear::TrayContents::ConstPtr & trayMsg, ariac::Kit & kit);
+
   /// \brief Helper function for filling a Kit from a kit ROS message.
   public: static void FillKitFromMsg(const osrf_gear::Kit & kitMsg, ariac::Kit & kit);
 
@@ -92,7 +96,7 @@ class AriacScorer
   public: void OnOrderReceived(const osrf_gear::Order::ConstPtr & orderMsg);
 
   /// \brief Callback for receiving tray state message.
-  public: void OnTrayInfoReceived(const osrf_gear::KitTray::ConstPtr & trayMsg);
+  public: void OnTrayInfoReceived(const osrf_gear::TrayContents::ConstPtr & trayMsg);
 
   /// \brief Callback for receiving gripper state message.
   public: void OnGripperStateReceived(const osrf_gear::VacuumGripperState &stateMsg);
