@@ -3,6 +3,18 @@
   <model name="kit_tray">
     <static>false</static>
     <link name="tray">
+      <inertial>
+        <mass>1</mass>
+        <inertia>
+          <ixx>0.0408</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.02084</iyy>
+          <iyz>0</iyz>
+          <izz>0.0616</izz>
+        </inertia>
+      </inertial>
+
       <sensor name='kit_tray_contact' type='contact'>
         <update_rate>1</update_rate>
         <contact>
