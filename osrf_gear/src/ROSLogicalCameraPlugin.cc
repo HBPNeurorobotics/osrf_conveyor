@@ -109,6 +109,13 @@ void ROSLogicalCameraPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sd
     }
   }
 
+  this->modelFramePrefix = "";
+  if (_sdf->HasElement("model_frame_prefix"))
+  {
+    this->modelFramePrefix = _sdf->GetElement("model_frame_prefix")->Get<std::string>();
+  }
+  gzdbg << "Using model frame prefix of: " << this->modelFramePrefix << std::endl;
+
   this->model = _parent;
   this->node = transport::NodePtr(new transport::Node());
   this->node->Init(this->model->GetWorld()->GetName());
@@ -214,7 +221,7 @@ void ROSLogicalCameraPlugin::OnImage(ConstLogicalCameraImagePtr &_msg)
       modelPose = math::Pose(modelPosition, modelOrientation);
       this->AddNoise(modelPose);
       this->AddModelToMsg(modelType, modelPose, imageMsg);
-      this->PublishTF(modelPose, this->name + "_frame", ariac::TrimNamespace(modelName) + "_frame");
+      this->PublishTF(modelPose, this->name + "_frame", this->modelFramePrefix + ariac::TrimNamespace(modelName) + "_frame");
     }
 
     // Check any children models
@@ -235,7 +242,7 @@ void ROSLogicalCameraPlugin::OnImage(ConstLogicalCameraImagePtr &_msg)
       this->AddNoise(modelPose);
       this->AddModelToMsg(modelType, modelPose, imageMsg);
       // Do not publish TF information for nested models (kit_tray).
-      // this->PublishTF(modelPose, this->name + "_frame", ariac::TrimNamespace(modelName) + "_frame");
+      // this->PublishTF(modelPose, this->name + "_frame", this->modelFramePrefix + ariac::TrimNamespace(modelName) + "_frame");
     }
   }
 

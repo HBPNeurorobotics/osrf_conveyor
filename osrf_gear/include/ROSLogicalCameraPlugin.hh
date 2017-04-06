@@ -106,6 +106,9 @@ namespace gazebo
     /// \brief ROS publisher for the logical camera image
     protected: ros::Publisher imagePub;
 
+    /// \brief Prefix for the model TF frames published
+    protected: std::string modelFramePrefix;
+
     /// \brief If true, only publish the models if their type is known; otherwise publish all
     protected: bool onlyPublishKnownModels;
 
