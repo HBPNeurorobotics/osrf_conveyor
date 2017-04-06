@@ -47,14 +47,17 @@ void KitTrayPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   {
     this->faultyPartNames.clear();
     sdf::ElementPtr faultyPartNamesElem = _sdf->GetElement("faulty_parts");
-    sdf::ElementPtr faultyPartElem = faultyPartNamesElem->GetElement("name");
-    while (faultyPartElem)
+    if (faultyPartNamesElem->HasElement("name"))
     {
-      std::string faultyPartName = faultyPartElem->Get<std::string>();
+      sdf::ElementPtr faultyPartElem = faultyPartNamesElem->GetElement("name");
+      while (faultyPartElem)
+      {
+        std::string faultyPartName = faultyPartElem->Get<std::string>();
 
-      ROS_DEBUG_STREAM("Ignoring part: " << faultyPartName);
-      this->faultyPartNames.push_back(faultyPartName);
-      faultyPartElem = faultyPartElem->GetNextElement("name");
+        ROS_DEBUG_STREAM("Ignoring part: " << faultyPartName);
+        this->faultyPartNames.push_back(faultyPartName);
+        faultyPartElem = faultyPartElem->GetNextElement("name");
+      }
     }
   }
 

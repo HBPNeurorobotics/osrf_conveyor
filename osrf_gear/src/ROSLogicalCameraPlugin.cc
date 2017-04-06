@@ -98,14 +98,17 @@ void ROSLogicalCameraPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sd
     this->onlyPublishKnownModels = true;
     this->knownModelNames.clear();
     sdf::ElementPtr knownModelNamesElem = _sdf->GetElement("known_model_names");
-    sdf::ElementPtr knownModelNameElem = knownModelNamesElem->GetElement("name");
-    while (knownModelNameElem)
+    if (knownModelNamesElem->HasElement("name"))
     {
-      std::string knownModelName = knownModelNameElem->Get<std::string>();
+      sdf::ElementPtr knownModelNameElem = knownModelNamesElem->GetElement("name");
+      while (knownModelNameElem)
+      {
+        std::string knownModelName = knownModelNameElem->Get<std::string>();
 
-      ROS_DEBUG_STREAM("New known model name: " << knownModelName);
-      this->knownModelNames.push_back(knownModelName);
-      knownModelNameElem = knownModelNameElem->GetNextElement("name");
+        ROS_DEBUG_STREAM("New known model name: " << knownModelName);
+        this->knownModelNames.push_back(knownModelName);
+        knownModelNameElem = knownModelNameElem->GetNextElement("name");
+      }
     }
   }
 
