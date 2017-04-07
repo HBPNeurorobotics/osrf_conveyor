@@ -42,6 +42,9 @@ models_over_bins:
         num_models_x: 3
         num_models_y: 4
 
+faulty_parts:
+  - piston_rod_part_5  # this part gets spawned manually in the tutorial
+
 time_limit: -1
 
 
