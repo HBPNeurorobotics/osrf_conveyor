@@ -21,6 +21,7 @@ catkin_package(
 set(rostests
   ariac_rosapi.test
   ariac_example.test
+  ariac_tf_frames.test
   ariac_qual2a.test
   ariac_qual2b.test
   ariac_qual2a_scoring_after_waiting.test
@@ -75,5 +76,6 @@ install(PROGRAMS
   test_scoring_after_waiting.py
   test_scoring_immediate.py
   test_scoring_against_expected_score.py
+  test_tf_frames.py
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/test
 )

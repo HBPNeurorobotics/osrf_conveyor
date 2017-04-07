@@ -19,7 +19,12 @@ sensors:
   logical_camera_2:
     type: logical_camera
     pose:
-      xyz: [1.6, 2.25, 1.92]
+      xyz: [0.35, 3.0, 1.75]
+      rpy: [0, 'pi/2', 0]
+  logical_camera_3:
+    type: logical_camera
+    pose:
+      xyz: [0.35, -3.0, 1.75]
       rpy: [0, 'pi/2', 0]
   laser_profiler_1:
     type: laser_profiler
