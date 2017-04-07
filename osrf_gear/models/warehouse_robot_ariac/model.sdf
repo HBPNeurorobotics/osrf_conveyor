@@ -3,6 +3,18 @@
   <model name="warehouse_robot">
     <static>false</static>
     <link name="link">
+      <inertial>
+        <pose>0 0 0.15 0 0 0</pose>
+        <mass>50.0</mass>
+        <inertia>
+          <ixx>4.525499333333333</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>1.4504741933333334</iyy>
+          <iyz>0</iyz>
+          <izz>5.6426401933333326</izz>
+        </inertia>
+      </inertial>
       <visual name="visual">
         <geometry>
           <mesh>
