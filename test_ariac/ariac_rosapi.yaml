@@ -40,7 +40,7 @@ topics:
     num_subscribers: 0
 
   - topic: /ariac/trays
-    type: osrf_gear/KitTray
+    type: osrf_gear/TrayContents
     num_publishers: 1
     num_subscribers: 1
 
@@ -56,6 +56,16 @@ topics:
 
   - topic: /ariac/current_score
     type: std_msgs/Float32
+    num_publishers: 1
+    num_subscribers: 0
+
+  - topic: /ariac/faulty_part_detector_1
+    type: osrf_gear/LogicalCameraImage
+    num_publishers: 1
+    num_subscribers: 0
+
+  - topic: /ariac/faulty_part_detector_2
+    type: osrf_gear/LogicalCameraImage
     num_publishers: 1
     num_subscribers: 0
 

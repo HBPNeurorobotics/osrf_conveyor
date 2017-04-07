@@ -76,8 +76,8 @@ namespace gazebo
     /// \param[in] _msg The logical camera image
     public: void OnImage(ConstLogicalCameraImagePtr &_msg);
 
-    /// \brief Determine if the model type is one that should be published
-    protected: bool ModelTypeToPublish(const std::string & modelType);
+    /// \brief Determine if the model is one that should be published
+    protected: bool ModelToPublish(const std::string & modelName, const std::string & modelType);
 
     /// \brief Add noise to a model pose
     protected: void AddNoise(math::Pose & pose);
@@ -106,11 +106,18 @@ namespace gazebo
     /// \brief ROS publisher for the logical camera image
     protected: ros::Publisher imagePub;
 
+    /// \brief Prefix for the model TF frames published
+    protected: std::string modelFramePrefix;
+
     /// \brief If true, only publish the models if their type is known; otherwise publish all
     protected: bool onlyPublishKnownModels;
 
     /// \brief Whitelist of the known model types to detect
     protected: std::vector<std::string> knownModelTypes;
+
+    /// \brief Whitelist of known models by name (independent of the namespace (e.g. bin7)).
+    /// e.g. if model_name1 is whitelisted, both bin7|model_name1 and bin6|model_name1 will be published
+    protected: std::vector<std::string> knownModelNames;
 
     /// \brief Map of noise IDs to noise models
     protected: std::map<std::string, sensors::NoisePtr> noiseModels;

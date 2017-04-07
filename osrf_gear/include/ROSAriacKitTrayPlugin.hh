@@ -108,6 +108,11 @@ namespace gazebo
     /// \brief ROS service that clears the tray
     public: ros::ServiceServer clearTrayServer;
 
+    /// \brief Parts to ignore (will be published as faulty in tray msgs)
+    /// The namespace of the part (e.g. bin7) is ignored.
+    /// e.g. if model_name1 is faulty, either bin7|model_name1 or bin6|model_name1 will be considered faulty
+    protected: std::vector<std::string> faultyPartNames;
+
     /// \brief Gazebo subscriber to the lock models topic
     protected: transport::SubscriberPtr lockModelsSub;
   };

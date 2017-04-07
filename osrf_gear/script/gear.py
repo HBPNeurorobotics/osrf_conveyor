@@ -363,6 +363,13 @@ def create_order_infos(orders_dict):
     return order_infos
 
 
+def create_faulty_parts_info(faulty_parts_dict):
+    faulty_part_infos = {}
+    for part_name in faulty_parts_dict:
+        faulty_part_infos[part_name] = part_name  # no other info for now
+    return faulty_part_infos
+
+
 def create_bin_infos():
     bin_infos = {}
     for bin_name, xyz in default_bin_origins.items():
@@ -406,6 +413,7 @@ def prepare_template_data(config_dict):
         'models_to_insert': {},
         'models_to_spawn': {},
         'belt_parts': {},
+        'faulty_parts': {},
         'drops': {},
         'orders': {},
         'options': {},
@@ -430,6 +438,8 @@ def prepare_template_data(config_dict):
             template_data['belt_parts'].update(create_belt_part_infos(value))
         elif key == 'drops':
             template_data['drops'].update(create_drops_info(value))
+        elif key == 'faulty_parts':
+            template_data['faulty_parts'].update(create_faulty_parts_info(value))
         elif key == 'orders':
             template_data['orders'].update(create_order_infos(value))
         elif key == 'options':
