@@ -225,18 +225,24 @@ void ROSLogicalCameraPlugin::OnImage(ConstLogicalCameraImagePtr &_msg)
       math::Quaternion modelOrientation = math::Quaternion(
         msgs::ConvertIgn(_msg->model(i).pose().orientation()));
       modelPose = math::Pose(modelPosition, modelOrientation);
-      this->AddNoise(modelPose);
-      this->AddModelToMsg(modelType, modelPose, imageMsg);
-      this->PublishTF(modelPose, this->name + "_frame", this->modelFramePrefix + ariac::TrimNamespace(modelName) + "_frame");
 
-      // If AGVs are detected, also publish the pose to the kit tray.
+      // Special case: don't add noise for AGV base (it is too much noise by the time the tray pose is extrapolated)
+      if (modelType != "agv1" && modelType != "agv2")
+      {
+        this->AddNoise(modelPose);
+      }
+      this->AddModelToMsg(modelType, modelPose, imageMsg);
+      std::string modelFrameId = this->modelFramePrefix + ariac::TrimNamespace(modelName) + "_frame";
+      this->PublishTF(modelPose, this->name + "_frame", modelFrameId);
+
+      // If AGVs are detected, also publish the pose to the respective kit tray.
       if (modelType == "agv1")
       {
-        this->PublishTF(this->kitTrayToAgv, this->modelFramePrefix + modelName + "_frame", this->modelFramePrefix + "kit_tray_1_frame");
+        this->PublishTF(this->kitTrayToAgv, modelFrameId, this->modelFramePrefix + "kit_tray_1_frame");
       }
       if (modelType == "agv2")
       {
-        this->PublishTF(this->kitTrayToAgv, this->modelFramePrefix + modelName + "_frame", this->modelFramePrefix + "kit_tray_2_frame");
+        this->PublishTF(this->kitTrayToAgv, modelFrameId, this->modelFramePrefix + "kit_tray_2_frame");
       }
     }
 
