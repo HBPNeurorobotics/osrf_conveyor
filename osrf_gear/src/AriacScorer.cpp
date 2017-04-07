@@ -256,8 +256,10 @@ ariac::TrayScore AriacScorer::ScoreTray(const ariac::KitTray & tray)
       // Check the position of the object (ignoring orientation)
       gzdbg << "Comparing pose '" << currentObject.pose << \
         "' with the assigned pose '" << assignedObject.pose << "'" << std::endl;
-      gazebo::math::Vector3 posnDiff = assignedObject.pose.CoordPositionSub(currentObject.pose);
-      posnDiff.z = 0;
+      gazebo::math::Vector3 posnDiff(
+        currentObject.pose.pos.x - assignedObject.pose.pos.x,
+        currentObject.pose.pos.y - assignedObject.pose.pos.y,
+        0);
       gzdbg << "Position error: " << posnDiff.GetLength() << std::endl;
       if (posnDiff.GetLength() > scoringParameters.distanceThresh)
         continue;
@@ -275,16 +277,18 @@ ariac::TrayScore AriacScorer::ScoreTray(const ariac::KitTray & tray)
       // TODO: this value can probably be derived using relationships between
       // euler angles and quaternions.
       double quaternionDiffThresh = 0.05;
+      gzdbg << "Cosine of angle between orientations (quaternion dot product): " << \
+        orientationDiff << std::endl;
       if (std::abs(orientationDiff) < (1.0 - quaternionDiffThresh))
         continue;
 
-      // Now filter the poses based on a threshold set in radians (more user-friendly).
-      double yawDiff = objOrientation.GetYaw() - orderOrientation.GetYaw();
-      gzdbg << "Orientation error: " << std::abs(yawDiff) << \
-        " (or " << std::abs(std::abs(yawDiff) - 2 * M_PI) << ")" << std::endl;
-      if (std::abs(yawDiff) > scoringParameters.orientationThresh)
+      // Filter the yaw based on a threshold set in radians (more user-friendly).
+      double angleDiff = objOrientation.GetYaw() - orderOrientation.GetYaw();
+      gzdbg << "Orientation error (yaw): " << std::abs(angleDiff) << \
+        " (or " << std::abs(std::abs(angleDiff) - 2 * M_PI) << ")" << std::endl;
+      if (std::abs(angleDiff) > scoringParameters.orientationThresh)
         // Account for wrapping in angles. E.g. -pi compared with pi should "pass".
-        if (std::abs(std::abs(yawDiff) - 2 * M_PI) > scoringParameters.orientationThresh)
+        if (std::abs(std::abs(angleDiff) - 2 * M_PI) > scoringParameters.orientationThresh)
           continue;
 
       gzdbg << "Object of type '" << currentObject.type << \
@@ -395,6 +399,7 @@ void AriacScorer::FillKitFromMsg(const osrf_gear::TrayContents::ConstPtr &trayMs
     geometry_msgs::Quaternion o = objMsg.pose.orientation;
     gazebo::math::Vector3 objPosition(p.x, p.y, p.z);
     gazebo::math::Quaternion objOrientation(o.w, o.x, o.y, o.z);
+    objOrientation.Normalize();
     obj.pose = gazebo::math::Pose(objPosition, objOrientation);
     kit.objects.push_back(obj);
   }

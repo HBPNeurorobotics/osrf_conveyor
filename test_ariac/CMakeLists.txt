@@ -31,9 +31,11 @@ set(rostests
   gripper.test
   gripper_unthrottled.test
   test_scoring/ariac_scoring_perfect_kit.test
+  test_scoring/ariac_scoring_perfect_kit_flipped.test
   test_scoring/ariac_scoring_correct_parts_incorrect_poses.test
   test_scoring/ariac_scoring_correct_parts_plus_unwanted.test
   test_scoring/ariac_scoring_correct_parts_plus_faulty.test
+  test_scoring/ariac_scoring_correct_parts_not_flipped.test
   test_scoring/ariac_scoring_missing_parts.test
   test_scoring/ariac_scoring_faulty_parts.test
 )
@@ -58,10 +60,13 @@ install(FILES
   qual2b_testing.yaml
   minimal_sample_unthrottled.yaml
   test_scoring/scoring_base_order.yaml
+  test_scoring/scoring_base_order_flipped.yaml
   test_scoring/scoring_perfect_kit.yaml
+  test_scoring/scoring_perfect_kit_flipped.yaml
   test_scoring/scoring_correct_parts_incorrect_poses.yaml
   test_scoring/scoring_correct_parts_plus_unwanted.yaml
   test_scoring/scoring_correct_parts_plus_faulty.yaml
+  test_scoring/scoring_correct_parts_not_flipped.yaml
   test_scoring/scoring_missing_parts.yaml
   test_scoring/scoring_faulty_parts.yaml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/test
