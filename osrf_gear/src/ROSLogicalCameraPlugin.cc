@@ -58,6 +58,7 @@ void ROSLogicalCameraPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sd
   }
 
   this->world = _parent->GetWorld();
+  this->name = _parent->GetName();
 
   // Make sure the ROS node for Gazebo has already been initialized
   if (!ros::isInitialized())
@@ -112,7 +113,7 @@ void ROSLogicalCameraPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sd
     }
   }
 
-  this->modelFramePrefix = "";
+  this->modelFramePrefix = this->name + "_";
   if (_sdf->HasElement("model_frame_prefix"))
   {
     this->modelFramePrefix = _sdf->GetElement("model_frame_prefix")->Get<std::string>();
@@ -145,7 +146,6 @@ void ROSLogicalCameraPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sd
       "logical_camera");
   }
 
-  this->name = _parent->GetName();
   std::string imageTopic_ros = this->name;
   if (_sdf->HasElement("image_topic_ros")) {
     imageTopic_ros = _sdf->Get<std::string>("image_topic_ros");
