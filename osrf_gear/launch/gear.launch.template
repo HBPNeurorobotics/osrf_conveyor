@@ -4,12 +4,6 @@
   <node name="relay_joint_states" pkg="topic_tools" type="relay"
         args="/joint_states /ariac/joint_states" required="true" output="log" />
 
-  <node name="kit_tray_1_to_agv1" pkg="tf" type="static_transform_publisher"
-        args="0 0.15 0.75 0 0 0 1 agv1_frame kit_tray_1_frame 100" required="true" output="log" />
-
-  <node name="kit_tray_2_to_agv2" pkg="tf" type="static_transform_publisher"
-        args="0 0.15 0.75 0 0 0 1 agv2_frame kit_tray_2_frame 100" required="true" output="log" />
-
   <remap from="joint_states" to="ariac/joint_states" />
 
   <arg name="limited" default="false"/>

@@ -131,6 +131,9 @@ void ROSLogicalCameraPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sd
     gzerr << "No logical camera found on any link\n";
     return;
   }
+  math::Vector3 kitTrayPosition = math::Vector3(0, 0.15, 0.75);
+  math::Quaternion kitTrayOrientation = math::Quaternion(1, 0, 0, 0);
+  this->kitTrayToAgv = math::Pose(kitTrayPosition, kitTrayOrientation);
 
   // Handle noise model settings.
   if (_sdf->HasElement("position_noise"))
@@ -225,6 +228,16 @@ void ROSLogicalCameraPlugin::OnImage(ConstLogicalCameraImagePtr &_msg)
       this->AddNoise(modelPose);
       this->AddModelToMsg(modelType, modelPose, imageMsg);
       this->PublishTF(modelPose, this->name + "_frame", this->modelFramePrefix + ariac::TrimNamespace(modelName) + "_frame");
+
+      // If AGVs are detected, also publish the pose to the kit tray.
+      if (modelType == "agv1")
+      {
+        this->PublishTF(this->kitTrayToAgv, this->modelFramePrefix + modelName + "_frame", this->modelFramePrefix + "kit_tray_1_frame");
+      }
+      if (modelType == "agv2")
+      {
+        this->PublishTF(this->kitTrayToAgv, this->modelFramePrefix + modelName + "_frame", this->modelFramePrefix + "kit_tray_2_frame");
+      }
     }
 
     // Check any children models

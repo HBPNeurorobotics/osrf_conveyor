@@ -122,6 +122,9 @@ namespace gazebo
     /// \brief Map of noise IDs to noise models
     protected: std::map<std::string, sensors::NoisePtr> noiseModels;
 
+    /// \brief Pose of kit trays w.r.t. their parent AGV
+    protected: math::Pose kitTrayToAgv;
+
     /// \brief TF broadcaster for model frames
     protected: boost::shared_ptr<tf::TransformBroadcaster> transformBroadcaster;
   };
