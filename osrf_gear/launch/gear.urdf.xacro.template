@@ -48,7 +48,7 @@
 
   <!-- sensor links and fixed joints -->
 @[for name, sensor in sensors.items()]@
-@[if not name.startswith('logical_camera')]@
+@[if not name.startswith('logical_camera')  # logical cameras publish their own TF pose dynamically]@
 
   <!-- a @(sensor.type) type sensor in the frame @(name)_frame -->
   <link name="@(name)_frame" />
