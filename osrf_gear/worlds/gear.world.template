@@ -374,7 +374,7 @@
     </model>
 
     <model name="faulty_part_detector_@(str(agv_id))">
-      <pose>0.3 @(3.5 if agv_id == 1 else -3.5) 1.5 0 1.2 @(-1.574 if agv_id == 1 else 1.574)</pose>
+      <pose>0.3 @(3.5 if agv_id == 1 else -3.5) 1.5 0 1.574 @(-1.574 if agv_id == 1 else 1.574)</pose>
       <plugin name="ros_logical_camera" filename="libROSLogicalCameraPlugin.so">
         <robotNamespace>ariac</robotNamespace>
         <position_noise>
@@ -429,10 +429,10 @@
 
         <sensor name="logical_camera" type="logical_camera">
           <logical_camera>
-            <near>0.2</near>
-            <far>1.0</far>
+            <near>0.73</near>
+            <far>0.78</far>
             <horizontal_fov>0.7</horizontal_fov>
-            <aspect_ratio>0.7</aspect_ratio>
+            <aspect_ratio>0.35</aspect_ratio>
           </logical_camera>
 
           <visualize>true</visualize>
