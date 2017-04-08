@@ -84,7 +84,7 @@ class AriacScorer
   protected: ariac::TrayScore ScoreTray(const ariac::KitTray & tray);
 
   /// \brief Calculate the score for the trays given the objects in them.
-  protected: void ScoreCurrentState();
+  //protected: void ScoreCurrentState();
 
   /// \brief Helper function for filling a Kit from a tray contents ROS message.
   public: static void FillKitFromMsg(const osrf_gear::TrayContents::ConstPtr & trayMsg, ariac::Kit & kit);
@@ -107,8 +107,9 @@ class AriacScorer
   /// \brief Mutex for protecting the kit trays being monitored.
   protected: mutable boost::mutex kitTraysMutex;
 
-  /// \brief Current order being monitored.
-  protected: ariac::Order currentOrder;
+  /// \brief Collection of orders that have been announced but are not yet complete.
+  /// The order at the back of the vector is the highest priority.
+  protected: std::vector<ariac::Order> ordersInProgress;
 
   /// \brief Flag for signalling new tray info to process.
   protected: bool newTrayInfoReceived = false;

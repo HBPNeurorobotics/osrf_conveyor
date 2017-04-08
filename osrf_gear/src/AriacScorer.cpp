@@ -85,6 +85,7 @@ bool AriacScorer::IsCurrentOrderComplete()
   return this->orderScore->isComplete();
 }
 
+/*
 /////////////////////////////////////////////////
 void AriacScorer::ScoreCurrentState()
 {
@@ -124,6 +125,7 @@ void AriacScorer::ScoreCurrentState()
   }
   gzdbg << "Finished scoring current state." << std::endl;
 }
+*/
 
 /////////////////////////////////////////////////
 std::vector<ariac::KitTray> AriacScorer::GetTrays()
@@ -178,22 +180,50 @@ ariac::TrayScore AriacScorer::ScoreTray(const ariac::KitTray & tray)
   ariac::KitType_t kitType = tray.currentKit.kitType;
   ariac::TrayScore score;
   score.trayID = kitType;
-  auto it = find_if(this->currentOrder.kits.begin(), this->currentOrder.kits.end(),
-    [&kitType](const ariac::Kit& kit) {
-      return kit.kitType == kitType;
-    });
-  if (it == this->currentOrder.kits.end())
+  ariac::Order relevantOrder;
+  ariac::Kit assignedKit;
+
+  for (const auto & order : this->ordersInProgress)
+  {
+    auto it = find_if(order.kits.begin(), order.kits.end(),
+      [&kitType](const ariac::Kit& kit) {
+        return kit.kitType == kitType;
+      });
+    if (it != order.kits.end())
+    {
+      assignedKit = *it;
+      relevantOrder = order;
+      break;
+    }
+  }
+  ariac::OrderID_t orderId = relevantOrder.orderID;
+  if (orderId == "")
   {
     gzdbg << "No known kit type: " << kitType << std::endl;
     gzdbg << "Known kit types: " << std::endl;
-    for (const ariac::Kit & kit : this->currentOrder.kits)
+    for (const ariac::Order & order : this->ordersInProgress)
     {
-      gzdbg << kit << std::endl;
+      for (const ariac::Kit & kit : order.kits)
+      {
+        gzdbg << kit.kitType << std::endl;
+      }
     }
-    gzdbg << "Current order: " << this->currentOrder << std::endl;
     return score;
   }
-  ariac::Kit assignedKit = *it;
+
+  // Determine order priority
+  auto it = find_if(this->ordersInProgress.begin(), this->ordersInProgress.end(),
+      [&orderId](const ariac::Order& o) {
+        return o.orderID == orderId;
+      });
+  auto index = it - this->ordersInProgress.begin();
+  std::cout << index << std::endl;
+  if (index != (this->ordersInProgress.size()-1))
+  {
+    gzdbg << "Low priority order" << std::endl;
+    score.scale = scoringParameters.lowPriorityFactor;
+  }
+
   auto numAssignedObjects = assignedKit.objects.size();
   auto numCurrentObjects = kit.objects.size();
   gzdbg << "Comparing the " << numAssignedObjects << " assigned objects with the current " << \
@@ -356,6 +386,7 @@ void AriacScorer::OnOrderReceived(const osrf_gear::Order::ConstPtr & orderMsg)
 /////////////////////////////////////////////////
 void AriacScorer::AssignOrder(const ariac::Order & order)
 {
+  gzdbg << "Assigned order: " << order << std::endl;
   ariac::OrderID_t orderID = order.orderID;
   if (this->gameScore.orderScores.find(orderID) == this->gameScore.orderScores.end())
   {
@@ -372,17 +403,21 @@ void AriacScorer::AssignOrder(const ariac::Order & order)
   }
   this->orderScore = &this->gameScore.orderScores[orderID];
 
-  this->currentOrder = order;
-  gzdbg << "Assigned order: " << this->currentOrder << std::endl;
+  this->ordersInProgress.push_back(order);
 }
 
 /////////////////////////////////////////////////
 ariac::OrderScore AriacScorer::UnassignCurrentOrder(double timeTaken)
 {
-  gzdbg << "Unassigning order: " << this->currentOrder.orderID << std::endl;
-  auto orderScore = *this->orderScore;
-  orderScore.timeTaken = timeTaken;
-  this->currentOrder.kits.clear();
+  gzdbg << "Unassigning order..." << std::endl;
+  ariac::OrderScore orderScore;
+  if (this->ordersInProgress.size())
+  {
+    gzdbg << "Unassigning order: " << this->ordersInProgress.back().orderID << std::endl;
+    this->ordersInProgress.pop_back();
+    orderScore = *this->orderScore;
+    orderScore.timeTaken = timeTaken;
+  }
   return orderScore;
 }
 

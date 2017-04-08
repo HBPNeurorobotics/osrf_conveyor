@@ -58,11 +58,12 @@ namespace ariac
             double partPose = 0.0;
             bool isComplete = false;  // all parts on the tray
             bool isSubmitted = false;  // the tray has been submitted for evaluation
+            double scale = 1.0;
 
             /// \brief Calculate the total score.
             double total() const
             {
-              return partPresence + allPartsBonus + partPose;
+              return (partPresence + allPartsBonus + partPose) * scale;
             }
   };
 
@@ -220,6 +221,7 @@ namespace ariac
     // The measured difference is from a top-down view of the tray, but only if
     // the quaternions are aligned.
     public: double orientationThresh = 0.1;
+    public: double lowPriorityFactor = 0.5;
   };
 
   /// \brief Determine the model name without namespace
