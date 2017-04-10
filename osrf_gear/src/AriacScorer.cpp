@@ -43,10 +43,18 @@ ariac::GameScore AriacScorer::GetGameScore()
 }
 
 /////////////////////////////////////////////////
-ariac::OrderScore AriacScorer::GetCurrentOrderScore()
+ariac::OrderScore AriacScorer::GetOrderScore(const ariac::OrderID_t & orderID)
 {
   boost::mutex::scoped_lock mutexLock(this->mutex);
-  return *this->orderScore;
+  ariac::OrderScore score;
+  auto it = this->gameScore.orderScores.find(orderID);
+  if (it == this->gameScore.orderScores.end())
+  {
+    gzdbg << "No known order with ID: " << orderID << std::endl;
+    return score;
+  }
+  score = it->second;
+  return score;
 }
 
 /////////////////////////////////////////////////
@@ -82,10 +90,11 @@ void AriacScorer::Update(double timeStep)
 }
 
 /////////////////////////////////////////////////
-bool AriacScorer::IsCurrentOrderComplete()
+bool AriacScorer::IsOrderComplete(const ariac::OrderID_t & orderID)
 {
+  auto orderScore = GetOrderScore(orderID);
   boost::mutex::scoped_lock mutexLock(this->mutex);
-  return this->orderScore->isComplete();
+  return orderScore.isComplete();
 }
 
 /*
@@ -219,11 +228,14 @@ ariac::TrayScore AriacScorer::SubmitTray(const ariac::KitTray & tray)
         return o.orderID == orderId;
       });
   auto index = it1 - this->ordersInProgress.begin();
-  std::cout << index << std::endl;
   if (index != (this->ordersInProgress.size()-1))
   {
     gzdbg << "Low priority order" << std::endl;
     trayScore.scale = scoringParameters.lowPriorityFactor;
+  }
+  else
+  {
+    gzdbg << "Normal priority order" << std::endl;
   }
 
   // Mark the tray as submitted
@@ -425,24 +437,36 @@ void AriacScorer::AssignOrder(const ariac::Order & order)
     }
     this->gameScore.orderScores[orderID] = orderScore;
   }
-  this->orderScore = &this->gameScore.orderScores[orderID];
 
   this->ordersInProgress.push_back(order);
-    std::cout << "================================" << this->ordersInProgress.size() << std::endl;
 }
 
 /////////////////////////////////////////////////
-ariac::OrderScore AriacScorer::UnassignCurrentOrder(double timeTaken)
+ariac::OrderScore AriacScorer::UnassignOrder(const ariac::OrderID_t & orderID, double timeTaken)
 {
-  boost::mutex::scoped_lock mutexLock(this->mutex);
-  gzdbg << "Unassigning order..." << std::endl;
+  gzdbg << "Unassign order request for: " << orderID << std::endl;
   ariac::OrderScore orderScore;
-  if (this->ordersInProgress.size())
+  boost::mutex::scoped_lock mutexLock(this->mutex);
+  auto it1 = find_if(this->ordersInProgress.begin(), this->ordersInProgress.end(),
+      [&orderID](const ariac::Order& o) {
+        return o.orderID == orderID;
+      });
+  if (it1 == this->ordersInProgress.end())
   {
-    this->ordersInProgress.back().timeTaken = timeTaken;
-    gzdbg << "Unassigning order: " << this->ordersInProgress.back().orderID << std::endl;
-    this->ordersInProgress.pop_back();
+    gzdbg << "No order with ID: " << orderID << std::endl;
+    return orderScore;
   }
+  auto it = this->gameScore.orderScores.find(orderID);
+  if (it == this->gameScore.orderScores.end())
+  {
+    gzdbg << "No order score with ID: " << orderID << std::endl;
+    return orderScore;
+  }
+  auto pOrderScore = (&it->second);
+  pOrderScore->timeTaken = timeTaken;
+  orderScore = *pOrderScore;
+  gzdbg << "Unassigning order: " << orderID << std::endl;
+  this->ordersInProgress.pop_back();
   return orderScore;
 }
 

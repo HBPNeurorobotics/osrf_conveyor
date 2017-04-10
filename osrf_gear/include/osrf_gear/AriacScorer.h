@@ -52,11 +52,11 @@ class AriacScorer
 
   /// \brief Get the score of the current order.
   /// \return True if the order is complete.
-  public: bool IsCurrentOrderComplete();
+  public: bool IsOrderComplete(const ariac::OrderID_t & orderID);
 
   /// \brief Get the score of the current order.
   /// \return The score for the order.
-  public: ariac::OrderScore GetCurrentOrderScore();
+  public: ariac::OrderScore GetOrderScore(const ariac::OrderID_t & orderID);
 
   /// \brief Assign an order to process.
   /// \param[in] order The order.
@@ -65,7 +65,7 @@ class AriacScorer
   /// \brief Stop processing the current order.
   /// \param[in] timeTaken The time spent on the order.
   /// \return The score for the order.
-  public: ariac::OrderScore UnassignCurrentOrder(double timeTaken = 0.0);
+  public: ariac::OrderScore UnassignOrder(const ariac::OrderID_t & orderID, double timeTaken = 0.0);
 
   /// \brief Get the kit trays the scorer is monitoring.
   /// \return Vector of kit tray states.
