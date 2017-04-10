@@ -104,8 +104,8 @@ class AriacScorer
   /// \brief The trays to monitor the score of.
   protected: std::map<ariac::TrayID_t, ariac::KitTray> kitTrays;
 
-  /// \brief Mutex for protecting the kit trays being monitored.
-  protected: mutable boost::mutex kitTraysMutex;
+  /// \brief Mutex for protecting the orders being scored.
+  protected: mutable boost::mutex mutex;
 
   /// \brief Collection of orders that have been announced but are not yet complete.
   /// The order at the back of the vector is the highest priority.

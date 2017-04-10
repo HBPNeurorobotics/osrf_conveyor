@@ -38,24 +38,26 @@ AriacScorer::~AriacScorer()
 /////////////////////////////////////////////////
 ariac::GameScore AriacScorer::GetGameScore()
 {
+  boost::mutex::scoped_lock mutexLock(this->mutex);
   return this->gameScore;
 }
 
 /////////////////////////////////////////////////
 ariac::OrderScore AriacScorer::GetCurrentOrderScore()
 {
+  boost::mutex::scoped_lock mutexLock(this->mutex);
   return *this->orderScore;
 }
 
 /////////////////////////////////////////////////
 void AriacScorer::Update(double timeStep)
 {
+  boost::mutex::scoped_lock mutexLock(this->mutex);
+
   if (this->isPartTravelling)
   {
     this->gameScore.partTravelTime += timeStep;
   }
-
-  boost::mutex::scoped_lock kitTraysLock(this->kitTraysMutex);
 
   if (this->newOrderReceived)
   {
@@ -82,6 +84,7 @@ void AriacScorer::Update(double timeStep)
 /////////////////////////////////////////////////
 bool AriacScorer::IsCurrentOrderComplete()
 {
+  boost::mutex::scoped_lock mutexLock(this->mutex);
   return this->orderScore->isComplete();
 }
 
@@ -130,7 +133,7 @@ void AriacScorer::ScoreCurrentState()
 /////////////////////////////////////////////////
 std::vector<ariac::KitTray> AriacScorer::GetTrays()
 {
-  boost::mutex::scoped_lock kitTraysLock(this->kitTraysMutex);
+  boost::mutex::scoped_lock mutexLock(this->mutex);
   std::vector<ariac::KitTray> kitTraysVec;
   for (auto const & item : this->kitTrays)
   {
@@ -142,6 +145,7 @@ std::vector<ariac::KitTray> AriacScorer::GetTrays()
 /////////////////////////////////////////////////
 bool AriacScorer::GetTrayById(const ariac::TrayID_t & trayID, ariac::KitTray & kitTray)
 {
+  boost::mutex::scoped_lock mutexLock(this->mutex);
   auto it = this->kitTrays.find(trayID);
   if (it == this->kitTrays.end())
   {
@@ -155,6 +159,7 @@ bool AriacScorer::GetTrayById(const ariac::TrayID_t & trayID, ariac::KitTray & k
 /////////////////////////////////////////////////
 ariac::TrayScore AriacScorer::SubmitTray(const ariac::KitTray & tray)
 {
+  boost::mutex::scoped_lock mutexLock(this->mutex);
   ariac::TrayScore trayScore;
   ariac::KitType_t kitType = tray.currentKit.kitType;
 
@@ -360,7 +365,7 @@ ariac::TrayScore AriacScorer::ScoreTray(const ariac::KitTray & tray, const ariac
 /////////////////////////////////////////////////
 void AriacScorer::OnTrayInfoReceived(const osrf_gear::TrayContents::ConstPtr & trayMsg)
 {
-  boost::mutex::scoped_lock kitTraysLock(this->kitTraysMutex);
+  boost::mutex::scoped_lock mutexLock(this->mutex);
 
   // Get the ID of the tray that the message is from.
   std::string trayID = trayMsg->tray;
@@ -384,6 +389,7 @@ void AriacScorer::OnTrayInfoReceived(const osrf_gear::TrayContents::ConstPtr & t
 /////////////////////////////////////////////////
 void AriacScorer::OnOrderReceived(const osrf_gear::Order::ConstPtr & orderMsg)
 {
+  boost::mutex::scoped_lock mutexLock(this->mutex);
   gzdbg << "Received an order" << std::endl;
   this->newOrderReceived = true;
 
@@ -403,6 +409,7 @@ void AriacScorer::OnOrderReceived(const osrf_gear::Order::ConstPtr & orderMsg)
 /////////////////////////////////////////////////
 void AriacScorer::AssignOrder(const ariac::Order & order)
 {
+  boost::mutex::scoped_lock mutexLock(this->mutex);
   gzdbg << "Assigned order: " << order << std::endl;
   ariac::OrderID_t orderID = order.orderID;
   if (this->gameScore.orderScores.find(orderID) == this->gameScore.orderScores.end())
@@ -421,19 +428,20 @@ void AriacScorer::AssignOrder(const ariac::Order & order)
   this->orderScore = &this->gameScore.orderScores[orderID];
 
   this->ordersInProgress.push_back(order);
+    std::cout << "================================" << this->ordersInProgress.size() << std::endl;
 }
 
 /////////////////////////////////////////////////
 ariac::OrderScore AriacScorer::UnassignCurrentOrder(double timeTaken)
 {
+  boost::mutex::scoped_lock mutexLock(this->mutex);
   gzdbg << "Unassigning order..." << std::endl;
   ariac::OrderScore orderScore;
   if (this->ordersInProgress.size())
   {
+    this->ordersInProgress.back().timeTaken = timeTaken;
     gzdbg << "Unassigning order: " << this->ordersInProgress.back().orderID << std::endl;
     this->ordersInProgress.pop_back();
-    orderScore = *this->orderScore;
-    orderScore.timeTaken = timeTaken;
   }
   return orderScore;
 }
@@ -477,5 +485,6 @@ void AriacScorer::FillKitFromMsg(const osrf_gear::Kit &kitMsg, ariac::Kit &kit)
 /////////////////////////////////////////////////
 void AriacScorer::OnGripperStateReceived(const osrf_gear::VacuumGripperState &stateMsg)
 {
+  boost::mutex::scoped_lock mutexLock(this->mutex);
   this->isPartTravelling = stateMsg.enabled && stateMsg.attached;
 }
