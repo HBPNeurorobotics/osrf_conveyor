@@ -155,31 +155,10 @@ bool AriacScorer::GetTrayById(const ariac::TrayID_t & trayID, ariac::KitTray & k
 /////////////////////////////////////////////////
 ariac::TrayScore AriacScorer::SubmitTray(const ariac::KitTray & tray)
 {
-  // Do not allow re-submission of trays - just return the existing score.
-  auto it = this->orderScore->trayScores.find(tray.currentKit.kitType);
-  if (it != this->orderScore->trayScores.end())
-  {
-    auto trayScore = it->second;
-    if (trayScore.isSubmitted)
-    {
-      gzdbg << "Kit already submitted, not rescoring: " << tray.currentKit.kitType << std::endl;
-      return trayScore;
-    }
-  }
-  auto trayScore = ScoreTray(tray);
-  gzdbg << "Score from tray '" << tray.trayID << "': " << trayScore.total() << std::endl;
-  this->orderScore->trayScores[tray.currentKit.kitType] = trayScore;
-  this->orderScore->trayScores[tray.currentKit.kitType].isSubmitted = true;
-  return trayScore;
-}
-
-/////////////////////////////////////////////////
-ariac::TrayScore AriacScorer::ScoreTray(const ariac::KitTray & tray)
-{
-  ariac::Kit kit = tray.currentKit;
+  ariac::TrayScore trayScore;
   ariac::KitType_t kitType = tray.currentKit.kitType;
-  ariac::TrayScore score;
-  score.trayID = kitType;
+
+  // Determine order and kit the tray is from
   ariac::Order relevantOrder;
   ariac::Kit assignedKit;
 
@@ -196,11 +175,13 @@ ariac::TrayScore AriacScorer::ScoreTray(const ariac::KitTray & tray)
       break;
     }
   }
+
+  // Ignore unknown trays
   ariac::OrderID_t orderId = relevantOrder.orderID;
   if (orderId == "")
   {
     gzdbg << "No known kit type: " << kitType << std::endl;
-    gzdbg << "Known kit types: " << std::endl;
+    gzdbg << "Known kit types are: " << std::endl;
     for (const ariac::Order & order : this->ordersInProgress)
     {
       for (const ariac::Kit & kit : order.kits)
@@ -208,21 +189,57 @@ ariac::TrayScore AriacScorer::ScoreTray(const ariac::KitTray & tray)
         gzdbg << kit.kitType << std::endl;
       }
     }
-    return score;
+    return trayScore;
   }
 
-  // Determine order priority
-  auto it = find_if(this->ordersInProgress.begin(), this->ordersInProgress.end(),
+  // Do not allow re-submission of trays - just return the existing score.
+  auto relevantOrderScore = &this->gameScore.orderScores[orderId];
+  auto it = relevantOrderScore->trayScores.find(kitType);
+  if (it != relevantOrderScore->trayScores.end())
+  {
+    trayScore = it->second;
+    if (trayScore.isSubmitted)
+    {
+      gzdbg << "Kit already submitted, not rescoring: " << kitType << std::endl;
+      return trayScore;
+    }
+  }
+
+  // Evaluate the tray against the kit it contains
+  trayScore = ScoreTray(tray, assignedKit);
+
+  // Scale the score if it's from a low-priority order
+  auto it1 = find_if(this->ordersInProgress.begin(), this->ordersInProgress.end(),
       [&orderId](const ariac::Order& o) {
         return o.orderID == orderId;
       });
-  auto index = it - this->ordersInProgress.begin();
+  auto index = it1 - this->ordersInProgress.begin();
   std::cout << index << std::endl;
   if (index != (this->ordersInProgress.size()-1))
   {
     gzdbg << "Low priority order" << std::endl;
-    score.scale = scoringParameters.lowPriorityFactor;
+    trayScore.scale = scoringParameters.lowPriorityFactor;
   }
+
+  // Mark the tray as submitted
+  trayScore.isSubmitted = true;
+
+  gzdbg << "Score from tray '" << tray.trayID << "': " << trayScore.total() << std::endl;
+
+  // Add the tray to the game score
+  relevantOrderScore->trayScores[kitType] = trayScore;
+
+  return trayScore;
+}
+
+/////////////////////////////////////////////////
+ariac::TrayScore AriacScorer::ScoreTray(const ariac::KitTray & tray, const ariac::Kit & assignedKit)
+{
+  ariac::Kit kit = tray.currentKit;
+  ariac::KitType_t kitType = tray.currentKit.kitType;
+  ariac::TrayScore score;
+  score.trayID = kitType;
+  gzdbg << "Scoring kit: " << kit << std::endl;
 
   auto numAssignedObjects = assignedKit.objects.size();
   auto numCurrentObjects = kit.objects.size();

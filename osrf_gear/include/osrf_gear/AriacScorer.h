@@ -81,7 +81,7 @@ class AriacScorer
   public: ariac::TrayScore SubmitTray(const ariac::KitTray & tray);
 
   /// \brief Calculate the score for a tray given the type of kit being built.
-  protected: ariac::TrayScore ScoreTray(const ariac::KitTray & tray);
+  protected: ariac::TrayScore ScoreTray(const ariac::KitTray & tray, const ariac::Kit & assignedKit);
 
   /// \brief Calculate the score for the trays given the objects in them.
   //protected: void ScoreCurrentState();
