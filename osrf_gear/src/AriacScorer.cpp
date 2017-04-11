@@ -223,12 +223,14 @@ ariac::TrayScore AriacScorer::SubmitTray(const ariac::KitTray & tray)
   trayScore = ScoreTray(tray, assignedKit);
 
   // Scale the score if it's from a low-priority order
+  // The most recently assigned order will be normal priority, all others will be low-priority.
+  // TODO: this class should not infer which orders are high priority, it should be explicit.
   auto it1 = find_if(this->ordersInProgress.begin(), this->ordersInProgress.end(),
       [&orderId](const ariac::Order& o) {
         return o.orderID == orderId;
       });
   auto index = it1 - this->ordersInProgress.begin();
-  if (index != (this->ordersInProgress.size()-1))
+  if ((std::vector<ariac::Order>::size_type)index != (this->ordersInProgress.size()-1))
   {
     gzdbg << "Low priority order" << std::endl;
     trayScore.scale = scoringParameters.lowPriorityFactor;
