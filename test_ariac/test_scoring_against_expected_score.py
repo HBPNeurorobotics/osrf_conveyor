@@ -15,14 +15,27 @@ class ScoringTester(ExampleNodeTester):
     def test(self):
         expectedScore = float(sys.argv[1])
         rospy.loginfo('Using expected score of: ' + str(expectedScore))
+        if len(sys.argv) > 2:
+            self.agv2_first = sys.argv[2] == '--agv2-first'
         self.prepare_tester()
 
         # Starting the competition will cause parts from the order to be spawned on AGV1
         self._test_start_comp()
 
-        # Submit the tray
-        self._test_agv_control()
-        time.sleep(5.0)
+        if self.agv2_first:
+            # Submit the tray on AGV 2
+            self._test_agv_control(index=2, kit_id='order_1_kit_0')
+            time.sleep(5.0)
+            # Submit the tray on AGV 1
+            self._test_agv_control()
+            time.sleep(5.0)
+        else:
+            # Submit the tray on AGV 1
+            self._test_agv_control()
+            time.sleep(5.0)
+            # Submit the tray on AGV 2
+            self._test_agv_control(index=2, kit_id='order_1_kit_0')
+            time.sleep(5.0)
 
         self.assertTrue(
             self.current_comp_score == expectedScore,
