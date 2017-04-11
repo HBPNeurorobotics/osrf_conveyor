@@ -58,6 +58,7 @@ void ROSLogicalCameraPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sd
   }
 
   this->world = _parent->GetWorld();
+  this->name = _parent->GetName();
 
   // Make sure the ROS node for Gazebo has already been initialized
   if (!ros::isInitialized())
@@ -112,7 +113,7 @@ void ROSLogicalCameraPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sd
     }
   }
 
-  this->modelFramePrefix = "";
+  this->modelFramePrefix = this->name + "_";
   if (_sdf->HasElement("model_frame_prefix"))
   {
     this->modelFramePrefix = _sdf->GetElement("model_frame_prefix")->Get<std::string>();
@@ -130,6 +131,9 @@ void ROSLogicalCameraPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sd
     gzerr << "No logical camera found on any link\n";
     return;
   }
+  math::Vector3 kitTrayPosition = math::Vector3(0, 0.15, 0.75);
+  math::Quaternion kitTrayOrientation = math::Quaternion(1, 0, 0, 0);
+  this->kitTrayToAgv = math::Pose(kitTrayPosition, kitTrayOrientation);
 
   // Handle noise model settings.
   if (_sdf->HasElement("position_noise"))
@@ -145,7 +149,6 @@ void ROSLogicalCameraPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sd
       "logical_camera");
   }
 
-  this->name = _parent->GetName();
   std::string imageTopic_ros = this->name;
   if (_sdf->HasElement("image_topic_ros")) {
     imageTopic_ros = _sdf->Get<std::string>("image_topic_ros");
@@ -222,9 +225,32 @@ void ROSLogicalCameraPlugin::OnImage(ConstLogicalCameraImagePtr &_msg)
       math::Quaternion modelOrientation = math::Quaternion(
         msgs::ConvertIgn(_msg->model(i).pose().orientation()));
       modelPose = math::Pose(modelPosition, modelOrientation);
-      this->AddNoise(modelPose);
+
+      std::string modelFrameId = this->modelFramePrefix + ariac::TrimNamespace(modelName) + "_frame";
+
+      bool isAgv = modelType == "agv1" || modelType == "agv2";
+      if (isAgv)
+      {
+        // If AGVs are detected, also publish the pose to the respective kit tray.
+        // Add noise to the kit tray pose, not the AGV base (it is too much noise by the time the tray pose is extrapolated)
+        auto noisyKitTrayPose = math::Pose(this->kitTrayToAgv);
+        this->AddNoise(noisyKitTrayPose);
+        if (modelType == "agv1")
+        {
+          this->PublishTF(noisyKitTrayPose, modelFrameId, this->modelFramePrefix + "kit_tray_1_frame");
+        }
+        else if (modelType == "agv2")
+        {
+          this->PublishTF(noisyKitTrayPose, modelFrameId, this->modelFramePrefix + "kit_tray_2_frame");
+        }
+      }
+      else
+      {
+        this->AddNoise(modelPose);
+      }
       this->AddModelToMsg(modelType, modelPose, imageMsg);
-      this->PublishTF(modelPose, this->name + "_frame", this->modelFramePrefix + ariac::TrimNamespace(modelName) + "_frame");
+      this->PublishTF(modelPose, this->name + "_frame", modelFrameId);
+
     }
 
     // Check any children models

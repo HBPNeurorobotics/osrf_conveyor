@@ -24,6 +24,8 @@ class TfTester(ExampleNodeTester):
         self.tfBuffer = tf2_ros.Buffer()
         self.listener = tf2_ros.TransformListener(self.tfBuffer)
 
+        self.camera_above_agv1 = 'logical_camera_2'
+        self.camera_above_agv2 = 'logical_camera_3'
         self._test_agv_pose()
         self._test_tray_pose()
         self._test_logical_camera_parts()
@@ -33,41 +35,50 @@ class TfTester(ExampleNodeTester):
         self._test_pose(
             [0.3, 3.3, 0.0],
             tf.transformations.quaternion_from_euler(0, 0, 3.1415),
-            'agv1_frame'
+            self.camera_above_agv1 + '_agv1_frame'
         )
 
         self._test_pose(
             [0.3, -3.3, 0.0],
             tf.transformations.quaternion_from_euler(0, 0, 0),
-            'agv2_frame'
+            self.camera_above_agv2 + '_agv2_frame'
         )
 
     def _test_tray_pose(self):
         self._test_pose(
             [0.3, 3.15, 0.75],
             tf.transformations.quaternion_from_euler(0, 0, 3.1415),
-            'kit_tray_1_frame'
+            self.camera_above_agv1 + '_kit_tray_1_frame'
+        )
+        self._test_pose(
+            [0.3, -3.15, 0.75],
+            tf.transformations.quaternion_from_euler(0, 0, 0),
+            self.camera_above_agv2 + '_kit_tray_2_frame'
         )
 
     def _test_logical_camera_parts(self):
         self._test_pose(
             [0.1, -0.2, 0.0],
             tf.transformations.quaternion_from_euler(0, 0, 0),
-            'piston_rod_part_1_frame', 'kit_tray_1_frame'
+            self.camera_above_agv1 + '_piston_rod_part_1_frame',
+            self.camera_above_agv1 + '_kit_tray_1_frame'
         )
 
     def _test_faulty_parts(self):
+        faulty_part_detector = 'faulty_part_detector_1'
         # This part is faulty and should be reported as such.
         self._test_pose(
             [0.1, -0.2, 0.0], tf.transformations.quaternion_from_euler(0, 0, 0),
-            'faulty_piston_rod_part_1_frame', 'kit_tray_1_frame'
+            faulty_part_detector + '_piston_rod_part_1_frame',
+            self.camera_above_agv1 + '_kit_tray_1_frame'
         )
 
         # This part is not faulty and should not be found by TF.
         with self.assertRaises(tf2.LookupException):
             self._test_pose(
                 [0.1, -0.2, 0.0], tf.transformations.quaternion_from_euler(0, 0, 0),
-                'faulty_piston_rod_part_2_frame', 'kit_tray_1_frame'
+                faulty_part_detector + '_faulty_piston_rod_part_2_frame',
+                self.camera_above_agv1 + '_kit_tray_1_frame'
             )
 
     def _test_pose(self, position, orientation, frame_id, parent_frame_id='world'):

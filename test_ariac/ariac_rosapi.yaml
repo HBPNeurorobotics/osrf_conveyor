@@ -23,7 +23,7 @@ topics:
 
   - topic: /tf
     type: tf2_msgs/TFMessage
-    num_publishers: 4
+    num_publishers: 2
     num_subscribers: -1
 
   - topic: /tf_static

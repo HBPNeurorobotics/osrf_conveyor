@@ -391,7 +391,6 @@
             <stddev>0.01</stddev>
           </noise>
         </orientation_noise>
-        <model_frame_prefix>faulty_</model_frame_prefix>
         <known_model_names>
 @[for part_name, part_info in faulty_parts.items()]@
           <name>@(part_name)</name>
