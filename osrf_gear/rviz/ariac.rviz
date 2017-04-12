@@ -61,6 +61,8 @@ Visualization Manager:
           Value: true
         base_link:
           Value: true
+        belt_frame:
+          Value: true
         bin1_frame:
           Value: true
         bin2_frame:
@@ -81,6 +83,10 @@ Visualization Manager:
           Value: true
         ee_link:
           Value: true
+        faulty_part_detector_1_frame:
+          Value: true
+        faulty_part_detector_2_frame:
+          Value: true
         forearm_link:
           Value: true
         laser_profiler_frame:
@@ -89,29 +95,29 @@ Visualization Manager:
           Value: true
         logical_camera_frame:
           Value: true
-        piston_rod_part_1:
+        logical_camera_piston_rod_part_10_frame:
           Value: true
-        piston_rod_part_10:
+        logical_camera_piston_rod_part_11_frame:
           Value: true
-        piston_rod_part_11:
+        logical_camera_piston_rod_part_12_frame:
           Value: true
-        piston_rod_part_12:
+        logical_camera_piston_rod_part_1_frame:
           Value: true
-        piston_rod_part_2:
+        logical_camera_piston_rod_part_2_frame:
           Value: true
-        piston_rod_part_3:
+        logical_camera_piston_rod_part_3_frame:
           Value: true
-        piston_rod_part_4:
+        logical_camera_piston_rod_part_4_frame:
           Value: true
-        piston_rod_part_5:
+        logical_camera_piston_rod_part_5_frame:
           Value: true
-        piston_rod_part_6:
+        logical_camera_piston_rod_part_6_frame:
           Value: true
-        piston_rod_part_7:
+        logical_camera_piston_rod_part_7_frame:
           Value: true
-        piston_rod_part_8:
+        logical_camera_piston_rod_part_8_frame:
           Value: true
-        piston_rod_part_9:
+        logical_camera_piston_rod_part_9_frame:
           Value: true
         proximity_sensor_frame:
           Value: true
@@ -120,6 +126,8 @@ Visualization Manager:
         tool0:
           Value: true
         upper_arm_link:
+          Value: true
+        vacuum_gripper_link:
           Value: true
         world:
           Value: true
@@ -140,6 +148,8 @@ Visualization Manager:
             {}
           agv2_load_point_frame:
             {}
+          belt_frame:
+            {}
           bin1_frame:
             {}
           bin2_frame:
@@ -158,6 +168,10 @@ Visualization Manager:
             {}
           break_beam_frame:
             {}
+          faulty_part_detector_1_frame:
+            {}
+          faulty_part_detector_2_frame:
+            {}
           laser_profiler_frame:
             {}
           linear_arm_actuator:
@@ -174,30 +188,32 @@ Visualization Manager:
                             {}
                           tool0:
                             {}
+                          vacuum_gripper_link:
+                            {}
           logical_camera_frame:
-            piston_rod_part_1:
+            logical_camera_piston_rod_part_10_frame:
               {}
-            piston_rod_part_10:
+            logical_camera_piston_rod_part_11_frame:
               {}
-            piston_rod_part_11:
+            logical_camera_piston_rod_part_12_frame:
               {}
-            piston_rod_part_12:
+            logical_camera_piston_rod_part_1_frame:
               {}
-            piston_rod_part_2:
+            logical_camera_piston_rod_part_2_frame:
               {}
-            piston_rod_part_3:
+            logical_camera_piston_rod_part_3_frame:
               {}
-            piston_rod_part_4:
+            logical_camera_piston_rod_part_4_frame:
               {}
-            piston_rod_part_5:
+            logical_camera_piston_rod_part_5_frame:
               {}
-            piston_rod_part_6:
+            logical_camera_piston_rod_part_6_frame:
               {}
-            piston_rod_part_7:
+            logical_camera_piston_rod_part_7_frame:
               {}
-            piston_rod_part_8:
+            logical_camera_piston_rod_part_8_frame:
               {}
-            piston_rod_part_9:
+            logical_camera_piston_rod_part_9_frame:
               {}
           proximity_sensor_frame:
             {}
@@ -262,5 +278,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1200
-  X: 56
+  X: 55
   Y: 0
