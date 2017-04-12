@@ -219,6 +219,16 @@ Visualization Manager:
             {}
       Update Interval: 0
       Value: true
+    - Alpha: 0.5
+      Buffer Length: 1
+      Class: rviz/Range
+      Color: 255; 255; 255
+      Enabled: true
+      Name: Range
+      Queue Size: 100
+      Topic: /ariac/proximity_sensor
+      Unreliable: false
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
