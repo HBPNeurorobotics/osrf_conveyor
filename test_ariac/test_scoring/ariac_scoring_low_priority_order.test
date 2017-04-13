@@ -10,5 +10,5 @@
               --verbose "/>
   <test pkg="test_ariac" type="test_scoring_against_expected_score.py"
         test-name="test_scoring_low_priority_order"
-        time-limit="60.0" args="19.5"/> <!-- 0.5*15 + 12 -->
+        time-limit="60.0" args="27"/> <!-- 15 + 12 -->
 </launch>

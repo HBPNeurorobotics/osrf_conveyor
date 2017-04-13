@@ -108,7 +108,6 @@ class AriacScorer
   protected: mutable boost::mutex mutex;
 
   /// \brief Collection of orders that have been announced but are not yet complete.
-  /// The order at the back of the vector is the highest priority.
   protected: std::vector<ariac::Order> ordersInProgress;
 
   /// \brief Flag for signalling new tray info to process.
