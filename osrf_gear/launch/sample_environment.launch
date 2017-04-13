@@ -1,4 +1,4 @@
 <launch>
   <node name="ariac_sim" pkg="osrf_gear" type="gear.py"
-        args="-f $(find osrf_gear)/config/sample.yaml" output="screen"/>
+        args="--development-mode -f $(find osrf_gear)/config/sample.yaml" output="screen"/>
 </launch>

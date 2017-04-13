@@ -90,6 +90,8 @@ def prepare_arguments(parser):
         help='output additional logging to console')
     add('-o', '--output', default='/tmp/ariac/',
         help='directory in which to output the generated files')
+    add('--development-mode', '-d', action='store_true', default=False,
+        help='if true the competition mode environment variable will not be set (default false)')
     add('--no-gui', action='store_true', default=False,
         help="don't run the gazebo client gui")
     mex_group = parser.add_mutually_exclusive_group(required=False)
@@ -514,6 +516,9 @@ def main(sysargv=None):
         cmd += ['verbose:=true']
     if args.no_gui:
         cmd += ['gui:=false']
+
+    if not args.development_mode:
+        os.environ['ARIAC_COMPETITION'] = '1'
 
     print("Running command: " + ' '.join(cmd))
     if not args.dry_run:
