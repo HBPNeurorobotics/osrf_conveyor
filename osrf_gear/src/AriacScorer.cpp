@@ -85,6 +85,16 @@ void AriacScorer::Update(double timeStep)
     }
   }
 
+  // Update the time spent on all active orders
+  for (auto & item : this->gameScore.orderScores)
+  {
+    auto pOrderScore = &(item.second);
+    if (!pOrderScore->isComplete())
+    {
+      pOrderScore->timeTaken += timeStep;
+    }
+  }
+
   this->newOrderReceived = false;
   this->newTrayInfoReceived = false;
 }
@@ -426,7 +436,7 @@ void AriacScorer::AssignOrder(const ariac::Order & order)
 }
 
 /////////////////////////////////////////////////
-ariac::OrderScore AriacScorer::UnassignOrder(const ariac::OrderID_t & orderID, double timeTaken)
+ariac::OrderScore AriacScorer::UnassignOrder(const ariac::OrderID_t & orderID)
 {
   gzdbg << "Unassign order request for: " << orderID << std::endl;
   ariac::OrderScore orderScore;
@@ -446,9 +456,7 @@ ariac::OrderScore AriacScorer::UnassignOrder(const ariac::OrderID_t & orderID, d
     gzdbg << "No order score with ID: " << orderID << std::endl;
     return orderScore;
   }
-  auto pOrderScore = (&it->second);
-  pOrderScore->timeTaken = timeTaken;
-  orderScore = *pOrderScore;
+  orderScore = it->second;
   gzdbg << "Unassigning order: " << orderID << std::endl;
   this->ordersInProgress.pop_back();
   return orderScore;

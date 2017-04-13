@@ -830,6 +830,6 @@ void ROSAriacTaskManagerPlugin::StopCurrentOrder()
     auto orderID = this->dataPtr->ordersInProgress.top().orderID;
     gzdbg << "Stopping order: " << orderID << std::endl;
     this->dataPtr->ordersInProgress.pop();
-    this->dataPtr->ariacScorer.UnassignOrder(orderID, this->dataPtr->timeSpentOnCurrentOrder);
+    this->dataPtr->ariacScorer.UnassignOrder(orderID);
   }
 }

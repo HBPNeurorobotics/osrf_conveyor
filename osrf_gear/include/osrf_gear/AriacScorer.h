@@ -65,7 +65,7 @@ class AriacScorer
   /// \brief Stop processing the current order.
   /// \param[in] timeTaken The time spent on the order.
   /// \return The score for the order.
-  public: ariac::OrderScore UnassignOrder(const ariac::OrderID_t & orderID, double timeTaken = 0.0);
+  public: ariac::OrderScore UnassignOrder(const ariac::OrderID_t & orderID);
 
   /// \brief Get the kit trays the scorer is monitoring.
   /// \return Vector of kit tray states.
