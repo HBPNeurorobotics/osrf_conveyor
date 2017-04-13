@@ -45,8 +45,8 @@ models_over_bins:
   bin8:
     models:
       pulley_part:
-        xyz_start: [0.1, 0.1, 0.0]
-        xyz_end: [0.5, 0.5, 0.0]
+        xyz_start: [0.15, 0.15, 0.0]
+        xyz_end: [0.45, 0.45, 0.0]
         rpy: [0, 0, 'pi/4']
         num_models_x: 2
         num_models_y: 2
