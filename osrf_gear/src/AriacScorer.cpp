@@ -73,18 +73,6 @@ void AriacScorer::Update(double timeStep)
     this->AssignOrder(this->newOrder);
   }
 
-  // During the competition, this environment variable will be set.
-  auto v = std::getenv("ARIAC_COMPETITION");
-  if (!v)
-  {
-    // Check score of trays in progress.
-    if (this->newOrderReceived || this->newTrayInfoReceived)
-    {
-      // Calculate the hypothetical score of each tray.
-      // this->ScoreCurrentState();
-    }
-  }
-
   // Update the time spent on all active orders
   for (auto & item : this->gameScore.orderScores)
   {
@@ -106,48 +94,6 @@ bool AriacScorer::IsOrderComplete(const ariac::OrderID_t & orderID)
   boost::mutex::scoped_lock mutexLock(this->mutex);
   return orderScore.isComplete();
 }
-
-/*
-/////////////////////////////////////////////////
-void AriacScorer::ScoreCurrentState()
-{
-  gzdbg << "Scoring current state." << std::endl;
-  for (const auto & item : this->kitTrays)
-  {
-    auto trayID = item.first;
-  gzdbg << "Scoring tray: " << trayID << std::endl;
-    auto tray = item.second;
-    if (tray.currentKit.kitType != "")
-    {
-      auto trayScore = ScoreTray(tray);
-          std::ostringstream logStream;
-      logStream << "Score from tray '" << trayID << \
-        "' with kit type '" << tray.currentKit.kitType << "': " << trayScore.total();
-      ROS_INFO_STREAM(logStream.str().c_str());
-      gzdbg << logStream.str().c_str() << std::endl;
-    }
-    else
-    {
-      for (const auto & kit : this->currentOrder.kits)
-      {
-        auto orderKitType = kit.kitType;
-        tray.currentKit.kitType = orderKitType;
-        auto trayScore = ScoreTray(tray);
-        if (trayScore.total() > 0)
-        {
-          std::ostringstream logStream;
-          logStream << "Score from tray '" << trayID \
-            << "' if it were to have kit type '" << orderKitType << "': " \
-            << trayScore.total();
-          ROS_INFO_STREAM(logStream.str().c_str());
-          gzdbg << logStream.str().c_str() << std::endl;
-        }
-      }
-    }
-  }
-  gzdbg << "Finished scoring current state." << std::endl;
-}
-*/
 
 /////////////////////////////////////////////////
 std::vector<ariac::KitTray> AriacScorer::GetTrays()
