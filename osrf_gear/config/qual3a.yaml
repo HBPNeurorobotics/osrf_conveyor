@@ -1,7 +1,8 @@
 # In this scenario:
+# - The conveyor belt is not used.
 # - There are two orders of one tray each:
 #   - The second will interrupt the first at an inconvenient time.
-#   - The second has no time limit.
+#   - The second has no time limit, but should be completed as fast as possible.
 #   - After the second order is complete, the first order is to be resumed.
 # - Faulty parts should not be used to build the kits.
 
@@ -72,7 +73,7 @@ orders:
           rpy: [0, 0, 0]
 
 models_over_bins:
-  bin8:
+  bin7:
     models:
       gasket_part:
         xyz_start: [0.2, 0.2, 0.0]
@@ -81,7 +82,7 @@ models_over_bins:
         num_models_x: 2
         num_models_y: 2
 
-  bin5:
+  bin8:
     models:
       disk_part:
         xyz_start: [0.2, 0.2, 0.0]
@@ -90,7 +91,7 @@ models_over_bins:
         num_models_x: 2
         num_models_y: 2
 
-  bin7:
+  bin6:
     models:
       piston_rod_part:
         xyz_start: [0.2, 0.2, 0.0]
@@ -99,7 +100,7 @@ models_over_bins:
         num_models_x: 2
         num_models_y: 2
 
-  bin6:
+  bin5:
     models:
        gear_part:
         xyz_start: [0.1, 0.1, 0.0]
@@ -111,7 +112,6 @@ models_over_bins:
 faulty_parts:
   - piston_rod_part_1
   - piston_rod_part_3
-  - gasket_part_clone_0
   - gasket_part_4
   - gasket_part_3
 
