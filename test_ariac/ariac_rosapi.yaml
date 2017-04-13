@@ -153,9 +153,6 @@ services:
   - service: /ariac/conveyor/control
     type: osrf_gear/ConveyorBeltControl
 
-  - service: /ariac/population/control
-    type: osrf_gear/PopulationControl
-
   #####################################
   # Arm
   - service: /ariac/gripper/control
