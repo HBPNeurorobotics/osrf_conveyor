@@ -52,11 +52,11 @@ class AriacScorer
 
   /// \brief Get the score of the current order.
   /// \return True if the order is complete.
-  public: bool IsCurrentOrderComplete();
+  public: bool IsOrderComplete(const ariac::OrderID_t & orderID);
 
   /// \brief Get the score of the current order.
   /// \return The score for the order.
-  public: ariac::OrderScore GetCurrentOrderScore();
+  public: ariac::OrderScore GetOrderScore(const ariac::OrderID_t & orderID);
 
   /// \brief Assign an order to process.
   /// \param[in] order The order.
@@ -65,7 +65,7 @@ class AriacScorer
   /// \brief Stop processing the current order.
   /// \param[in] timeTaken The time spent on the order.
   /// \return The score for the order.
-  public: ariac::OrderScore UnassignCurrentOrder(double timeTaken = 0.0);
+  public: ariac::OrderScore UnassignOrder(const ariac::OrderID_t & orderID);
 
   /// \brief Get the kit trays the scorer is monitoring.
   /// \return Vector of kit tray states.
@@ -81,10 +81,7 @@ class AriacScorer
   public: ariac::TrayScore SubmitTray(const ariac::KitTray & tray);
 
   /// \brief Calculate the score for a tray given the type of kit being built.
-  protected: ariac::TrayScore ScoreTray(const ariac::KitTray & tray);
-
-  /// \brief Calculate the score for the trays given the objects in them.
-  protected: void ScoreCurrentState();
+  protected: ariac::TrayScore ScoreTray(const ariac::KitTray & tray, const ariac::Kit & assignedKit);
 
   /// \brief Helper function for filling a Kit from a tray contents ROS message.
   public: static void FillKitFromMsg(const osrf_gear::TrayContents::ConstPtr & trayMsg, ariac::Kit & kit);
@@ -104,11 +101,11 @@ class AriacScorer
   /// \brief The trays to monitor the score of.
   protected: std::map<ariac::TrayID_t, ariac::KitTray> kitTrays;
 
-  /// \brief Mutex for protecting the kit trays being monitored.
-  protected: mutable boost::mutex kitTraysMutex;
+  /// \brief Mutex for protecting the orders being scored.
+  protected: mutable boost::mutex mutex;
 
-  /// \brief Current order being monitored.
-  protected: ariac::Order currentOrder;
+  /// \brief Collection of orders that have been announced but are not yet complete.
+  protected: std::vector<ariac::Order> ordersInProgress;
 
   /// \brief Flag for signalling new tray info to process.
   protected: bool newTrayInfoReceived = false;

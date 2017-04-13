@@ -65,8 +65,8 @@ class ExampleNodeTester(unittest.TestCase):
             error += abs(position - 0.0)
         self.assertTrue(error < 0.5, 'Arm was not properly sent to zero state')
 
-    def _test_agv_control(self):
-        success = ariac_example.control_agv(1, 'order_0_kit_0')
+    def _test_agv_control(self, index=1, kit_id='order_0_kit_0'):
+        success = ariac_example.control_agv(index, kit_id)
         self.assertTrue(success, 'Failed to control AGV')
 
     def _test_comp_end(self):

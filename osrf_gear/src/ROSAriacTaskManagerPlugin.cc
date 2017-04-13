@@ -528,7 +528,7 @@ void ROSAriacTaskManagerPlugin::OnUpdate()
       this->dataPtr->timeSpentOnCurrentOrder = this->dataPtr->ordersInProgress.top().timeTaken;
 
       // Check for completed orders.
-      bool orderCompleted = this->dataPtr->ariacScorer.IsCurrentOrderComplete();
+      bool orderCompleted = this->dataPtr->ariacScorer.IsOrderComplete(orderID);
       if (orderCompleted)
       {
         std::ostringstream logMessage;
@@ -559,6 +559,7 @@ void ROSAriacTaskManagerPlugin::OnUpdate()
   }
   else if (this->dataPtr->currentState == "end_game")
   {
+    this->dataPtr->currentGameScore = this->dataPtr->ariacScorer.GetGameScore();
     if (this->dataPtr->gameStartTime != common::Time())
     {
       this->dataPtr->currentGameScore.totalProcessTime =
@@ -720,7 +721,7 @@ bool ROSAriacTaskManagerPlugin::HandleSubmitTrayService(
 
   if (this->dataPtr->competitonMode && callerName.compare("/gazebo") != 0)
   {
-    std::string errStr = "Competition is running so this service is not enabled.";
+    std::string errStr = "Competition mode is enabled so this service is not enabled.";
     gzerr << errStr << std::endl;
     ROS_ERROR_STREAM(errStr);
     res.success = false;
@@ -823,18 +824,12 @@ void ROSAriacTaskManagerPlugin::AssignOrder(const ariac::Order & order)
 /////////////////////////////////////////////////
 void ROSAriacTaskManagerPlugin::StopCurrentOrder()
 {
+  // Stop the current order; any previous orders that are incomplete will automatically be resumed
   if (this->dataPtr->ordersInProgress.size())
   {
-    gzdbg << "Stopping order: " << this->dataPtr->ordersInProgress.top().orderID << std::endl;
+    auto orderID = this->dataPtr->ordersInProgress.top().orderID;
+    gzdbg << "Stopping order: " << orderID << std::endl;
     this->dataPtr->ordersInProgress.pop();
-    this->dataPtr->ariacScorer.UnassignCurrentOrder(this->dataPtr->timeSpentOnCurrentOrder);
-  }
-
-  if (this->dataPtr->ordersInProgress.size())
-  {
-    // Assign the previous order to the scorer
-    auto order = this->dataPtr->ordersInProgress.top();
-    gzdbg << "Restoring order: " << order.orderID << std::endl;
-    this->AssignOrder(order);
+    this->dataPtr->ariacScorer.UnassignOrder(orderID);
   }
 }
