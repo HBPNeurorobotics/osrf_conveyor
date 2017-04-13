@@ -69,9 +69,9 @@
 
         <logical_camera>
           <near>0.2</near>
-          <far>2.0</far>
-          <horizontal_fov>1.04719755</horizontal_fov>
-          <aspect_ratio>1.778</aspect_ratio>
+          <far>0.75</far>
+          <horizontal_fov>1.1</horizontal_fov>
+          <aspect_ratio>1.5</aspect_ratio>
         </logical_camera>
 
         <visualize>true</visualize>
