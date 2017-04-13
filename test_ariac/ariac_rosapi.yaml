@@ -121,12 +121,7 @@ topics:
     num_subscribers: 0
 
   - topic: /ariac/proximity_sensor_1
-    type: osrf_gear/Proximity
-    num_publishers: 1
-    num_subscribers: 0
-
-  - topic: /ariac/proximity_sensor_1_change
-    type: osrf_gear/Proximity
+    type: sensor_msgs/Range
     num_publishers: 1
     num_subscribers: 0
 

@@ -24,6 +24,7 @@
 #include <osrf_gear/Proximity.h>
 #include <sensor_msgs/JointState.h>
 #include <sensor_msgs/LaserScan.h>
+#include <sensor_msgs/Range.h>
 #include <std_msgs/Float32.h>
 #include <std_msgs/String.h>
 #include <std_srvs/Trigger.h>
@@ -160,9 +161,9 @@ private:
   bool has_been_zeroed_;
 };
 
-void proximity_sensor_callback(const osrf_gear::Proximity::ConstPtr & msg) {
-  if (msg->object_detected) {  // If there is an object in proximity.
-    ROS_INFO("Proximity sensor triggered.");
+void proximity_sensor_callback(const sensor_msgs::Range::ConstPtr & msg) {
+  if ((msg->max_range - msg->range) > 0.01) {  // If there is an object in proximity.
+    ROS_INFO_THROTTLE(1, "Proximity sensor sees something.");
   }
 }
 
@@ -207,9 +208,9 @@ int main(int argc, char ** argv) {
     &MyCompetitionClass::joint_state_callback, &comp_class);
 
   // %Tag(SUB_FUNC)%
-  // Subscribe to the '/ariac/proximity_sensor_1_change' topic.
+  // Subscribe to the '/ariac/proximity_sensor_1' topic.
   ros::Subscriber proximity_sensor_subscriber = node.subscribe(
-    "/ariac/proximity_sensor_1_change", 10, proximity_sensor_callback);
+    "/ariac/proximity_sensor_1", 10, proximity_sensor_callback);
   // %EndTag(SUB_FUNC)%
 
   // Subscribe to the '/ariac/break_beam_1_change' topic.

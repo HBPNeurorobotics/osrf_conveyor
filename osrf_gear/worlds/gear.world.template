@@ -147,52 +147,42 @@
           </geometry>
         </collision>
         <sensor name="@(name)" type="ray">
-          <plugin name="proximity_ray_plugin" filename="libROSProximityRayPlugin.so" >
+          <pose>0.023 0 0 0 0 0</pose>
+          <plugin filename="libgazebo_ros_range.so" name="gazebo_ros_range">
+            <gaussianNoise>0.001</gaussianNoise>
+            <alwaysOn>true</alwaysOn>
+            <updateRate>20</updateRate>
+            <topicName>@(name)</topicName>
+            <frameName>@(name)_frame</frameName>
             <robotNamespace>ariac</robotNamespace>
-            <time_delay>0.02</time_delay><!-- this modifies the update rate of the ray sensor -->
-            <!-- the ray sensor doesn't have setters for these yet unfortunately so they have to be set in the ray tags -->
-            <!--
-            <sensing_range_min>0.06</sensing_range_min>
-            <sensing_range_max>0.12</sensing_range_max>
-            <resolution>0.001</resolution>
-            -->
+            <fov>0.125</fov>
+            <radiation>ultrasound</radiation>
           </plugin>
 
-          <!-- using min angle of 0.005: -->
-          <!-- dx = diameter / 0.01 - length -->
-          <pose>-1.154 0 0 0 0 0</pose>                   <!-- -dx 0 0 0 0 0 -->
           <ray>
             <range>
-              <min>1.214</min>                            <!-- dx + min range -->
-              <max>1.274</max>                            <!-- dx + max range -->
-              <resolution>0.001</resolution>
+              <min>0.01</min>
+              <max>0.15</max>
+              <resolution>0.01</resolution>
             </range>
-
-            <!-- nothing below this line really needs to be modified upon change of sensor model -->
-
             <scan>
               <horizontal>
-                <samples>10</samples>
-                <resolution>1</resolution>
-                <min_angle>-0.005</min_angle>
-                <max_angle>0.005</max_angle>
-              </horizontal>
-              <vertical>
-                <samples>10</samples>
-                <resolution>1</resolution>
-                <min_angle>-0.005</min_angle>
-                <max_angle>0.005</max_angle>
-              </vertical>
+                  <samples>5</samples>
+                  <resolution>1.0</resolution>
+                  <min_angle>-0.0625</min_angle>
+                  <max_angle>0.0625</max_angle>
+                </horizontal>
+                <vertical>
+                  <samples>5</samples>
+                  <resolution>1</resolution>
+                  <min_angle>-0.0625</min_angle>
+                  <max_angle>0.0625</max_angle>
+                </vertical>
             </scan>
-            <noise>
-              <type>gaussian</type>
-              <mean>0.0</mean>
-              <stddev>0.001</stddev>
-            </noise>
           </ray>
 
           <always_on>1</always_on>
-          <visualize>false</visualize>
+          <visualize>true</visualize>
         </sensor>
         <gravity>false</gravity>
         <inertial>
