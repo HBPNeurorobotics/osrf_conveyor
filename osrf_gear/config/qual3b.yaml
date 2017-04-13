@@ -3,11 +3,12 @@
 
 options:
   insert_models_over_bins: true
-  fill_demo_tray: true
+  fill_demo_tray: false
   gazebo_state_logging: true
   model_type_aliases:
     order_part1: piston_rod_part
     order_part2: gear_part
+    order_part3: pulley_part
 
 orders:
   order_0:
@@ -15,20 +16,20 @@ orders:
     announcement_condition_value: 0.0
     parts:
       part_0:
-        type: order_part1
+        type: order_part3
         pose:
-          xyz: [0.1, -0.2, 0]
+          xyz: [0.12, -0.2, 0]
           rpy: ['pi', 0, 0]
       part_1:
-        type: order_part1
+        type: order_part3
         pose:
-          xyz: [-0.1, -0.2, 0]
+          xyz: [-0.12, -0.2, 0]
           rpy: [0, 'pi', 0]
       part_2:
-        type: order_part2
+        type: order_part1
         pose:
           xyz: [0.15, 0.15, 0]
-          rpy: [0, 'pi/2', 0]
+          rpy: [0, 0, 0]
       part_3:
         type: order_part2
         pose:
@@ -43,9 +44,9 @@ orders:
 models_over_bins:
   bin8:
     models:
-      gasket_part:
-        xyz_start: [0.2, 0.2, 0.0]
-        xyz_end: [0.4, 0.4, 0.0]
+      pulley_part:
+        xyz_start: [0.15, 0.15, 0.0]
+        xyz_end: [0.45, 0.45, 0.0]
         rpy: [0, 0, 'pi/4']
         num_models_x: 2
         num_models_y: 2
