@@ -65,11 +65,11 @@ class TfTester(ExampleNodeTester):
         )
 
     def _test_faulty_parts(self):
-        faulty_part_detector = 'faulty_part_detector_1'
+        quality_control_sensor = 'quality_control_sensor_1'
         # This part is faulty and should be reported as such.
         self._test_pose(
             [0.1, -0.2, 0.0], tf.transformations.quaternion_from_euler(0, 0, 0),
-            faulty_part_detector + '_piston_rod_part_1_frame',
+            quality_control_sensor + '_piston_rod_part_1_frame',
             self.camera_above_agv1 + '_kit_tray_1_frame'
         )
 
@@ -77,7 +77,7 @@ class TfTester(ExampleNodeTester):
         with self.assertRaises(tf2.LookupException):
             self._test_pose(
                 [0.1, -0.2, 0.0], tf.transformations.quaternion_from_euler(0, 0, 0),
-                faulty_part_detector + '_faulty_piston_rod_part_2_frame',
+                quality_control_sensor + '_piston_rod_part_2_frame',
                 self.camera_above_agv1 + '_kit_tray_1_frame'
             )
 
