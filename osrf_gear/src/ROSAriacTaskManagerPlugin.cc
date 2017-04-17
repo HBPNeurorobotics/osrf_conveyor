@@ -607,9 +607,20 @@ void ROSAriacTaskManagerPlugin::ProcessOrdersToAnnounce()
   auto nextOrder = this->dataPtr->ordersToAnnounce.front();
   bool interruptOnUnwantedParts = nextOrder.interruptOnUnwantedParts > 0;
   bool interruptOnWantedParts = nextOrder.interruptOnWantedParts > 0;
+  bool noActiveOrder = this->dataPtr->ordersInProgress.empty();
+  auto elapsed = this->dataPtr->world->GetSimTime() - this->dataPtr->gameStartTime;
+  bool announceNextOrder = false;
+
+  // Check whether announce a new order from the list.
+  // Announce next order if the appropriate amount of time has elapsed
+  announceNextOrder |= elapsed.Double() >= nextOrder.startTime;
+  // Announce next order if there is no active order and we are waiting to interrupt
+  announceNextOrder |= noActiveOrder && (interruptOnWantedParts || interruptOnUnwantedParts);
+
   int maxNumUnwantedParts = 0;
   int maxNumWantedParts = 0;
-  if (interruptOnWantedParts || interruptOnUnwantedParts)
+  // Check if it's time to interrupt (skip if we're already interrupting anyway)
+  if (!announceNextOrder && (interruptOnWantedParts || interruptOnUnwantedParts))
   {
     // Check if the parts in the trays are enough to interrupt the current order
 
@@ -654,14 +665,13 @@ void ROSAriacTaskManagerPlugin::ProcessOrdersToAnnounce()
     }
     maxNumUnwantedParts = *std::max_element(numUnwantedPartsOnTrays.begin(), numUnwantedPartsOnTrays.end());
     maxNumWantedParts = *std::max_element(numWantedPartsOnTrays.begin(), numWantedPartsOnTrays.end());
+
+    // Announce next order if the appropriate number of wanted/unwanted parts are detected
+    announceNextOrder |= interruptOnWantedParts && (maxNumWantedParts >= nextOrder.interruptOnWantedParts);
+    announceNextOrder |= interruptOnUnwantedParts && (maxNumUnwantedParts >= nextOrder.interruptOnUnwantedParts);
   }
 
-  // Check whether announce a new order from the list.
-  auto elapsed = this->dataPtr->world->GetSimTime() - this->dataPtr->gameStartTime;
-  if ((elapsed.Double() >= nextOrder.startTime) ||
-    (interruptOnUnwantedParts && maxNumUnwantedParts >= nextOrder.interruptOnUnwantedParts) ||
-    (interruptOnWantedParts && maxNumWantedParts >= nextOrder.interruptOnWantedParts)
-    )
+  if (announceNextOrder)
   {
     gzdbg << "New order to announce: " << nextOrder.orderID << std::endl;
 
