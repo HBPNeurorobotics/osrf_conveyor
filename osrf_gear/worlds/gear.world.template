@@ -244,6 +244,7 @@
           </geometry>
         </collision>
         <sensor name="laser_profiler" type="ray">
+          <update_rate>100</update_rate>
           <pose>0 0 0.06 0 0 0</pose>
           <plugin name="proximity_ray_plugin" filename="libgazebo_ros_laser.so" >
             <!-- If the namespace is set to ariac, the frame will also be namespaced -->
@@ -260,7 +261,7 @@
             </range>
             <scan>
               <horizontal>
-                <samples>100</samples>
+                <samples>400</samples>
                 <resolution>1</resolution>
                 <min_angle>-0.251</min_angle>
                 <max_angle>0.251</max_angle>
