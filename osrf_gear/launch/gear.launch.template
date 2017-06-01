@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
 <launch>
+  <arg name="competition_mode" value="$(optenv ARIAC_COMPETITION false)" />
+
   <!-- run a relay to make joint_states available on ariac/joint_states -->
   <node name="relay_joint_states" pkg="topic_tools" type="relay"
         args="/joint_states /ariac/joint_states" required="true" output="log" />
@@ -17,11 +19,14 @@
   <!-- run startup script -->
   <node name="startup_ariac" pkg="osrf_gear" type="startup.sh" output="screen" />
 
+  <arg unless="$(arg competition_mode)" name="enable_gz_ros_network" value="true"/>
+  <arg     if="$(arg competition_mode)" name="enable_gz_ros_network" value="false"/>
   <!-- startup simulated world -->
   <include file="$(find osrf_gear)/launch/empty_world.launch">
     <arg name="world_name" default="$(arg world_path)"/>
     <!-- Always start paused because the arm spawn needs it that way. -->
     <arg name="paused" value="true"/>
+    <arg name="enable_ros_network" value="$(arg enable_gz_ros_network)"/>
     <arg name="gui" value="$(arg gui)"/>
     <arg name="extra_gazebo_args" value="@('-r --record_path=$(arg state_log_dir)' if options['gazebo_state_logging'] else '')" />
     <arg name="debug" value="$(arg debug)" />
