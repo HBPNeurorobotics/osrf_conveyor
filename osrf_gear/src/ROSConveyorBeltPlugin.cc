@@ -77,7 +77,6 @@ bool ROSConveyorBeltPlugin::OnControlCommand(ros::ServiceEvent<
   gzdbg << "Conveyor control service called by: " << callerName << std::endl;
 
   // During the competition, this environment variable will be set.
-  /* // TODO(dhood): re-enable this once qualifiers are finished
   auto compRunning = std::getenv("ARIAC_COMPETITION");
   if (compRunning && callerName.compare("/gazebo") != 0)
   {
@@ -87,7 +86,6 @@ bool ROSConveyorBeltPlugin::OnControlCommand(ros::ServiceEvent<
     res.success = false;
     return true;
   }
-  */
   this->SetPower(req.state.power);
   res.success = true;
   return true;
