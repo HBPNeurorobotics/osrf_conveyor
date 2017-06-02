@@ -7,7 +7,7 @@
               $(find test_ariac)/test/scoring_base_order_interrupted.yaml
               $(find test_ariac)/test/scoring_perfect_kit_both_trays.yaml
               $(find osrf_gear)/config/sample_user_config.yaml
-              --verbose "/>
+              --development-mode --verbose "/>
   <test pkg="test_ariac" type="test_scoring_against_expected_score.py"
         test-name="test_scoring_low_priority_order"
         time-limit="60.0" args="27"/> <!-- 15 + 12 -->
