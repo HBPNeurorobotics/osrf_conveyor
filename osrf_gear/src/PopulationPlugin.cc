@@ -373,6 +373,7 @@ void PopulationPlugin::OnUpdate()
 void PopulationPlugin::OnActivation(ConstGzStringPtr &_msg)
 {
   std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
+  gzdbg << "PopulationPlugin: received activation request: " << _msg->data() << std::endl;
 
   if (_msg->data() == "restart")
     this->Restart();
@@ -388,6 +389,7 @@ void PopulationPlugin::OnActivation(ConstGzStringPtr &_msg)
 void PopulationPlugin::OnRateModification(ConstGzStringPtr &_msg)
 {
   std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
+  gzdbg << "PopulationPlugin: received rate modification request: " << _msg->data() << std::endl;
 
   double rateModifier = std::stod(_msg->data());
   if (rateModifier >= 0.0)

@@ -126,6 +126,9 @@ namespace gazebo
     /// \brief The time the last update was called.
     public: common::Time lastUpdateTime;
 
+    /// \brief The time the sim time was last published.
+    public: common::Time lastSimTimePublish;
+
     /// \brief The time specified in the object is relative to this time.
     public: common::Time gameStartTime;
 
@@ -485,6 +488,11 @@ void ROSAriacTaskManagerPlugin::OnUpdate()
 {
   std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
   auto currentSimTime = this->dataPtr->world->GetSimTime();
+  if ((currentSimTime - this->dataPtr->lastSimTimePublish).Double() >= 1.0)
+  {
+    gzdbg << "Sim time: " << currentSimTime.Double() << std::endl;
+    this->dataPtr->lastSimTimePublish = currentSimTime;
+  }
 
   double elapsedTime = (currentSimTime - this->dataPtr->lastUpdateTime).Double();
   if (this->dataPtr->timeLimit >= 0 && this->dataPtr->currentState == "go" &&

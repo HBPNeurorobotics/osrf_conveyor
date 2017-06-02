@@ -72,6 +72,7 @@ bool ROSConveyorBeltPlugin::OnControlCommand(ros::ServiceEvent<
 {
   const osrf_gear::ConveyorBeltControl::Request& req = event.getRequest();
   osrf_gear::ConveyorBeltControl::Response& res = event.getResponse();
+  gzdbg << "Conveyor control service called with: " << req.state.power << std::endl;
 
   const std::string& callerName = event.getCallerName();
   gzdbg << "Conveyor control service called by: " << callerName << std::endl;
