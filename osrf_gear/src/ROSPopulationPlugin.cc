@@ -118,6 +118,7 @@ bool ROSPopulationPlugin::OnPopulationControl(
   osrf_gear::PopulationControl::Request &_req,
   osrf_gear::PopulationControl::Response &_res)
 {
+  gzdbg << "ROSPopulationPlugin::OnPopulationControl() called with: " << _req.action << std::endl;
   _res.success = true;
 
   if (_req.action == "pause")

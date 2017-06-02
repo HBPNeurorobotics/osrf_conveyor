@@ -43,7 +43,7 @@ namespace ariac
                                             const TrayScore &_obj)
     {
       _out << "<tray_score " << _obj.trayID << ">" << std::endl;
-      _out << "Total score: [" << _obj.total() << "]" << std::endl;
+      _out << "Completion score: [" << _obj.total() << "]" << std::endl;
       _out << "Complete: [" << (_obj.isComplete ? "true" : "false") << "]" << std::endl;
       _out << "Submitted: [" << (_obj.isSubmitted ? "true" : "false") << "]" << std::endl;
       _out << "Part presence score: [" << _obj.partPresence << "]" << std::endl;
@@ -77,7 +77,7 @@ namespace ariac
                                             const OrderScore &_obj)
     {
       _out << "<order_score " << _obj.orderID << ">" << std::endl;
-      _out << "Total score: [" << _obj.total() << "]" << std::endl;
+      _out << "Total order score: [" << _obj.total() << "]" << std::endl;
       _out << "Time taken: [" << _obj.timeTaken << "]" << std::endl;
       _out << "Complete: [" << (_obj.isComplete() ? "true" : "false") << "]" << std::endl;
       for (const auto & item : _obj.trayScores)
@@ -137,7 +137,7 @@ namespace ariac
                                             const GameScore &_obj)
     {
       _out << "<game_score>" << std::endl;
-      _out << "Total score: [" << _obj.total() << "]" << std::endl;
+      _out << "Total game score: [" << _obj.total() << "]" << std::endl;
       _out << "Total process time: [" << _obj.totalProcessTime << "]" << std::endl;
       _out << "Part travel time: [" << _obj.partTravelTime << "]" << std::endl;
       for (const auto & item : _obj.orderScores)

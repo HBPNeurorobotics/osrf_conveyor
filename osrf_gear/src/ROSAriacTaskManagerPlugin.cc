@@ -126,6 +126,9 @@ namespace gazebo
     /// \brief The time the last update was called.
     public: common::Time lastUpdateTime;
 
+    /// \brief The time the sim time was last published.
+    public: common::Time lastSimTimePublish;
+
     /// \brief The time specified in the object is relative to this time.
     public: common::Time gameStartTime;
 
@@ -194,7 +197,7 @@ ROSAriacTaskManagerPlugin::~ROSAriacTaskManagerPlugin()
 void ROSAriacTaskManagerPlugin::Load(physics::WorldPtr _world,
   sdf::ElementPtr _sdf)
 {
-  gzdbg << "ARIAC VERSION: 1.1.2\n";
+  gzdbg << "ARIAC VERSION: 1.1.3\n";
   auto competitionEnv = std::getenv("ARIAC_COMPETITION");
   this->dataPtr->competitonMode = competitionEnv != NULL;
   gzdbg << "ARIAC COMPETITION MODE: " << (this->dataPtr->competitonMode ? competitionEnv : "false") << std::endl;
@@ -485,6 +488,11 @@ void ROSAriacTaskManagerPlugin::OnUpdate()
 {
   std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
   auto currentSimTime = this->dataPtr->world->GetSimTime();
+  if ((currentSimTime - this->dataPtr->lastSimTimePublish).Double() >= 1.0)
+  {
+    gzdbg << "Sim time: " << currentSimTime.Double() << std::endl;
+    this->dataPtr->lastSimTimePublish = currentSimTime;
+  }
 
   double elapsedTime = (currentSimTime - this->dataPtr->lastUpdateTime).Double();
   if (this->dataPtr->timeLimit >= 0 && this->dataPtr->currentState == "go" &&

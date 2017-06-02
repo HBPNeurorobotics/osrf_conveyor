@@ -110,6 +110,7 @@ bool ROSVacuumGripperPlugin::OnGripperControl(
   osrf_gear::VacuumGripperControl::Request &_req,
   osrf_gear::VacuumGripperControl::Response &_res)
 {
+  gzdbg << "Gripper control requested: " << (_req.enable ? "Enable" : "Disable") << std::endl;
   if (_req.enable)
     this->Enable();
   else

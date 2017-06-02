@@ -78,7 +78,7 @@ configurable_options = {
         'belt_model_type2': 'part2',
     },
 }
-default_time_limit = 300  # seconds
+default_time_limit = 500  # seconds
 global_model_count = {}  # the global count of how many times a model type has been created
 
 
