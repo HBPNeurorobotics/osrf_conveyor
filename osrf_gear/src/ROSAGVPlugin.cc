@@ -408,6 +408,7 @@ bool ROSAGVPlugin::OnCommand(
     _res.success = false;
     return true;
   }
+  ROS_ERROR_STREAM("[INFO] AGV '" << this->dataPtr->agvName << "' delivery triggered for kit: " << _req.kit_type);
   this->dataPtr->kitType = _req.kit_type;
   this->dataPtr->deliveryTriggered = true;
   _res.success = true;

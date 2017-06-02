@@ -541,7 +541,7 @@ void ROSAriacTaskManagerPlugin::OnUpdate()
       {
         std::ostringstream logMessage;
         logMessage << "Order complete: " << orderID;
-        ROS_INFO_STREAM(logMessage.str().c_str());
+        ROS_ERROR_STREAM(("[INFO] " + logMessage.str()).c_str());
         gzdbg << logMessage.str() << std::endl;
         this->StopCurrentOrder();
       }
@@ -552,7 +552,7 @@ void ROSAriacTaskManagerPlugin::OnUpdate()
         {
           std::ostringstream logMessage;
           logMessage << "Order timed out: " << orderID;
-          ROS_INFO_STREAM(logMessage.str().c_str());
+          ROS_ERROR_STREAM(("[INFO] " + logMessage.str()).c_str());
           gzdbg << logMessage.str() << std::endl;
           this->StopCurrentOrder();
         }
@@ -577,7 +577,7 @@ void ROSAriacTaskManagerPlugin::OnUpdate()
     logMessage << "End of trial. Final score: " << \
       this->dataPtr->currentGameScore.total() << "\nScore breakdown:\n" << \
       this->dataPtr->currentGameScore;
-    ROS_INFO_STREAM(logMessage.str().c_str());
+    ROS_ERROR_STREAM(("[INFO] " + logMessage.str()).c_str());
     gzdbg << logMessage.str() << std::endl;
     this->dataPtr->currentState = "done";
 
@@ -829,7 +829,11 @@ void ROSAriacTaskManagerPlugin::PopulateConveyorBelt()
 void ROSAriacTaskManagerPlugin::AssignOrder(const ariac::Order & order)
 {
     // Publish the order to ROS topic
-    gzdbg << "Announcing order: " << order.orderID << std::endl;
+    std::ostringstream logMessage;
+    logMessage << "Announcing order: " << order.orderID << std::endl;
+    ROS_ERROR_STREAM(("[INFO] " + logMessage.str()).c_str());
+    gzdbg << logMessage.str() << std::endl;
+
     osrf_gear::Order orderMsg;
     fillOrderMsg(order, orderMsg);
     this->dataPtr->orderPub.publish(orderMsg);
