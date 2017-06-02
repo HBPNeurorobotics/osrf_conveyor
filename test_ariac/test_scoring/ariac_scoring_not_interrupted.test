@@ -9,7 +9,7 @@
               $(find test_ariac)/test/scoring_base_order_interrupted.yaml
               $(find test_ariac)/test/scoring_partial_kit_both_trays.yaml
               $(find osrf_gear)/config/sample_user_config.yaml
-              --development-mode --verbose "/>
+              --development-mode --verbose --no-gui"/>
   <test pkg="test_ariac" type="test_scoring_against_expected_score.py"
         test-name="test_scoring_not_interrupted_order"
         time-limit="60.0" args="6"/> <!-- 2 + 4 -->
