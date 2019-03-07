@@ -4,15 +4,17 @@ GEAR is the software used by teams participating in the Agile Robotics for
 Industrial Automation Competition (ARIAC) hosted by the National Institute
 of Standards and Technology (NIST).
 
-This branch has the source code used for ARIAC 2017.
-
-![ARIAC_full.png](https://bitbucket.org/repo/pB4bBb/images/1577073220-ARIAC_full.png)
+Use branch ARIAC_2017!
 
 For testing use:
 
-roslaunch osrf_gear test.launch (launching gazebo with test world)
+    roslaunch osrf_gear test.launch (launching gazebo with test world)
 
-rosrun gazebo_ros spawn_model -file osrf_gear/models/conveyor/model.sdf  -sdf -model conveyor_belt
+    rosrun gazebo_ros spawn_model -file osrf_gear/models/conveyor/model.sdf  -sdf -model conveyor_belt
+
+![ARIAC_full.png](https://bitbucket.org/repo/pB4bBb/images/1577073220-ARIAC_full.png)
+
+
 
 
 
