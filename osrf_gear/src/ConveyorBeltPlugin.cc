@@ -39,12 +39,10 @@ ConveyorBeltPlugin::~ConveyorBeltPlugin()
 /////////////////////////////////////////////////
 void ConveyorBeltPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 {
+  printf("Conveyer online.\n");
   // Read the power of the belt.
   if (_sdf->HasElement("power"))
     this->beltPower = _sdf->Get<double>("power");
-
-  this->SetPower(this->beltPower);
-  gzdbg << "Using belt power of: " << this->beltPower << " %\n";
 
   // Read and set the joint that controls the belt.
   std::string jointName = "belt_joint";
@@ -67,6 +65,7 @@ void ConveyorBeltPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   auto worldPtr = gazebo::physics::get_world();
   this->link = boost::static_pointer_cast<physics::Link>(
     worldPtr->GetEntity(linkName));
+
   if (!this->link)
   {
     gzerr << "Link not found" << std::endl;
@@ -74,30 +73,25 @@ void ConveyorBeltPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   }
 
   // Set the point where the link will be moved to its starting pose.
-  this->limit = this->joint->GetUpperLimit(0) - 0.6;
+  this->limit = this->joint->GetUpperLimit(0) - 0.9;
 
   // Initialize Gazebo transport
   this->gzNode = transport::NodePtr(new transport::Node());
   this->gzNode->Init();
 
-  // Publisher for modifying the rate at which the belt is populated.
-  // TODO(dhood): this should not be in this class.
-  std::string populationRateModifierTopic = "population_rate_modifier";
-  if (_sdf->HasElement("population_rate_modifier_topic"))
-    populationRateModifierTopic = _sdf->Get<std::string>("population_rate_modifier_topic");
-  this->populationRateModifierPub =
-    this->gzNode->Advertise<msgs::GzString>(populationRateModifierTopic);
 
   // Listen to the update event that is broadcasted every simulation iteration.
-  this->updateConnection = event::Events::ConnectWorldUpdateBegin(
+  this->updateConnection = event::Events::ConnectWorldUpdateEnd(
     std::bind(&ConveyorBeltPlugin::OnUpdate, this));
+
+  gzdbg << "Using belt power of: " << this->beltPower << " %\n";
+  this->SetPower(this->beltPower);
 }
 
 /////////////////////////////////////////////////
 void ConveyorBeltPlugin::OnUpdate()
 {
   this->joint->SetVelocity(0, this->beltVelocity);
-
   // Reset the belt.
   if (this->joint->GetAngle(0) >= this->limit)
   {
@@ -107,9 +101,10 @@ void ConveyorBeltPlugin::OnUpdate()
     // found an incorrect value in childLinkPose within
     // Joint::SetPositionMaximal(). This workaround makes sure that the right
     // numbers are always used in our scenario.
-    const math::Pose childLinkPose(1.20997, 2.5998, 0.8126, 0, 0, -1.57);
-    const math::Pose newChildLinkPose(1.20997, 2.98, 0.8126, 0, 0, -1.57);
-    this->link->MoveFrame(childLinkPose, newChildLinkPose);
+    this->joint->SetPosition(0, 0);
+    //const math::Pose childLinkPose(1.20997, 2.5998, 0.8126, 0, 0, -1.57);
+    //const math::Pose newChildLinkPose(1.20997, 2.98, 0.8126, 0, 0, -1.57);
+    //this->link->MoveFrame(childLinkPose, newChildLinkPose);
   }
 }
 
@@ -136,11 +131,6 @@ void ConveyorBeltPlugin::SetPower(const double _power)
   }
 
   this->beltPower = _power;
-
-  // Publish a message on the rate modifier topic of the PopulationPlugin.
-  gazebo::msgs::GzString msg;
-  msg.set_data(std::to_string(_power / 100.0));
-  this->populationRateModifierPub->Publish(msg);
 
   // Convert the power (percentage) to a velocity.
   this->beltVelocity = this->kMaxBeltLinVel * this->beltPower / 100.0;

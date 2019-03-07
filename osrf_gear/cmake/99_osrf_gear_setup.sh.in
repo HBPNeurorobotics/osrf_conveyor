@@ -1,1 +1,1 @@
-export GAZEBO_MODEL_PATH=@CMAKE_INSTALL_PREFIX@/share/@PROJECT_NAME@/models:$GAZEBO_MODEL_PATH
+export GAZEBO_MODEL_PATH=/home/daniel/robot_folders/checkout/testing/catkin_ws/src/ariac_2017/test/:$GAZEBO_MODEL_PATH

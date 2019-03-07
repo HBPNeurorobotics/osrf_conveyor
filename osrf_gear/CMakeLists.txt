@@ -25,28 +25,12 @@ find_package(gazebo REQUIRED)
 add_message_files(DIRECTORY msg
   FILES
   ConveyorBeltState.msg
-  DetectedObject.msg
-  Kit.msg
-  KitObject.msg
-  KitTray.msg
-  LogicalCameraImage.msg
   Model.msg
-  Order.msg
-  PopulationState.msg
-  Proximity.msg
-  StorageUnit.msg
-  TrayContents.msg
-  VacuumGripperState.msg
 )
 
 add_service_files(DIRECTORY srv
   FILES
-  AGVControl.srv
   ConveyorBeltControl.srv
-  GetMaterialLocations.srv
-  PopulationControl.srv
-  SubmitTray.srv
-  VacuumGripperControl.srv
 )
 
 generate_messages(
@@ -75,50 +59,6 @@ include_directories(
 
 link_directories(
   ${GAZEBO_LIBRARY_DIRS}
-)
-
-# Create the libVacuumGripperPlugin.so library.
-set(vacuum_gripper_plugin_name VacuumGripperPlugin)
-add_library(${vacuum_gripper_plugin_name} src/VacuumGripperPlugin.cc)
-target_link_libraries(${vacuum_gripper_plugin_name}
-  ${GAZEBO_LIBRARIES}
-  ${roscpp_LIBRARIES}
-  ${sensor_msgs_LIBRARIES}
-)
-install(TARGETS ${vacuum_gripper_plugin_name}
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin)
-
-# Create the libROSVacuumGripperPlugin.so library.
-set(ros_vacuum_gripper_plugin_name ROSVacuumGripperPlugin)
-add_library(${ros_vacuum_gripper_plugin_name} src/ROSVacuumGripperPlugin.cc)
-target_link_libraries(${ros_vacuum_gripper_plugin_name}
-  ${catkin_LIBRARIES}
-  ${vacuum_gripper_plugin_name}
-  ${GAZEBO_LIBRARIES}
-  ${roscpp_LIBRARIES}
-  ${sensor_msgs_LIBRARIES}
-)
-add_dependencies(${ros_vacuum_gripper_plugin_name}
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-)
-install(TARGETS ${ros_vacuum_gripper_plugin_name}
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin)
-
-
-# Create the libSideContactPlugin.so library.
-set(side_contact_plugin_name SideContactPlugin)
-add_library(${side_contact_plugin_name} src/SideContactPlugin.cc)
-target_link_libraries(${side_contact_plugin_name}
-  ${GAZEBO_LIBRARIES}
-)
-install(TARGETS ${side_contact_plugin_name}
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin
 )
 
 
@@ -151,174 +91,6 @@ install(TARGETS ${ros_conveyor_belt_plugin_name}
   RUNTIME DESTINATION bin
 )
 
-# Create the libROSAGVPlugin.so library.
-set(ros_agv_plugin_name ROSAGVPlugin)
-add_library(${ros_agv_plugin_name} src/ROSAGVPlugin.cc)
-target_link_libraries(${ros_agv_plugin_name} ${GAZEBO_LIBRARIES})
-add_dependencies(${ros_agv_plugin_name}
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-)
-install(TARGETS ${ros_agv_plugin_name}
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin
-)
-
-# Create the libProximityRayPlugin.so library.
-set(proximity_ray_plugin_name ProximityRayPlugin)
-add_library(${proximity_ray_plugin_name} src/ProximityRayPlugin.cc)
-target_link_libraries(${proximity_ray_plugin_name}
-  ${GAZEBO_LIBRARIES}
-)
-install(TARGETS ${proximity_ray_plugin_name}
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin
-)
-
-# Create the libROSProximityRayPlugin.so library.
-set(ros_proximity_ray_plugin_name ROSProximityRayPlugin)
-add_library(${ros_proximity_ray_plugin_name} src/ROSProximityRayPlugin.cc)
-target_link_libraries(${ros_proximity_ray_plugin_name}
-  ${proximity_ray_plugin_name}
-  ${GAZEBO_LIBRARIES}
-)
-add_dependencies(${ros_proximity_ray_plugin_name}
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-)
-install(TARGETS ${ros_proximity_ray_plugin_name}
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin
-)
-
-# Create the libPopulationPlugin.so library.
-set(population_plugin_name PopulationPlugin)
-add_library(${population_plugin_name} src/PopulationPlugin.cc)
-target_link_libraries(${population_plugin_name}
-  ${GAZEBO_LIBRARIES}
-)
-install(TARGETS ${population_plugin_name}
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin
-)
-
-# Create the libROSPopulationPlugin.so library.
-set(ros_population_plugin_name ROSPopulationPlugin)
-add_library(${ros_population_plugin_name} src/ROSPopulationPlugin.cc)
-target_link_libraries(${ros_population_plugin_name}
-  ${catkin_LIBRARIES}
-  ${population_plugin_name}
-  ${GAZEBO_LIBRARIES}
-  ${roscpp_LIBRARIES}
-)
-add_dependencies(${ros_population_plugin_name}
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-)
-install(TARGETS ${ros_population_plugin_name}
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin
-)
-
-# Create the libAriacTaskManagerPlugin.so library.
-set(task_plugin_name ROSAriacTaskManagerPlugin)
-add_library(${task_plugin_name}
-  src/ROSAriacTaskManagerPlugin.cc
-)
-target_link_libraries(${task_plugin_name}
-  ${GAZEBO_LIBRARIES}
-  ${roscpp_LIBRARIES}
-  AriacScorer
-)
-add_dependencies(${task_plugin_name}
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-)
-install(TARGETS ${task_plugin_name}
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin
-)
-
-# Create the libROSLogicalCameraPlugin.so library.
-set(ros_logical_camera_plugin_name ROSLogicalCameraPlugin)
-add_library(${ros_logical_camera_plugin_name} src/ROSLogicalCameraPlugin.cc)
-target_link_libraries(${ros_logical_camera_plugin_name}
-  ${GAZEBO_LIBRARIES}
-  ${catkin_LIBRARIES}
-)
-add_dependencies(${ros_logical_camera_plugin_name}
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-)
-install(TARGETS ${ros_logical_camera_plugin_name}
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin
-)
-
-# Create the libObjectDisposalPlugin.so library.
-set(object_disposal_plugin_name ObjectDisposalPlugin)
-add_library(${object_disposal_plugin_name} src/ObjectDisposalPlugin.cc)
-target_link_libraries(${object_disposal_plugin_name}
-  ${GAZEBO_LIBRARIES}
-  ${side_contact_plugin_name}
-)
-install(TARGETS ${object_disposal_plugin_name}
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin
-)
-
-# Create the libROSAriacKitTrayPlugin.so library.
-set(kit_tray_plugin_name ROSAriacKitTrayPlugin)
-add_library(${kit_tray_plugin_name} src/ROSAriacKitTrayPlugin.cc)
-target_link_libraries(${kit_tray_plugin_name}
-  ${GAZEBO_LIBRARIES}
-  ${roscpp_LIBRARIES}
-  ${side_contact_plugin_name}
-)
-add_dependencies(${kit_tray_plugin_name}
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-)
-install(TARGETS ${kit_tray_plugin_name}
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin
-)
-
-# Create the libAriacKitTray.so library.
-set(target_name AriacKitTray)
-add_library(${target_name} src/AriacKitTray.cpp)
-target_link_libraries(${target_name}
-  ${GAZEBO_LIBRARIES}
-  ${roscpp_LIBRARIES}
-)
-add_dependencies(${target_name}
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-)
-install(TARGETS ${target_name}
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin
-)
-
-# Create the libAriacScorer.so library.
-set(target_name AriacScorer)
-add_library(${target_name} src/AriacScorer.cpp)
-target_link_libraries(${target_name}
-  ${GAZEBO_LIBRARIES}
-  ${roscpp_LIBRARIES}
-  AriacKitTray
-)
-add_dependencies(${target_name}
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-)
-install(TARGETS ${target_name}
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin
-)
 
 
 #############
@@ -333,10 +105,6 @@ install(PROGRAMS script/gear.py script/startup.sh
 install(DIRECTORY config/
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/config)
 
-# Install all the world files
-install(DIRECTORY worlds/
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/worlds)
-
 # Install all the model files
 install(DIRECTORY models/
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/models)
@@ -345,15 +113,7 @@ install(DIRECTORY models/
 install(DIRECTORY launch/
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch)
 
-# Install all the rviz files
-install(DIRECTORY rviz/
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/rviz)
-
-# Install all the vendor files from outside packages
-install(DIRECTORY vendor/
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/vendor)
-
 # Configure the setup script
-catkin_add_env_hooks(99_osrf_gear_setup
-  DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/cmake
-  SHELLS sh)
+#catkin_add_env_hooks(99_osrf_gear_setup
+#  DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/cmake
+#  SHELLS sh)
