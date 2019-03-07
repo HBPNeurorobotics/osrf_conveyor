@@ -12,6 +12,11 @@ For testing use:
 
     rosrun gazebo_ros spawn_model -file osrf_gear/models/conveyor/model.sdf  -sdf -model conveyor_belt
 
+    rosservice call /ariac/conveyor/control "state: power: 100.0" (Set the conveyor speed, only 20%-100% works)
+
+Important: if the conveyor switches from off (0%-20%) to on (20%-100$), something (another object) has to interact with the conveyor (e.g. let an object fall on it)
+
+
 ![ARIAC_full.png](https://bitbucket.org/repo/pB4bBb/images/1577073220-ARIAC_full.png)
 
 
