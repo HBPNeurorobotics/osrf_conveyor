@@ -25,6 +25,7 @@
 #include <gazebo/physics/Model.hh>
 #include <gazebo/physics/World.hh>
 #include "ConveyorBeltPlugin.hh"
+#include <iostream>
 
 using namespace gazebo;
 
@@ -48,11 +49,15 @@ void ConveyorBeltPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   std::string jointName = "belt_joint";
   if (_sdf->HasElement("joint"))
     jointName = _sdf->Get<std::string>("joint");
-  gzdbg << "Using joint name of: [" << jointName << "]\n";
+
+  printf("joint name: %s.\n", jointName.c_str());
+  // _model = boost::static_pointer_cast<physics::ModelPtr>(_model->GetChild("conveyor_belt"));
+  std::cout << "Conveyor model name: " << _model->GetName() << "\n";
+  std::cerr << "Child in the model: " << _model->GetChild("conveyor_belt") << "\n";
   this->joint = _model->GetJoint(jointName);
   if (!this->joint)
   {
-    gzerr << "Joint [" << jointName << "] not found, belt disabled\n";
+    std::cerr << "Joint [" << jointName << "] not found, belt disabled\n";
     return;
   }
 
@@ -60,7 +65,7 @@ void ConveyorBeltPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   std::string linkName = "belt_link";
   if (_sdf->HasElement("link"))
     linkName = _sdf->Get<std::string>("link");
-  gzdbg << "Using link name of: [" << linkName << "]\n";
+  std::cout << "Using link name of: [" << linkName << "]\n";
 
   auto worldPtr = gazebo::physics::get_world();
   this->link = boost::static_pointer_cast<physics::Link>(
@@ -68,7 +73,7 @@ void ConveyorBeltPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 
   if (!this->link)
   {
-    gzerr << "Link not found" << std::endl;
+    std::cerr << "Link not found" << std::endl;
     return;
   }
 
@@ -84,7 +89,7 @@ void ConveyorBeltPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   this->updateConnection = event::Events::ConnectWorldUpdateEnd(
     std::bind(&ConveyorBeltPlugin::OnUpdate, this));
 
-  gzdbg << "Using belt power of: " << this->beltPower << " %\n";
+  std::cout << "Using belt power of: " << this->beltPower << " %\n";
   this->SetPower(this->beltPower);
 }
 
@@ -125,8 +130,8 @@ void ConveyorBeltPlugin::SetPower(const double _power)
 
   if (_power < 0 || _power > 100)
   {
-    gzerr << "Incorrect power value [" << _power << "]\n";
-    gzerr << "Accepted values are in the [0-100] range\n";
+    std::cerr << "Incorrect power value [" << _power << "]\n";
+    std::cerr << "Accepted values are in the [0-100] range\n";
     return;
   }
 
@@ -134,5 +139,5 @@ void ConveyorBeltPlugin::SetPower(const double _power)
 
   // Convert the power (percentage) to a velocity.
   this->beltVelocity = this->kMaxBeltLinVel * this->beltPower / 100.0;
-  gzdbg << "Received power of: " << _power << ", setting velocity to: " << this->beltVelocity << std::endl;
+  std::cout << "Received power of: " << _power << ", setting velocity to: " << this->beltVelocity << std::endl;
 }
