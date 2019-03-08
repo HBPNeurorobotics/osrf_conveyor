@@ -54,9 +54,12 @@ void ROSConveyorBeltPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf
     return;
   }
 
-  std::string topic = "conveyor/control";
-  if (_sdf->HasElement("topic"))
-    topic = _sdf->Get<std::string>("topic");
+  std::string topic = _parent->GetName();
+  topic += "/control";
+
+  gzdbg << topic << "\n";
+  //if (_sdf->HasElement("topic"))
+  //  topic = _sdf->Get<std::string>("topic");
 
   ConveyorBeltPlugin::Load(_parent, _sdf);
 
